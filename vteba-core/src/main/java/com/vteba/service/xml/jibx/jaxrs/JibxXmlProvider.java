@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -32,13 +31,14 @@ import com.vteba.service.xml.XmlServiceImpl;
 
 /**
  * 基于JiBX的jax-rs xml provider，实现对象的序列化和反序列化。
+ * 直接在spring xml配置文件中配置。
  * @author yinlei
  * @date 2013年10月6日 下午10:12:16
  */
 @Provider
 @Consumes({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
-@Named
+//@Named
 public class JibxXmlProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 	@Inject
 	private XmlServiceImpl xmlServiceImpl;

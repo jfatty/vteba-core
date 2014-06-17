@@ -20,7 +20,7 @@ import org.springframework.oxm.xstream.XStreamMarshaller;
 import com.vteba.service.xml.jibx.JibxMarshallerFactory;
 
 /**
- * XML和对象序列化和反序列化服务。
+ * XML和对象序列化和反序列化服务。在spring xml配置文件中配置。
  * @author yinlei
  * date 2013-7-28 下午8:17:01
  */
