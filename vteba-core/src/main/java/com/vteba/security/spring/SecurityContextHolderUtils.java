@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import com.vteba.security.user.IUserDetails;
+
 /**
  * Spring Security Context Information。
  * @author yinlei 
@@ -38,15 +40,15 @@ public class SecurityContextHolderUtils {
 	 * @author yinlei
 	 * date 2012-6-24 下午3:38:58
 	 */
-	public static UserDetails getCurrentUserInfo() {
+	public static IUserDetails getCurrentUserInfo() {
 		if (null == getAuthentication()) {
 			return null;
 		}
 		Object detail = getAuthentication().getPrincipal();
-		if (!(detail instanceof UserDetails)) {
+		if (!(detail instanceof IUserDetails)) {
 			return null;
 		}
-		UserDetails user = (UserDetails) detail;
+		IUserDetails user = (IUserDetails) detail;
 		return user;
 	}
 	
