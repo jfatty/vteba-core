@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.Unmarshaller;
+import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.xstream.XStreamMarshaller;
 
 import com.vteba.service.xml.jibx.JibxMarshallerFactory;
@@ -46,7 +47,17 @@ public class XmlServiceImpl {
 	 */
 	public Object fromXml(String xml) {
 		StringReader reader = new StringReader(xml);
-		return xstreamMarshaller.getXStream().fromXML(reader);
+		Source source = new StreamSource(reader);
+		Object object = null;
+		try {
+			object = xstreamMarshaller.unmarshal(source);
+		} catch (XmlMappingException e) {
+			logger.error("xml=[{}]，xml mapping exception。", xml);
+		} catch (IOException e) {
+			logger.error("xml=[{}]，xml io exception。", xml);
+		}
+		//return xstreamMarshaller.getXStream().fromXML(reader);
+		return object;
 	}
 	
 	/**
@@ -57,7 +68,18 @@ public class XmlServiceImpl {
 	 * date 2013-7-28 下午8:18:05
 	 */
 	public String toXml(Object object) {
-		return xstreamMarshaller.getXStream().toXML(object);
+		StringWriter writer = new StringWriter();
+		Result result = new StreamResult(writer);
+		try {
+			xstreamMarshaller.marshal(object, result);
+		} catch (XmlMappingException e) {
+			logger.error("object=[{}]，xml mapping exception。", object);
+		} catch (IOException e) {
+			logger.error("object=[{}]，xml io exception。", object);
+		}
+		writer.flush();
+		return writer.toString();
+		//return xstreamMarshaller.getXStream().toXML(object);
 	}
 	
 	/**
