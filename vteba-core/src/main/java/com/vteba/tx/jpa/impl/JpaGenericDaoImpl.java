@@ -12,6 +12,9 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
 
 import com.vteba.tx.jpa.spi.IJpaGenericDao;
 import com.vteba.utils.reflection.ReflectUtils;
@@ -85,8 +88,18 @@ public abstract class JpaGenericDaoImpl<T, ID extends Serializable> implements I
 		Root<T> root = criteriaQuery.from(entityClass);
 		criteriaQuery.select(root);
 		
+		Metamodel metamodel = entityManager.getMetamodel();
+		metamodel.entity(criteria.getClass());
+		
 		TypedQuery<T> typedQuery = entityManager.createQuery(criteriaQuery);
 		result = typedQuery.getResultList();
 		return result;
+	}
+	
+	public <X> void listAttributes(EntityType<X> entityType) {
+		for (Attribute<? super X, ?> attribute : entityType.getAttributes()) {
+			attribute.getName();
+			attribute.getJavaType();
+		}
 	}
 }

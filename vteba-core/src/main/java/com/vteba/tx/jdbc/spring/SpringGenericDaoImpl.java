@@ -143,7 +143,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 	@Override
 	public ID save(T entity) {
 		Map<String, Object> toMap = new HashMap<String, Object>();
-		BeanCopyUtils.getInstance().beanToMap(entity, toMap);
+		BeanCopyUtils.get().beanToMap(entity, toMap);
 		springJdbcTemplate.update(INSERT, toMap);
 		return null;
 	}
@@ -151,7 +151,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 	@Override
 	public void update(T entity) {
 		Map<String, Object> toMap = new HashMap<String, Object>();
-		BeanCopyUtils.getInstance().beanToMap(entity, toMap);
+		BeanCopyUtils.get().beanToMap(entity, toMap);
 		springJdbcTemplate.update(UPDATE, toMap);
 		
 	}
@@ -170,7 +170,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 	@Override
 	public void delete(T entity) {
 		Map<String, Object> toMap = new HashMap<String, Object>();
-		BeanCopyUtils.getInstance().beanToMap(entity, toMap);
+		BeanCopyUtils.get().beanToMap(entity, toMap);
 		
 	}
 	
