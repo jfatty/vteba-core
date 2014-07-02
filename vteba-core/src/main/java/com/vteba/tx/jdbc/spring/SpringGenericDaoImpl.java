@@ -168,19 +168,19 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 	}
 
 	@Override
-    public ID saveAll(T entity) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-	
-	@Override
 	public T get(ID id) {
 		GenericRowMapper<T> rowMapper = new GenericRowMapper<T>(entityClass, SELECT);
 		return springJdbcTemplate.queryForObject(SELECT, rowMapper, id);
 	}
 
 	@Override
-    public T get(T entity) {
+    public T unique(T entity) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+	
+	@Override
+    public T unique(Map<String, Object> params) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -215,18 +215,11 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
     
     @Override
     public int update(T entity) {
-        Map<String, Object> toMap = new HashMap<String, Object>();
-        BeanCopyUtils.get().beanToMap(entity, toMap);
+        Map<String, Object> toMap = maps(entity);
         return springJdbcTemplate.update(UPDATE, toMap);
         
     }
     
-    @Override
-    public int updateAll(T entity) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
     @Override
     public int updateBatch(T entity, T criteria) {
         Map<String, Object> params = maps(criteria);
@@ -290,11 +283,8 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 
     @Override
     public List<T> query(Map<String, Object> params) {
-        StringBuilder sb = new StringBuilder(SELECT_ALL).append(" where 1=1");
-        for (Entry<String, ?> entry : params.entrySet()) {
-            sb.append(" and ").append(entry.getKey()).append(" = :").append(entry.getKey());
-        }
-        return query(sb.toString(), params);
+        String sql = SELECT_ALL + buildWhere(params);
+        return query(sql, params);
     }
 
     @Override

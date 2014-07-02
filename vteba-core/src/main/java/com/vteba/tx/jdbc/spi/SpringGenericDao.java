@@ -23,7 +23,7 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * @param entity
      * @return 实体主键
      */
-    public ID saveAll(T entity);
+    //public ID saveAll(T entity);
 	
 	/**
 	 * 根据id更新实体entity非空栏位（主键属性非空）
@@ -35,7 +35,7 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * 根据id更新实体entity所有栏位（主键属性非空）
      * @param entity
      */
-    public int updateAll(T entity);
+    //public int updateAll(T entity);
 	
 	/**
      * 批量更新实体entity，使用命名sql
@@ -84,7 +84,14 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * @param entity 含主键的实体
      * @return 实体
      */
-    public T get(T entity);
+    public T unique(T entity);
+    
+    /**
+     * 根据条件查询唯一实体，多于一个报异常
+     * @param params 参数
+     * @return 实体
+     */
+    public T unique(Map<String, Object> params);
 	
 	/**
 	 * 根据主键删除实体
