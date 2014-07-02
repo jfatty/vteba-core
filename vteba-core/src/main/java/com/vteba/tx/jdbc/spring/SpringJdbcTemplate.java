@@ -203,8 +203,8 @@ public class SpringJdbcTemplate {
 	 * date 2013-7-5 下午10:37:21
 	 */
 	public <T> List<T> query(String sql, Class<T> resultClass, Object... args) {
-        //RowMapper<T> rowMapper = new GenericRowMapper<T>(resultClass, sql);
-		RowMapper<T> rowMapper = new FieldRowMapper<T>(resultClass, sql);
+        RowMapper<T> rowMapper = new GenericRowMapper<T>(resultClass, sql);
+		//RowMapper<T> rowMapper = new FieldRowMapper<T>(resultClass, sql);
         return query(sql, rowMapper, args);
     }
 	
