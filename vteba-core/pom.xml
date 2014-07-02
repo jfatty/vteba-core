@@ -59,6 +59,18 @@
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-jpa</artifactId>
 		<version>1.6.0.RELEASE</version>
+		<exclusions>
+		  	<exclusion>
+		  		<groupId>org.slf4j</groupId>
+		  		<artifactId>jcl-over-slf4j</artifactId>
+		  	</exclusion>
+	  	</exclusions>
+	</dependency>
+   
+    <dependency>
+		<groupId>org.eclipse.persistence</groupId>
+		<artifactId>org.eclipse.persistence.jpa</artifactId>
+		<version>2.5.1</version>
 	</dependency>
    
     <!-- struts2 start -->
@@ -211,11 +223,11 @@
 <!-- 		<version>3.0.M1</version> -->
 <!-- 	</dependency> -->
 	
-	<dependency> 
-	  <groupId>dwr</groupId>
-	  <artifactId>dwr</artifactId>
-	  <version>3.0.rc2</version>
-	</dependency>
+<!-- 	<dependency>  -->
+<!-- 	  <groupId>dwr</groupId> -->
+<!-- 	  <artifactId>dwr</artifactId> -->
+<!-- 	  <version>3.0.rc2</version> -->
+<!-- 	</dependency> -->
 	
 <!-- 	<dependency> -->
 <!-- 		<groupId>org.directwebremoting</groupId> -->
