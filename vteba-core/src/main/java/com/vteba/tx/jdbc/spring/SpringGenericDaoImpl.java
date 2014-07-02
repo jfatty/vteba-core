@@ -21,6 +21,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import com.vteba.common.exception.NonUniqueException;
+import com.vteba.tx.generic.Page;
 import com.vteba.tx.jdbc.spi.SpringGenericDao;
 import com.vteba.utils.reflection.BeanCopyUtils;
 import com.vteba.utils.reflection.ReflectUtils;
@@ -175,14 +177,19 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 
 	@Override
     public T unique(T entity) {
-        // TODO Auto-generated method stub
-        return null;
+		Map<String, Object> params = maps(entity);
+        return unique(params);
     }
 	
 	@Override
     public T unique(Map<String, Object> params) {
-        // TODO Auto-generated method stub
-        return null;
+		List<T> list = query(params);
+		if (list == null || list.isEmpty()) {
+			throw new NonUniqueException("查询结果集为空。");
+		} else if (list.size() >= 2) {
+			throw new NonUniqueException("查询结果集size大于1。");
+		}
+        return list.get(0);
     }
 	
 	@Override
@@ -303,4 +310,91 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
         return query(sql, maps(params));
     }
 
+	@Override
+	public Page<T> queryForPage(Page<T> page, T params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, String sql, T params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, Map<String, Object> params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, String sql, Map<String, Object> params) {
+		Integer count = count(sql, params);
+		if (count == 0) {
+			return page;
+		} else {
+			page.setTotalRecordCount(count);
+		}
+		preparePagedQuery(page, sql, params);
+		List<T> list = query(sql, params);
+		page.setResult(list);
+		
+		
+		return page;
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, String sql, Object... params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected String mysqlPagedQuery(String sql, Page<T> page) {
+		StringBuilder sb = new StringBuilder(sql);
+		Map<String, String> orders = page.getOrders();
+		if (orders != null && orders.size() >= 1 ) {
+			sb.append(" order by");
+			for (Entry<String, String> entry : orders.entrySet()) {
+				sb.append(" ").append(entry.getKey()).append(" ").append(entry.getValue());
+			}
+		}
+		sb.append(" limit :startIndex , :pageSize");
+		return sb.toString();
+	}
+	
+	protected void setParameterToQuery(Page<T> page, Map<String, Object> params) {
+		params.put("startIndex", page.getStartIndex());
+		params.put("pageSize", page.getPageSize());
+	}
+	
+	protected void preparePagedQuery(Page<T> page, String sql, Map<String, Object> params) {
+		sql = mysqlPagedQuery(sql, page);
+		setParameterToQuery(page, params);
+	}
+	
+	/**
+	 * select显示的栏位与order by排序会影响count查询效率，进行简单的排除，未考虑union
+	 * @param sql 原始sql
+	 * @return 排除order by和显示栏位后的sql
+	 * @author yinlei
+	 * date 2012-7-14 下午11:31:21
+	 */
+	protected String prepareCountSql(String sql) {
+		String fromSql = sql;
+		StringBuilder sb = new StringBuilder("select count(*) count from ");
+		sb.append(StringUtils.substringAfter(fromSql, "from"));
+		sb.append(StringUtils.substringBefore(fromSql, "order by"));
+		return sb.toString();
+	}
+	
+	protected Integer count(String sql, Map<String, Object> params) {
+		String countSQL = prepareCountSql(sql);
+		return springJdbcTemplate.queryForObject(countSQL, params, Integer.class);
+	}
+	
+	protected Integer count(String sql, Object... params) {
+		String countSQL = prepareCountSql(sql);
+		return springJdbcTemplate.queryForObject(countSQL, Integer.class, params);
+	}
 }

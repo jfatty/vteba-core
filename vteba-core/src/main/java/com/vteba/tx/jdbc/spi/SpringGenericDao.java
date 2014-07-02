@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import com.vteba.tx.generic.Page;
+
 /**
  * Spring泛型Dao抽象。
  * @author yinlei
@@ -169,4 +171,47 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * @return 实体list
      */
     public List<T> query(String sql, Object... params);
+    
+    /**
+     * 根据条件分页查询实体list，使用命名sql
+     * @param page 分页条件以及排序条件
+     * @param params 查询条件参数
+     * @return 实体分页数据
+     */
+    public Page<T> queryForPage(Page<T> page, T params);
+    
+    /**
+     * 根据条件分页查询实体list，使用命名sql
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param params 查询条件参数
+     * @return 实体分页数据
+     */
+    public Page<T> queryForPage(Page<T> page, String sql, T params);
+    
+    /**
+     * 根据条件分页查询实体list，使用命名sql
+     * @param page 分页条件以及排序条件
+     * @param params 查询条件参数
+     * @return 实体分页数据
+     */
+    public Page<T> queryForPage(Page<T> page, Map<String, Object> params);
+    
+    /**
+     * 根据条件分页查询实体list，使用命名sql
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param params 查询条件参数
+     * @return 实体分页数据
+     */
+    public Page<T> queryForPage(Page<T> page, String sql, Map<String, Object> params);
+    
+    /**
+     * 根据条件分页查询实体list，sql为普通sql，？为占位符
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param params sql参数
+     * @return 实体分页数据
+     */
+    public Page<T> queryForPage(Page<T> page, String sql, Object... params);
 }

@@ -3,6 +3,7 @@ package com.vteba.tx.generic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 分页需要提供3个主要的参数，1：页码pageNo，构造时设置；2：总记录数totalRecordCount，查询DB获得；
@@ -20,6 +21,8 @@ public class Page<T> implements Serializable {
 	private int pageNo = 1;// 某一页序号
 	private String orderBy;//排序字段
 	private String ascDesc;//升序或降序
+	private Map<String, String> orders;
+	
 	/**
 	 * 默认构造方法，构造空页。
 	 */
@@ -203,4 +206,13 @@ public class Page<T> implements Serializable {
 			return pageNo;
 		}
 	}
+
+	public Map<String, String> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(Map<String, String> orders) {
+		this.orders = orders;
+	}
+	
 }
