@@ -62,5 +62,5 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
         }
         return resultMap;
     }
-	
+
 }

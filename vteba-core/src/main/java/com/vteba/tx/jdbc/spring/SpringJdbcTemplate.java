@@ -209,6 +209,20 @@ public class SpringJdbcTemplate {
     }
 	
 	/**
+	 * 执行查询语句。使用字节码自动构建实体Class&lt;T&gt;实例。性能略低于回调2%以内。
+	 * @param sql sql语句
+	 * @param resultClass 结果类型Class&ltT&gt
+	 * @param params sql参数
+	 * @return 实体List&lt;T&gt;
+	 * @author yinlei
+	 * date 2013-7-5 下午10:37:21
+	 */
+	public <T> List<T> query(String sql, Class<T> resultClass, Map<String, ?> params) {
+        RowMapper<T> rowMapper = new GenericRowMapper<T>(resultClass, sql);
+        return query(sql, params, rowMapper);
+    }
+	
+	/**
 	 * 返回唯一结果，多条记录，返回第一条。使用字节码自动构建实体Class&lt;T&gt;实例。性能略低于回调2%以内。
 	 * @param sql sql语句
 	 * @param resultClass 结果类型Class&lt;T&gt;

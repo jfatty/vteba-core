@@ -173,6 +173,32 @@ public interface SpringGenericDao<T, ID extends Serializable> {
     public List<T> query(String sql, Object... params);
     
     /**
+     * 根据条件查询VO list，sql为命名sql，一般用于多表连接
+     * @param sql 命名sql语句
+     * @param params 携带sql参数的VO
+     * @return VO bean list
+     */
+    public <VO> List<VO> queryList(String sql, VO params);
+    
+    /**
+     * 根据条件查询VO list，sql为命名sql，一般用于多表连接
+     * @param sql 命名sql语句
+     * @param params 携带sql参数的VO
+     * @param resultClass VO class，结果对象类型
+     * @return VO bean list
+     */
+    public <VO> List<VO> queryList(String sql, Class<VO> resultClass, Map<String, Object> params);
+    
+    /**
+     * 根据条件查询VO list，sql为普通sql，一般用于多表连接
+     * @param sql sql语句
+     * @param resultClass VO class，结果对象类型
+     * @param params sql参数
+     * @return VO bean list
+     */
+    public <VO> List<VO> queryList(String sql, Class<VO> resultClass, Object... params);
+    
+    /**
      * 根据条件分页查询实体list，使用命名sql
      * @param page 分页条件以及排序条件
      * @param params 查询条件参数
@@ -214,4 +240,51 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * @return 实体分页数据
      */
     public Page<T> queryForPage(Page<T> page, String sql, Object... params);
+    
+    /**
+     * 根据条件分页查询vo bean list，使用命名sql，一般用于多表连接
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param params 查询条件参数
+     * @return vo bean list
+     */
+    public <VO> Page<VO> queryPageList(Page<VO> page, String sql, VO params);
+    
+    /**
+     * 根据条件分页查询vo bean list，使用命名sql，一般用于多表连接
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param resultClass 结果VO类型
+     * @param params 查询条件参数
+     * @return vo bean list
+     */
+    public <VO> Page<VO> queryPageList(Page<VO> page, String sql, Class<VO> resultClass, Map<String, Object> params);
+    
+    /**
+     * 根据条件分页查询vo bean list，使用命名sql，一般用于多表连接
+     * @param page 分页条件以及排序条件
+     * @param sql sql语句
+     * @param resultClass 结果VO类型
+     * @param params 查询条件参数
+     * @return vo bean list
+     */
+    public <VO> Page<VO> queryPageList(Page<VO> page, String sql, Class<VO> resultClass, Object... params);
+    
+    /**
+	 * 执行查询语句。只能查询基本类型。
+	 * @param sql 命名参数sql语句
+	 * @param paramMap sql参数，key为命名参数名
+	 * @param requiredType 参数基本类型类
+	 * @return 基本类型
+	 */
+    public <X> X queryForObject(String sql, Map<String, ?> paramMap, Class<X> requiredType);
+    
+    /**
+	 * 执行查询语句。只能查询基本类型。
+	 * @param sql sql语句，以？为占位符
+	 * @param requiredType 基本类型类
+	 * @param params sql参数
+	 * @return 基本类型
+	 */
+	public <X> X queryForObject(String sql, Class<X> requiredType, Object... params);
 }

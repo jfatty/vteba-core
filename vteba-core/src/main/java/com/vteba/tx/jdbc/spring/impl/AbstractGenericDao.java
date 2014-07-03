@@ -31,6 +31,7 @@ import com.vteba.tx.generic.Page;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.tx.jdbc.spring.meta.EntityMetadata;
 import com.vteba.tx.jdbc.spring.spi.SpringGenericDao;
+import com.vteba.utils.reflection.BeanCopyUtils;
 import com.vteba.utils.reflection.ReflectUtils;
 
 import freemarker.template.Configuration;
@@ -491,7 +492,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param named 是否命名sql
 	 * @return 分页sql语句
 	 */
-	protected String mysqlPagedQuery(String sql, Page<T> page, boolean named) {
+	protected <X> String mysqlPagedQuery(String sql, Page<X> page, boolean named) {
 		StringBuilder sb = new StringBuilder(sql);
 		Map<String, String> orders = page.getOrders();
 		if (orders != null && orders.size() >= 1 ) {
@@ -513,7 +514,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param page 分页数据
 	 * @param params sql参数
 	 */
-	protected void setParameterToQuery(Page<T> page, Map<String, Object> params) {
+	protected <X> void setParameterToQuery(Page<X> page, Map<String, Object> params) {
 		params.put("startIndex", page.getStartIndex());
 		params.put("pageSize", page.getPageSize());
 	}
@@ -523,7 +524,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * @param page 分页数据
      * @param params sql参数
      */
-    protected void setParameterToQuery(Page<T> page, Object... params) {
+    protected <X> void setParameterToQuery(Page<X> page, Object... params) {
         if (params != null) {
             params = ArrayUtils.addAll(params, page.getStartIndex(), page.getPageSize());
         }
@@ -535,7 +536,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param sql sql语句
 	 * @param params sql参数
 	 */
-	protected void preparePagedQuery(Page<T> page, String sql, Map<String, Object> params) {
+	protected <X> void preparePagedQuery(Page<X> page, String sql, Map<String, Object> params) {
 		sql = mysqlPagedQuery(sql, page, true);
 		setParameterToQuery(page, params);
 	}
@@ -546,7 +547,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * @param sql sql语句
      * @param params sql参数
      */
-    protected void preparePagedQuery(Page<T> page, String sql, Object... params) {
+    protected <X> void preparePagedQuery(Page<X> page, String sql, Object... params) {
         sql = mysqlPagedQuery(sql, page, false);
         setParameterToQuery(page, params);
     }
@@ -587,5 +588,82 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	protected int count(String sql, Object... params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, Integer.class, params);
+	}
+	
+	@Override
+	public <VO> List<VO> queryList(String sql, VO params) {
+		@SuppressWarnings("unchecked")
+		Class<VO> resultClass = (Class<VO>) params.getClass();
+		return queryList(sql, resultClass, maps(params));
+	}
+
+	@Override
+	public <VO> List<VO> queryList(String sql, Class<VO> resultClass,
+			Map<String, Object> params) {
+		return springJdbcTemplate.query(sql, resultClass, params);
+	}
+
+	@Override
+	public <VO> List<VO> queryList(String sql, Class<VO> resultClass,
+			Object... params) {
+		return springJdbcTemplate.query(sql, resultClass, params);
+	}
+
+	@Override
+	public <VO> Page<VO> queryPageList(Page<VO> page, String sql, VO params) {
+		@SuppressWarnings("unchecked")
+		Class<VO> resultClass = (Class<VO>) params.getClass();
+		return queryPageList(page, sql, resultClass, maps(params));
+	}
+
+	@Override
+	public <VO> Page<VO> queryPageList(Page<VO> page, String sql,
+			Class<VO> resultClass, Map<String, Object> params) {
+		int count = count(sql, params);
+		if (count == 0) {
+			return page;
+		} else {
+			page.setTotalRecordCount(count);
+		}
+		preparePagedQuery(page, sql, params);
+		List<VO> list = queryList(sql, resultClass, params);
+		page.setResult(list);
+		return page;
+	}
+
+	@Override
+	public <VO> Page<VO> queryPageList(Page<VO> page, String sql,
+			Class<VO> resultClass, Object... params) {
+		int count = count(sql, params);
+		if (count == 0) {
+			return page;
+		} else {
+			page.setTotalRecordCount(count);
+		}
+		preparePagedQuery(page, sql, params);
+		List<VO> list = queryList(sql, resultClass, params);
+		page.setResult(list);
+		return page;
+	}
+	
+	/**
+	 * 使用字节码将JavaBean转成Map，key为属性的下划线命名法，如果想要更高性能，建议子类重写该方法
+	 * @param params 要转换的对象
+	 * @return params转成的Map
+	 */
+	public Map<String, Object> maps(Object params) {
+		return BeanCopyUtils.get().toMap(params);
+	}
+	
+	@Override
+	public <X> X queryForObject(String sql, Map<String, ?> paramMap,
+			Class<X> requiredType) {
+		return springJdbcTemplate.queryForObject(sql, paramMap, requiredType);
+	}
+
+	@Override
+	public <X> X queryForObject(String sql, Class<X> requiredType,
+			Object... params) {
+		return springJdbcTemplate.queryForObject(sql, requiredType, params);
 	}
 }

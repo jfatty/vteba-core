@@ -57,4 +57,5 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
     public void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate) {
         this.springJdbcTemplate = springJdbcTemplate;
     }
+
 }
