@@ -28,11 +28,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vteba.common.exception.NonUniqueException;
 import com.vteba.tx.generic.Page;
-import com.vteba.tx.jdbc.spring.GenericRowMapper;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.tx.jdbc.spring.meta.EntityMetadata;
 import com.vteba.tx.jdbc.spring.spi.SpringGenericDao;
-import com.vteba.utils.reflection.BeanCopyUtils;
 import com.vteba.utils.reflection.ReflectUtils;
 
 import freemarker.template.Configuration;
@@ -64,29 +62,25 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 	
 	protected SpringJdbcTemplate springJdbcTemplate;
 	
-	public AbstractSpringGenericDao() {
+	
+    public abstract void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate);
+
+    public AbstractSpringGenericDao() {
 		super();
 		entityClass = ReflectUtils.getClassGenericType(this.getClass());
-		idClass = ReflectUtils.getClassGenericType(getClass(), 1);
+		idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
 		init();
 	}
 
-	public AbstractSpringGenericDao(String tableName) {
+	public AbstractSpringGenericDao(Class<T> entityClass) {
 		super();
-		this.tableName = tableName;
-		entityClass = ReflectUtils.getClassGenericType(this.getClass());
-		init();
-	}
-	
-	public AbstractSpringGenericDao(String tableName, Class<T> entityClass) {
-		super();
-		this.tableName = tableName;
 		this.entityClass = entityClass;
+		idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
 		init();
 	}
 
 	protected void init() {
-		
+		metadata();
 		SELECT_BYID = SELECT_BYID.replace("${tableName}", tableName);
 		SELECT_ALL = SELECT_ALL + tableName;
 		
@@ -154,7 +148,10 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 		return toReturn;
 	}
 	
-	public void metadata() {
+	/**
+	 * 解析处理，当前dao所对应的实体信息。
+	 */
+	private void metadata() {
 	    EntityMetadata metadata = new EntityMetadata();
 	    
 	    if (entityClass == null) {
@@ -215,7 +212,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     @Override
     @SuppressWarnings("unchecked")
 	public ID save(T entity) {
-		Map<String, Object> paramMap = mapBean(entity);
+		Map<String, Object> paramMap = mapBean(entity, false, null);
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 		springJdbcTemplate.update(INSERT_ALL, paramMap, keyHolder);
 		Number key = keyHolder.getKey();
@@ -255,7 +252,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 	
 	@Override
     public T unique(T entity) {
-		Map<String, Object> params = mapBean(entity);
+		Map<String, Object> params = mapBean(entity, false, null);
         return unique(params);
     }
 	
@@ -277,7 +274,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
     @Override
     public int deleteBatch(T entity) {
-        Map<String, Object> params = mapBean(entity);
+        Map<String, Object> params = mapBean(entity, false, null);
         String where = buildWhere(params);
         String sql = DELETE_WHERE + where;
         return deleteBatch(sql, params);
@@ -285,7 +282,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
     @Override
     public int deleteBatch(String sql, T entity) {
-        return deleteBatch(sql, mapBean(entity));
+        return deleteBatch(sql, mapBean(entity, false, null));
     }
 
     @Override
@@ -300,23 +297,25 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     
     @Override
     public int update(T entity) {
-        Map<String, Object> toMap = mapBean(entity);
+        Map<String, Object> toMap = mapBean(entity, false, null);
         return springJdbcTemplate.update(UPDATE_BYID, toMap);
         
     }
     
     @Override
     public int updateBatch(T entity, T criteria) {
-        Map<String, Object> params = mapBean(criteria);
+        Map<String, Object> params = mapBean(criteria, false, null);
         return updateBatch(entity, params);
     }
     
     @Override
     public int updateBatch(T entity, Map<String, Object> params) {
-        Map<String, Object> setMap = BeanCopyUtils.get().toMapPrefix(entity);
-        String set = buildUpdateSet(setMap);
+        //1、构造where条件
         String where = buildWhere(params);
-        BeanCopyUtils.get().beanToMapPrefix(entity, params);
+        //2、将set参数转成Map，同时放入参数Map params中
+        Map<String, Object> setMap = mapBean(entity, true, params);
+        //3、构造update set语句部分
+        String set = buildUpdateSet(setMap);
         
         String sql = UPDATE_SET + set + where;
         
@@ -330,7 +329,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
     @Override
     public int updateBatch(String sql, T params) {
-        Map<String, Object> paramMap = mapBean(params);
+        Map<String, Object> paramMap = mapBean(params, false, null);
         return springJdbcTemplate.update(sql, paramMap);
     }
 
@@ -343,9 +342,11 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
      * 将实体 Bean转换为map，key为属性名，value为属性值。<br>
      * 以后可以抽象，延迟到子类中自己实现，避免字节码处理
      * @param entity 要转换的实体
-     * @return map
+     * @param prefix entity转换成Map的key是否要加前缀；如果为false，第三个参数不需要了
+     * @param params sql参数，如果prefix == true，参数entity转成的map也要放入该参数中
+     * @return map，参数entity转成的Map
      */
-    protected abstract Map<String, Object> mapBean(T entity);
+    public abstract Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params);
     
     /**
      * 根据参数构建where条件
@@ -369,14 +370,14 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
         StringBuilder sb = new StringBuilder();
         for (Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
-            sb.append(StringUtils.uncapitalize(key.substring(3))).append(" = :").append(key).append(" ");
+            sb.append(StringUtils.uncapitalize(key.substring(3))).append(" = :").append(key).append(", ");
         }
-        return sb.toString();
+        return sb.substring(0, sb.length() - 2);
     }
     
     @Override
     public List<T> query(T entity) {
-        Map<String, Object> params = mapBean(entity);
+        Map<String, Object> params = mapBean(entity, false, null);
         return query(params);
     }
 
@@ -388,7 +389,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
     @Override
     public List<T> query(String sql, Map<String, Object> params) {
-        RowMapper<T> rowMapper = new GenericRowMapper<T>(entityClass, sql);
+        ColumnRowMapper rowMapper = new ColumnRowMapper();
         return springJdbcTemplate.query(sql, params, rowMapper);
     }
 
@@ -399,18 +400,18 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
     @Override
     public List<T> query(String sql, T params) {
-        return query(sql, mapBean(params));
+        return query(sql, mapBean(params, false, null));
     }
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, T params) {
-	    Map<String, Object> paramMap = mapBean(params);
+	    Map<String, Object> paramMap = mapBean(params, false, null);
 		return queryForPage(page, paramMap);
 	}
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, String sql, T params) {
-	    Map<String, Object> paramMap = mapBean(params);
+	    Map<String, Object> paramMap = mapBean(params, false, null);
 		return queryForPage(page, sql, paramMap);
 	}
 

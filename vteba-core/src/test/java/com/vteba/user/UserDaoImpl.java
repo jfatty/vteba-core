@@ -5,11 +5,11 @@ import com.vteba.tx.jdbc.spring.impl.SpringGenericDaoImpl;
 public class UserDaoImpl extends SpringGenericDaoImpl<EmpUser, Long> {
 
 	public UserDaoImpl() {
-		super("emp_user", EmpUser.class);
+		super(EmpUser.class);
 	}
 
-	public UserDaoImpl(String tableName, Class<EmpUser> entityClass) {
-		super(tableName, entityClass);
+	public UserDaoImpl(Class<EmpUser> entityClass) {
+		super(entityClass);
 	}
 	
 }
