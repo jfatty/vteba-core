@@ -354,6 +354,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override
     public int updateBatch(T entity, Map<String, Object> params) {
+        StringBuilder sb = new StringBuilder(UPDATE_SET);
         //1、构造where条件
         String where = buildWhere(params);
         //2、将set参数转成Map，同时放入参数Map params中
@@ -361,9 +362,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         //3、构造update set语句部分
         String set = buildUpdateSet(setMap);
         
-        String sql = UPDATE_SET + set + where;
-        
-        return springJdbcTemplate.update(sql, params);
+        sb.append(set).append(where);
+        return springJdbcTemplate.update(sb.toString(), params);
     }
 
     @Override
