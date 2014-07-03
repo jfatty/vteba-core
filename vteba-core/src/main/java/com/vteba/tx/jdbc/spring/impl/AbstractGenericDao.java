@@ -396,7 +396,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     }
     
     /**
-     * 构建update语句的set语句部分
+     * 构建update语句的set语句部分，为防止和where中条件冲突，
+     * set语句的命名参数，使用 _ 开头。
      * @param params sql参数
      * @return set语句部分
      */
@@ -404,7 +405,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         StringBuilder sb = new StringBuilder();
         for (Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
-            sb.append(StringUtils.uncapitalize(key.substring(3))).append(" = :").append(key).append(", ");
+            sb.append(key.substring(1)).append(" = :").append(key).append(", ");
         }
         return sb.substring(0, sb.length() - 2);
     }

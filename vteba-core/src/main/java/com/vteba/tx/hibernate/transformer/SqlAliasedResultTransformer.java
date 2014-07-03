@@ -11,7 +11,7 @@ import com.vteba.lang.bytecode.ConstructorAccess;
 import com.vteba.lang.bytecode.MethodAccess;
 import com.vteba.tx.hibernate.QueryStatement;
 import com.vteba.tx.hibernate.QueryStatementCache;
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
 
 /**
@@ -67,7 +67,7 @@ public class SqlAliasedResultTransformer extends AliasedTupleSubsetResultTransfo
 							continue;
 						}
 						try {
-							columnAlias[j] = CamelCaseUtils.toUnderScoreCase(StringUtils.uncapitalize(methodName.substring(3)));
+							columnAlias[j] = CaseUtils.underCase(StringUtils.uncapitalize(methodName.substring(3)));
 							methodIndexs[j] = methodAccess.getIndex(methodName);
 							argsTypes[j] = tempArgsTypes[i];
 							j++;

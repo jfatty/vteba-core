@@ -10,7 +10,7 @@ import com.vteba.lang.bytecode.ConstructorAccess;
 import com.vteba.lang.bytecode.FieldAccess;
 import com.vteba.tx.hibernate.QueryStatement;
 import com.vteba.tx.hibernate.QueryStatementCache;
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 
 /**
  * 基于别名的hibernate结果集转换器。基于JavaBean属性访问实现。且JavaBean的属性必须是protected的。
@@ -77,7 +77,7 @@ public class FieldAliasedTransformer extends AliasedTupleSubsetResultTransformer
 					for (int i = 0; i < fieldNames.length; i++) {
 						String fieldName = fieldNames[i];
 						try {
-							columnAlias[j] = CamelCaseUtils.toUnderScoreCase(fieldName);
+							columnAlias[j] = CaseUtils.underCase(fieldName);
 							fieldIndexs[j] = fieldAccess.getIndex(fieldName);
 							fieldTypes[j] = fieldType[i];
 							j++;

@@ -46,9 +46,9 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
     
     public Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params) {
         if (prefix) {
-            return BeanCopyUtils.get().toMapPrefix(entity, params);
+            return BeanCopyUtils.get().toMaps(entity, params);
         } else {
-            return BeanCopyUtils.get().beanToMaps(entity);
+            return BeanCopyUtils.get().toMap(entity);
         }
     }
 

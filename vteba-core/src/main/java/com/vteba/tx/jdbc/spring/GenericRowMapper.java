@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import com.vteba.lang.bytecode.ConstructorAccess;
 import com.vteba.lang.bytecode.MethodAccess;
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
 
 /**
@@ -54,7 +54,7 @@ public class GenericRowMapper<T> implements RowMapper<T> {
 				String columnLabel = metaData.getColumnLabel(c + 1).toLowerCase();
 				columnLabels[c] = columnLabel;
 				
-				String methodName = "set" + CamelCaseUtils.toCapitalizeCamelCase(columnLabel);
+				String methodName = "set" + CaseUtils.toCapCamelCase(columnLabel);
 				methodNames[c] = methodName;
 				methodAccess.invoke(entity, methodName, getResultSetValue(rs, c + 1));
 			}
