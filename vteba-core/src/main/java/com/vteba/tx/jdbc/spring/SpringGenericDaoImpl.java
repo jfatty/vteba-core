@@ -261,10 +261,21 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
         return springJdbcTemplate.update(sql, params);
     }
     
+    /**
+     * 将实体 Bean转换为map，key为属性名，value为属性值。<br>
+     * 以后可以抽象，延迟到子类中自己实现，避免字节码处理
+     * @param entity 要转换的实体
+     * @return map
+     */
     private Map<String, Object> maps(T entity) {
         return BeanCopyUtils.get().beanToMaps(entity);
     }
     
+    /**
+     * 根据参数构建where条件
+     * @param params sql参数
+     * @return where语句
+     */
     private String buildWhere(Map<String, Object> params) {
         StringBuilder sb = new StringBuilder().append(" where 1=1");
         for (Entry<String, ?> entry : params.entrySet()) {
@@ -273,6 +284,11 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
         return sb.toString();
     }
     
+    /**
+     * 构建update语句的set语句部分
+     * @param params sql参数
+     * @return set语句部分
+     */
     private String buildUpdateSet(Map<String, Object> params) {
         StringBuilder sb = new StringBuilder();
         for (Entry<String, ?> entry : params.entrySet()) {
@@ -312,25 +328,25 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, T params) {
-		// TODO Auto-generated method stub
-		return null;
+	    Map<String, Object> paramMap = maps(params);
+		return queryForPage(page, paramMap);
 	}
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, String sql, T params) {
-		// TODO Auto-generated method stub
-		return null;
+	    Map<String, Object> paramMap = maps(params);
+		return queryForPage(page, sql, paramMap);
 	}
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, Map<String, Object> params) {
-		// TODO Auto-generated method stub
-		return null;
+	    String sql = SELECT_ALL + buildWhere(params);
+		return queryForPage(page, sql, params);
 	}
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, String sql, Map<String, Object> params) {
-		Integer count = count(sql, params);
+		int count = count(sql, params);
 		if (count == 0) {
 			return page;
 		} else {
@@ -339,8 +355,6 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 		preparePagedQuery(page, sql, params);
 		List<T> list = query(sql, params);
 		page.setResult(list);
-		
-		
 		return page;
 	}
 
@@ -350,6 +364,12 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 		return null;
 	}
 
+	/**
+	 * 构造mysql的分页查询sql
+	 * @param sql sql语句
+	 * @param page sql数据
+	 * @return 分页sql语句
+	 */
 	protected String mysqlPagedQuery(String sql, Page<T> page) {
 		StringBuilder sb = new StringBuilder(sql);
 		Map<String, String> orders = page.getOrders();
@@ -363,11 +383,22 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 		return sb.toString();
 	}
 	
+	/**
+	 * 设置分页参数
+	 * @param page 分页数据
+	 * @param params sql参数
+	 */
 	protected void setParameterToQuery(Page<T> page, Map<String, Object> params) {
 		params.put("startIndex", page.getStartIndex());
 		params.put("pageSize", page.getPageSize());
 	}
 	
+	/**
+	 * 设置分页sql，以及分页参数
+	 * @param page 分页数据
+	 * @param sql sql语句
+	 * @param params sql参数
+	 */
 	protected void preparePagedQuery(Page<T> page, String sql, Map<String, Object> params) {
 		sql = mysqlPagedQuery(sql, page);
 		setParameterToQuery(page, params);
@@ -383,17 +414,30 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> implements SpringG
 	protected String prepareCountSql(String sql) {
 		String fromSql = sql;
 		StringBuilder sb = new StringBuilder("select count(*) count from ");
-		sb.append(StringUtils.substringAfter(fromSql, "from"));
-		sb.append(StringUtils.substringBefore(fromSql, "order by"));
+		fromSql = StringUtils.substringAfter(fromSql, "from");
+		fromSql = StringUtils.substringBefore(fromSql, "order by");
+		sb.append(fromSql);
 		return sb.toString();
 	}
 	
-	protected Integer count(String sql, Map<String, Object> params) {
+	/**
+	 * 计算记录数
+	 * @param sql sql语句
+	 * @param params 参数
+	 * @return 记录数
+	 */
+	protected int count(String sql, Map<String, Object> params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, params, Integer.class);
 	}
 	
-	protected Integer count(String sql, Object... params) {
+	/**
+     * 计算记录数
+     * @param sql sql语句
+     * @param params 参数
+     * @return 记录数
+     */
+	protected int count(String sql, Object... params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, Integer.class, params);
 	}
