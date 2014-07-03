@@ -44,7 +44,7 @@ import freemarker.template.TemplateException;
  * @param <T> 泛型实体
  * @param <ID> 主键类型
  */
-public abstract class AbstractSpringGenericDao<T, ID extends Serializable> implements SpringGenericDao<T, ID> {
+public abstract class AbstractGenericDao<T, ID extends Serializable> implements SpringGenericDao<T, ID> {
 	protected String tableName;
 	protected Class<T> entityClass;
 	protected Class<ID> idClass;
@@ -53,46 +53,67 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 	protected List<String> setterList = Lists.newArrayList();
 	
 	private static String INSERT_ALL = "insert into ${tableName}(${columns}) values(${placeholder})";
-	private static String DELETE_BYID = "delete from ${tableName} where id = ?";
-	private static String DELETE_WHERE = "delete from ${tableName} ";
-	private static String UPDATE_BYID = "update ${tableName} set ${?} where id = ?";
+	private static String DELETE_BYID = "delete from ${tableName} where ${id} = ?";
+	private static String DELETE_ALL = "delete from ${tableName} ";
+	private static String UPDATE_BYID = "update ${tableName} set ${sets} where ${id} = :${id}";
 	private static String UPDATE_SET = "update ${tableName} set ";
-	private static String SELECT_BYID = "select * from ${tableName} where id = ?";
-	private static String SELECT_ALL = "select * from ";
+	private static String SELECT_BYID = "select * from ${tableName} where ${id} = ?";
+	private static String SELECT_ALL = "select * from ${tableName} ";
 	
 	protected SpringJdbcTemplate springJdbcTemplate;
 	
+	public AbstractGenericDao() {
+        super();
+        entityClass = ReflectUtils.getClassGenericType(this.getClass());
+        idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
+        init();
+    }
+
+    public AbstractGenericDao(Class<T> entityClass) {
+        super();
+        this.entityClass = entityClass;
+        idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
+        init();
+    }
 	
+	//***************以下为方法****************//
+	
+	/**
+	 * 延迟到子类中注入相应的SpringJdbcTemplate
+	 * @param springJdbcTemplate SpringJdbcTemplate，基于JdbcTemplate封装
+	 */
     public abstract void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate);
-
-    public AbstractSpringGenericDao() {
-		super();
-		entityClass = ReflectUtils.getClassGenericType(this.getClass());
-		idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
-		init();
-	}
-
-	public AbstractSpringGenericDao(Class<T> entityClass) {
-		super();
-		this.entityClass = entityClass;
-		idClass = ReflectUtils.getClassGenericType(this.getClass(), 1);
-		init();
-	}
+    
+    /**
+     * 将结果集映射为实体对象Bean
+     * @param rs 结果集
+     * @param rowNum 行号
+     * @return 实体对象
+     */
+    public abstract T mapRows(ResultSet rs, int rowNum) throws SQLException;
+    
+    /**
+     * 将实体 Bean转换为map，key为属性名，value为属性值。<br>
+     * 以后可以抽象，延迟到子类中自己实现，避免字节码处理
+     * @param entity 要转换的实体
+     * @param prefix entity转换成Map的key是否要加前缀；如果为false，第三个参数不需要了
+     * @param params sql参数，如果prefix == true，参数entity转成的map也要放入该参数中
+     * @return map，参数entity转成的Map
+     */
+    public abstract Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params);
 
 	protected void init() {
-		metadata();
-		SELECT_BYID = SELECT_BYID.replace("${tableName}", tableName);
-		SELECT_ALL = SELECT_ALL + tableName;
-		
-//		INSERT_ALL = INSERT_ALL.replace("${tableName}", tableName)
-//				.replace("${columns}", columns)
-//				.replace("${placeholder}", placeholder);
-
+		// 解析实体信息
+	    metadata();
+	    
+	    // 生成一些sql语句
+	    INSERT_ALL = INSERT_ALL.replace("${tableName}", tableName);
+		SELECT_BYID = SELECT_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());
+		SELECT_ALL = SELECT_ALL.replace("${tableName}", tableName);
 		UPDATE_SET = UPDATE_SET.replace("${tableName}", tableName);
-		
-		DELETE_BYID = DELETE_BYID.replace("${tableName}", tableName);
-		
-		DELETE_WHERE = DELETE_WHERE.replace("${tableName}", tableName);
+		UPDATE_BYID = UPDATE_BYID.replace("${tableName}", tableName).replaceAll("${id}", metadata.getIdName());
+		DELETE_BYID = DELETE_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());;
+		DELETE_ALL = DELETE_ALL.replace("${tableName}", tableName);
 	}
 	
 	public String process(Object model) {
@@ -114,21 +135,27 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 	}
 	
 	public static void main(String[] aa) {
-		String sql = null;
-		try {
-			Configuration configuration = new Configuration();
-			configuration.setEncoding(Locale.CHINA, "UTF-8");
-			
-			Template template = new Template("/", new StringReader(SELECT_BYID), configuration);
-			Map<String, Object> root = new HashMap<String, Object>();
-			root.put("tableName", "user_");
-			sql = FreeMarkerTemplateUtils.processTemplateIntoString(template, root);
-		} catch (IOException e) {
-			
-		} catch (TemplateException e) {
-			
-		}
-		System.out.println(sql);
+//		String sql = null;
+//		try {
+//			Configuration configuration = new Configuration();
+//			configuration.setEncoding(Locale.CHINA, "UTF-8");
+//			
+//			Template template = new Template("/", new StringReader(SELECT_BYID), configuration);
+//			Map<String, Object> root = new HashMap<String, Object>();
+//			root.put("tableName", "user_");
+//			sql = FreeMarkerTemplateUtils.processTemplateIntoString(template, root);
+//		} catch (IOException e) {
+//			
+//		} catch (TemplateException e) {
+//			
+//		}
+//		System.out.println(sql);
+	    
+	    String sql = INSERT_ALL;
+	    
+	    sql = sql.substring(0, 4);
+	    System.out.println(sql);
+	    System.out.println(INSERT_ALL);
 	}
 	
 	
@@ -212,21 +239,41 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     @Override
     @SuppressWarnings("unchecked")
 	public ID save(T entity) {
-		Map<String, Object> paramMap = mapBean(entity, false, null);
+		Map<String, Object> params = mapBean(entity, false, null);
+		String sql = INSERT_ALL;
+		dynamicColumn(sql, params);
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-		springJdbcTemplate.update(INSERT_ALL, paramMap, keyHolder);
+		springJdbcTemplate.update(sql, params, keyHolder);
 		Number key = keyHolder.getKey();
 		ID ids = null;
 		if (idClass == String.class) {
 		    ids = (ID) key.toString();
-		} else if (idClass == Integer.class) {
-            ids = (ID) Integer.valueOf(key.intValue());
 		} else if (idClass == Long.class) {
-		    ids = (ID) Long.valueOf(key.longValue());
+            ids = (ID) Long.valueOf(key.longValue());
+        } else if (idClass == Integer.class) {
+            ids = (ID) Integer.valueOf(key.intValue());
 		}
 		return ids;
 	}
 
+    /**
+     * 根据栏位数据动态产生insert语句。
+     * @param sql insert模板sql
+     * @param params 栏位数据
+     */
+    private void dynamicColumn(String sql, Map<String, Object> params) {
+        StringBuilder columns = new StringBuilder();
+        StringBuilder placeholders = new StringBuilder();
+        for (Entry<String, Object> entry : params.entrySet()) {
+            columns.append(entry.getKey()).append(", ");
+            placeholders.append(":").append(entry.getKey()).append(", ");
+        }
+        String temp = columns.substring(0, columns.length() - 2);
+        sql = sql.replace("${columns}", temp);
+        temp = placeholders.substring(0, placeholders.length() - 2);
+        sql = sql.replace("${placeholder}", temp);
+    }
+    
 	@Override
 	public T get(ID id) {
 	    ColumnRowMapper rowMapper = new ColumnRowMapper();
@@ -242,14 +289,6 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
 
 	}
 
-	/**
-	 * 将结果集映射为实体对象Bean
-	 * @param rs 结果集
-	 * @param rowNum 行号
-	 * @return 实体对象
-	 */
-	public abstract T mapRows(ResultSet rs, int rowNum) throws SQLException;
-	
 	@Override
     public T unique(T entity) {
 		Map<String, Object> params = mapBean(entity, false, null);
@@ -276,7 +315,7 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     public int deleteBatch(T entity) {
         Map<String, Object> params = mapBean(entity, false, null);
         String where = buildWhere(params);
-        String sql = DELETE_WHERE + where;
+        String sql = DELETE_ALL + where;
         return deleteBatch(sql, params);
     }
 
@@ -297,8 +336,13 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     
     @Override
     public int update(T entity) {
-        Map<String, Object> toMap = mapBean(entity, false, null);
-        return springJdbcTemplate.update(UPDATE_BYID, toMap);
+        Map<String, Object> params = mapBean(entity, false, null);
+        Object id = params.get(metadata.getIdName());
+        params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+        String sql = buildUpdateSet(params);// update set 部分
+        sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
+        params.put(metadata.getIdName(), id);//将id条件加回去
+        return springJdbcTemplate.update(sql, params);
         
     }
     
@@ -337,16 +381,6 @@ public abstract class AbstractSpringGenericDao<T, ID extends Serializable> imple
     public int updateBatch(String sql, Object... params) {
         return springJdbcTemplate.update(sql, params);
     }
-    
-    /**
-     * 将实体 Bean转换为map，key为属性名，value为属性值。<br>
-     * 以后可以抽象，延迟到子类中自己实现，避免字节码处理
-     * @param entity 要转换的实体
-     * @param prefix entity转换成Map的key是否要加前缀；如果为false，第三个参数不需要了
-     * @param params sql参数，如果prefix == true，参数entity转成的map也要放入该参数中
-     * @return map，参数entity转成的Map
-     */
-    public abstract Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params);
     
     /**
      * 根据参数构建where条件

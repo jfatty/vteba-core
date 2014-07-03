@@ -6,14 +6,14 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
-import com.vteba.tx.jdbc.spring.impl.AbstractSpringGenericDao;
+import com.vteba.tx.jdbc.spring.impl.AbstractGenericDao;
 
 /**
  * spring generic dao使用例子，以后会使用代码生成工具生成。
  * @author  yinlei 
  * @since 2014-7-2
  */
-public class UserDaoImpl extends AbstractSpringGenericDao<EmpUser, Long> {
+public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
 
 	public UserDaoImpl() {
 		super(EmpUser.class);

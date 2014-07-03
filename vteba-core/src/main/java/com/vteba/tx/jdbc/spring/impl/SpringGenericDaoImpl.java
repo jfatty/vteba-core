@@ -21,7 +21,7 @@ import com.vteba.utils.reflection.BeanCopyUtils;
  * @param <T> 泛型实体
  * @param <ID> 主键类型
  */
-public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractSpringGenericDao<T, ID> implements SpringGenericDao<T, ID> {
+public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGenericDao<T, ID> implements SpringGenericDao<T, ID> {
     private ConstructorAccess<T> constructorAccess = AsmUtils.get().createConstructorAccess(entityClass);
     private MethodAccess methodAccess = AsmUtils.get().createMethodAccess(entityClass);
     
