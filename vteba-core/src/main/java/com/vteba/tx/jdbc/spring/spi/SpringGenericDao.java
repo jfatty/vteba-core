@@ -1,4 +1,4 @@
-package com.vteba.tx.jdbc.spi;
+package com.vteba.tx.jdbc.spring.spi;
 
 import java.io.Serializable;
 import java.util.List;

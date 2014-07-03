@@ -1,6 +1,6 @@
 package com.vteba.user;
 
-import com.vteba.tx.jdbc.spring.SpringGenericDaoImpl;
+import com.vteba.tx.jdbc.spring.impl.SpringGenericDaoImpl;
 
 public class UserDaoImpl extends SpringGenericDaoImpl<EmpUser, Long> {
 
