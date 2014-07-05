@@ -25,7 +25,7 @@ import com.vteba.utils.reflection.BeanCopyUtils;
  * @param <T> 泛型实体
  * @param <ID> 主键类型
  */
-public abstract class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGenericDao<T, ID> implements SpringGenericDao<T, ID> {
+public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGenericDao<T, ID> implements SpringGenericDao<T, ID> {
     private ConstructorAccess<T> constructor = AsmUtils.get().createConstructorAccess(entityClass);
     private MethodAccess method = AsmUtils.get().createMethodAccess(entityClass);
     
@@ -49,6 +49,7 @@ public abstract class SpringGenericDaoImpl<T, ID extends Serializable> extends A
         return entity;
     }
     
+    @Override
     public Object mapRows(ResultSet rs, String sql, Class<?> resultClass) throws SQLException {
         ConstructorAccess<?> constructorAccess = AsmUtils.get().createConstructorAccess(resultClass);
         Object entity = constructorAccess.newInstance();
@@ -86,6 +87,7 @@ public abstract class SpringGenericDaoImpl<T, ID extends Serializable> extends A
         return entity;
 	}
     
+    @Override
     public Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params) {
         if (prefix) {
             return BeanCopyUtils.get().toMaps(entity, params);
