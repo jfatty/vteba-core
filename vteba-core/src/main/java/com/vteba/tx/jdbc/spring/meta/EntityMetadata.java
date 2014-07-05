@@ -3,20 +3,27 @@ package com.vteba.tx.jdbc.spring.meta;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 实体元数据信息。
+ * 
+ * @author yinlei
+ * @since 2014-7-1
+ */
 public class EntityMetadata {
+
     // 表名
-    private String tableName;
+    private String                tableName;
     // 数据库schema
-    private String schema;
-    // 属性信息，key属性名，value属性类型
+    private String                schema;
+    // java属性信息，key属性名，value属性类型
     private Map<String, Class<?>> fieldInfo;
-    // 栏位信息，key为栏位名，value为栏位类型（java）
+    // sql字段信息，key为字段名，value为字段java类型
     private Map<String, Class<?>> columnInfo;
     // 以逗号分隔的栏位名
     private String                columns;
     // 以逗号分隔的sql问号占位符
     private String                placeholders;
-    // sql栏位列表
+    // sql字段列表
     private List<String>          columnList;
     // setter方法列表
     private List<String>          setterList;
@@ -60,7 +67,7 @@ public class EntityMetadata {
     public Class<?> getIdClass() {
         return idClass;
     }
-    
+
     public void setIdClass(Class<?> idClass) {
         this.idClass = idClass;
     }
@@ -76,7 +83,7 @@ public class EntityMetadata {
     public Map<String, Class<?>> getColumnInfo() {
         return columnInfo;
     }
-    
+
     public void setColumnInfo(Map<String, Class<?>> columnInfo) {
         this.columnInfo = columnInfo;
     }
@@ -92,7 +99,7 @@ public class EntityMetadata {
     public String getSchema() {
         return schema;
     }
-    
+
     public void setSchema(String schema) {
         this.schema = schema;
     }
@@ -100,7 +107,7 @@ public class EntityMetadata {
     public List<String> getSetterList() {
         return setterList;
     }
-    
+
     public void setSetterList(List<String> setterList) {
         this.setterList = setterList;
     }

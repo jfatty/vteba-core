@@ -1,16 +1,12 @@
 package com.vteba.tx.jdbc.spring.impl;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,9 +16,10 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -34,10 +31,6 @@ import com.vteba.tx.jdbc.spring.spi.SpringGenericDao;
 import com.vteba.utils.reflection.BeanCopyUtils;
 import com.vteba.utils.reflection.ReflectUtils;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-
 /**
  * spring通用泛型dao实现。
  * @author yinlei 
@@ -46,7 +39,10 @@ import freemarker.template.TemplateException;
  * @param <ID> 主键类型
  */
 public abstract class AbstractGenericDao<T, ID extends Serializable> implements SpringGenericDao<T, ID> {
-	protected String tableName;
+	
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenericDao.class);
+    
+    protected String tableName;
 	protected Class<T> entityClass;
 	protected Class<ID> idClass;
 	protected EntityMetadata metadata;
@@ -102,7 +98,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * @return map，参数entity转成的Map
      */
     public abstract Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params);
-
+    
+    //OK
 	protected void init() {
 		// 解析实体信息
 	    metadata();
@@ -112,46 +109,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		SELECT_BYID = SELECT_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());
 		SELECT_ALL = SELECT_ALL.replace("${tableName}", tableName);
 		UPDATE_SET = UPDATE_SET.replace("${tableName}", tableName);
-		UPDATE_BYID = UPDATE_BYID.replace("${tableName}", tableName).replaceAll("${id}", metadata.getIdName());
+		UPDATE_BYID = UPDATE_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());
 		DELETE_BYID = DELETE_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());;
 		DELETE_ALL = DELETE_ALL.replace("${tableName}", tableName);
 	}
 	
-	public String process(Object model) {
-		String sql = null;
-		try {
-			Configuration configuration = new Configuration();
-			configuration.setEncoding(Locale.CHINA, "UTF-8");
-			
-			Template template = new Template("/", new StringReader(SELECT_BYID), configuration);
-			Map<String, Object> root = new HashMap<String, Object>();
-			root.put("tableName", "user_");
-			sql = FreeMarkerTemplateUtils.processTemplateIntoString(template, root);
-		} catch (IOException e) {
-			
-		} catch (TemplateException e) {
-			
-		}
-		return sql;
-	}
-	
 	public static void main(String[] aa) {
-//		String sql = null;
-//		try {
-//			Configuration configuration = new Configuration();
-//			configuration.setEncoding(Locale.CHINA, "UTF-8");
-//			
-//			Template template = new Template("/", new StringReader(SELECT_BYID), configuration);
-//			Map<String, Object> root = new HashMap<String, Object>();
-//			root.put("tableName", "user_");
-//			sql = FreeMarkerTemplateUtils.processTemplateIntoString(template, root);
-//		} catch (IOException e) {
-//			
-//		} catch (TemplateException e) {
-//			
-//		}
-//		System.out.println(sql);
-	    
 	    String sql = INSERT_ALL;
 	    
 	    sql = sql.substring(0, 4);
@@ -165,9 +128,9 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param clazz 目标类
 	 * @param annotation 目标注解
 	 * @return 类中被标注了响应注解的方法的注解信息
-	 */
-	public static <T extends Annotation> List<T> getAnnotations(Class<?> clazz, Class<T> annotation){
-		List<T> toReturn = new ArrayList<T>();
+	 *///OK
+	protected <A extends Annotation> List<A> getAnnotations(Class<?> clazz, Class<A> annotation){
+		List<A> toReturn = new ArrayList<A>();
 		for(Method m : clazz.getMethods()) {
 			if (m.isAnnotationPresent(annotation)) {
 				toReturn.add(m.getAnnotation(annotation));
@@ -178,7 +141,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	
 	/**
 	 * 解析处理，当前dao所对应的实体信息。
-	 */
+	 *///OK
 	private void metadata() {
 	    EntityMetadata metadata = new EntityMetadata();
 	    
@@ -194,12 +157,15 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         metadata.setTableName(tableName);
         metadata.setSchema(table.schema());
         
+        // 逗号分隔的 栏位名 字符串
         StringBuilder columnBuilder = new StringBuilder();
+        // 逗号分隔的？占位符 字符串
         StringBuilder placeholder = new StringBuilder();
-	    
+	    // java属性信息，key为属性名，value为属性类型
         Map<String, Class<?>> fieldInfo = Maps.newHashMap();
+        // sql字段信息，key为字段名，value为栏字段类型
         Map<String, Class<?>> columnInfo = Maps.newHashMap();
-        
+        // sql字段list
         List<String> columnList = Lists.newArrayList();
         
 	    Class<Column> annoColClass = Column.class;
@@ -208,7 +174,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	    for(Method method : entityClass.getMethods()) {
             if (method.isAnnotationPresent(annoColClass)) {
                 Column column = method.getAnnotation(annoColClass);
-                if (method.isAnnotationPresent(annoIdClass)) {
+                if (method.isAnnotationPresent(annoIdClass)) {// 获取id的信息
                     metadata.setIdName(column.name());
                     metadata.setIdClass(method.getReturnType());
                 }
@@ -219,7 +185,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
                 fieldInfo.put(StringUtils.uncapitalize(method.getName().substring(3)), method.getReturnType());
                 columnInfo.put(column.name(), method.getReturnType());
                 
-                setterList.add("set" + method.getName().substring(3));
+                //组建setter方法list
+                if (method.getReturnType() == boolean.class) {// boolean类型的getter方法是is开头的
+                    setterList.add("set" + method.getName().substring(2));
+                } else {
+                    setterList.add("set" + method.getName().substring(3));
+                }
             }
         }
 	    
@@ -237,32 +208,46 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	    this.metadata = metadata;
 	}
 	
-    @Override
-    @SuppressWarnings("unchecked")
+    @Override//OK
 	public ID save(T entity) {
 		Map<String, Object> params = mapBean(entity, false, null);
 		String sql = INSERT_ALL;
-		dynamicColumn(sql, params);
+		sql = dynamicColumn(sql, params);
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 		springJdbcTemplate.update(sql, params, keyHolder);
-		Number key = keyHolder.getKey();
-		ID ids = null;
-		if (idClass == String.class) {
-		    ids = (ID) key.toString();
-		} else if (idClass == Long.class) {
-            ids = (ID) Long.valueOf(key.longValue());
-        } else if (idClass == Integer.class) {
-            ids = (ID) Integer.valueOf(key.intValue());
-		}
-		return ids;
+		//Number key = (Number) keyHolder.getKeys().get("GENERATED_KEY");
+		Number key = keyHolder.getKey();// 自增主键或者序列，如果是应用程序自己生成的id，这里要调整
+		return convertId(key, idClass);
 	}
 
+    /**
+     * 转换ID
+     * @param value key值
+     * @param toType String，Integer，Long
+     * @return 转换后的key
+     *///OK
+    private ID convertId(Number value, Class<ID> toType) {
+        Object result = null;
+        if (value != null) {
+            if (toType == String.class) {
+                result = value.toString();
+            } else if ((toType == Integer.class)) {
+                result = value.intValue();
+            } else if ((toType == Long.class)) {
+                result = value.longValue();
+            }
+        }
+        @SuppressWarnings("unchecked")
+        ID id = (ID) result;
+        return id;
+    }
+    
     /**
      * 根据栏位数据动态产生insert语句。
      * @param sql insert模板sql
      * @param params 栏位数据
-     */
-    private void dynamicColumn(String sql, Map<String, Object> params) {
+     *///OK
+    private String dynamicColumn(String sql, Map<String, Object> params) {
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
         for (Entry<String, Object> entry : params.entrySet()) {
@@ -273,9 +258,10 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         sql = sql.replace("${columns}", temp);
         temp = placeholders.substring(0, placeholders.length() - 2);
         sql = sql.replace("${placeholder}", temp);
+        return sql;
     }
     
-	@Override
+	@Override//OK
 	public T get(ID id) {
 	    ColumnRowMapper rowMapper = new ColumnRowMapper();
 		return springJdbcTemplate.queryForObject(SELECT_BYID, rowMapper, id);
@@ -290,13 +276,13 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
 	}
 
-	@Override
+	@Override//OK
     public T unique(T entity) {
 		Map<String, Object> params = mapBean(entity, false, null);
         return unique(params);
     }
 	
-	@Override
+	@Override//OK
     public T unique(Map<String, Object> params) {
 		List<T> list = query(params);
 		if (list == null || list.isEmpty()) {
@@ -307,12 +293,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         return list.get(0);
     }
 	
-	@Override
+	@Override//OK
 	public int delete(ID id) {
 		return springJdbcTemplate.update(DELETE_BYID, id);
 	}
 
-    @Override
+    @Override//OK
     public int deleteBatch(T entity) {
         Map<String, Object> params = mapBean(entity, false, null);
         String where = buildWhere(params);
@@ -320,12 +306,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         return deleteBatch(sql, params);
     }
 
-    @Override
+    @Override//OK
     public int deleteBatch(String sql, T entity) {
         return deleteBatch(sql, mapBean(entity, false, null));
     }
 
-    @Override
+    @Override//OK
     public int deleteBatch(String sql, Map<String, Object> params) {
         return springJdbcTemplate.update(sql, params);
     }
@@ -335,25 +321,25 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         return springJdbcTemplate.update(sql, params);
     }
     
-    @Override
+    @Override//OK
     public int update(T entity) {
         Map<String, Object> params = mapBean(entity, false, null);
         Object id = params.get(metadata.getIdName());
         params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
-        String sql = buildUpdateSet(params);// update set 部分
+        String sql = buildUpdateSet(params, false);// update set 部分
         sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
         params.put(metadata.getIdName(), id);//将id条件加回去
         return springJdbcTemplate.update(sql, params);
         
     }
     
-    @Override
+    @Override//OK
     public int updateBatch(T entity, T criteria) {
         Map<String, Object> params = mapBean(criteria, false, null);
         return updateBatch(entity, params);
     }
     
-    @Override
+    @Override//OK
     public int updateBatch(T entity, Map<String, Object> params) {
         StringBuilder sb = new StringBuilder(UPDATE_SET);
         //1、构造where条件
@@ -361,10 +347,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         //2、将set参数转成Map，同时放入参数Map params中
         Map<String, Object> setMap = mapBean(entity, true, params);
         //3、构造update set语句部分
-        String set = buildUpdateSet(setMap);
+        String set = buildUpdateSet(setMap, true);
         
         sb.append(set).append(where);
-        return springJdbcTemplate.update(sb.toString(), params);
+        String sql = sb.toString();
+        LOGGER.debug("updateBatch sql = [{}]", sql);
+        return springJdbcTemplate.update(sql, params);
     }
 
     @Override
@@ -387,7 +375,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * 根据参数构建where条件
      * @param params sql参数
      * @return where语句
-     */
+     *///OK
     private String buildWhere(Map<String, Object> params) {
         StringBuilder sb = new StringBuilder().append(" where 1=1");
         for (Entry<String, ?> entry : params.entrySet()) {
@@ -400,13 +388,17 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * 构建update语句的set语句部分，为防止和where中条件冲突，
      * set语句的命名参数，使用 _ 开头。
      * @param params sql参数
+     * @param prefix 是否截取前缀，这个参数和mapBean的prefix参数一致
      * @return set语句部分
-     */
-    private String buildUpdateSet(Map<String, Object> params) {
+     *///OK
+    private String buildUpdateSet(Map<String, Object> params, boolean prefix) {
         StringBuilder sb = new StringBuilder();
         for (Entry<String, ?> entry : params.entrySet()) {
             String key = entry.getKey();
-            sb.append(key.substring(1)).append(" = :").append(key).append(", ");
+            if (prefix) {
+                key = key.substring(1);
+            }
+            sb.append(key).append(" = :").append(entry.getKey()).append(", ");
         }
         return sb.substring(0, sb.length() - 2);
     }
@@ -439,7 +431,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         return query(sql, mapBean(params, false, null));
     }
 
-	@Override
+	@Override//OK
 	public Page<T> queryForPage(Page<T> page, T params) {
 	    Map<String, Object> paramMap = mapBean(params, false, null);
 		return queryForPage(page, paramMap);
@@ -451,7 +443,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		return queryForPage(page, sql, paramMap);
 	}
 
-	@Override
+	@Override//OK
 	public Page<T> queryForPage(Page<T> page, Map<String, Object> params) {
 	    String sql = SELECT_ALL + buildWhere(params);
 		return queryForPage(page, sql, params);
@@ -465,13 +457,16 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		} else {
 			page.setTotalRecordCount(count);
 		}
-		preparePagedQuery(page, sql, params);
+		sql = preparePagedQuery(page, sql, params);
+		if (LOGGER.isDebugEnabled()) {
+		    LOGGER.debug("分页查询的sql语句=[{}]", sql);
+		}
 		List<T> list = query(sql, params);
 		page.setResult(list);
 		return page;
 	}
 
-	@Override
+	@Override//OK
 	public Page<T> queryForPage(Page<T> page, String sql, Object... params) {
 	    int count = count(sql, params);
         if (count == 0) {
@@ -479,7 +474,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         } else {
             page.setTotalRecordCount(count);
         }
-        preparePagedQuery(page, sql, params);
+        //sql = preparePagedQuery(page, sql, params);
+        sql = mysqlPagedQuery(sql, page, false);
+        params = setParameterToQuery(page, params);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("分页查询的sql语句=[{}]", sql);
+        }
         List<T> list = query(sql, params);
         page.setResult(list);
         return page;
@@ -491,29 +491,30 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param page 分页数据
 	 * @param named 是否命名sql
 	 * @return 分页sql语句
-	 */
+	 *///OK
 	protected <X> String mysqlPagedQuery(String sql, Page<X> page, boolean named) {
 		StringBuilder sb = new StringBuilder(sql);
 		Map<String, String> orders = page.getOrders();
 		if (orders != null && orders.size() >= 1 ) {
-			sb.append(" order by");
+			sb.append(" order by ");
 			for (Entry<String, String> entry : orders.entrySet()) {
-				sb.append(" ").append(entry.getKey()).append(" ").append(entry.getValue());
+				sb.append(entry.getKey()).append(" ").append(entry.getValue()).append(", ");
 			}
 		}
+		sql = sb.substring(0, sb.length() -2);
 		if (named) {
-		    sb.append(" limit :startIndex , :pageSize");
+		    sql += " limit :startIndex , :pageSize";
 		} else {
-		    sb.append(" limit ? , ?");
+		    sql += " limit ? , ?";
 		}
-		return sb.toString();
+		return sql;
 	}
 	
 	/**
 	 * 设置分页参数
 	 * @param page 分页数据
 	 * @param params sql参数
-	 */
+	 *///OK
 	protected <X> void setParameterToQuery(Page<X> page, Map<String, Object> params) {
 		params.put("startIndex", page.getStartIndex());
 		params.put("pageSize", page.getPageSize());
@@ -523,11 +524,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * 设置分页参数
      * @param page 分页数据
      * @param params sql参数
-     */
-    protected <X> void setParameterToQuery(Page<X> page, Object... params) {
+     *///OK
+    protected <X> Object[] setParameterToQuery(Page<X> page, Object... params) {
         if (params != null) {
             params = ArrayUtils.addAll(params, page.getStartIndex(), page.getPageSize());
         }
+        return params;
     }
 	
 	/**
@@ -535,21 +537,27 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param page 分页数据
 	 * @param sql sql语句
 	 * @param params sql参数
-	 */
-	protected <X> void preparePagedQuery(Page<X> page, String sql, Map<String, Object> params) {
+	 *///OK
+	protected <X> String preparePagedQuery(Page<X> page, String sql, Map<String, Object> params) {
 		sql = mysqlPagedQuery(sql, page, true);
 		setParameterToQuery(page, params);
+		return sql;
 	}
 	
 	/**
-     * 设置分页sql，以及分页参数
+     * 设置分页sql，以及分页参数。因为要返回两个参数，还要使用Object数据，在代码中直接调用算了。
      * @param page 分页数据
      * @param sql sql语句
      * @param params sql参数
-     */
-    protected <X> void preparePagedQuery(Page<X> page, String sql, Object... params) {
-        sql = mysqlPagedQuery(sql, page, false);
-        setParameterToQuery(page, params);
+     *///OK
+	@Deprecated
+    protected <X> Object[] preparePagedQuery(Page<X> page, String sql, Object... params) {
+        Object[] result = new Object[2];
+	    sql = mysqlPagedQuery(sql, page, false);
+	    result[0] = sql;
+        params = setParameterToQuery(page, params);
+        result[1] = params;
+        return result;
     }
 	
 	/**
@@ -558,7 +566,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @return 排除order by和显示栏位后的sql
 	 * @author yinlei
 	 * date 2012-7-14 下午11:31:21
-	 */
+	 *///OK
 	protected String prepareCountSql(String sql) {
 		String fromSql = sql;
 		StringBuilder sb = new StringBuilder("select count(*) count from ");
@@ -573,7 +581,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param sql sql语句
 	 * @param params 参数
 	 * @return 记录数
-	 */
+	 *///OK
 	protected int count(String sql, Map<String, Object> params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, params, Integer.class);
@@ -584,7 +592,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * @param sql sql语句
      * @param params 参数
      * @return 记录数
-     */
+     *///OK
 	protected int count(String sql, Object... params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, Integer.class, params);
@@ -640,7 +648,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		} else {
 			page.setTotalRecordCount(count);
 		}
-		preparePagedQuery(page, sql, params);
+		//sql = preparePagedQuery(page, sql, params);
+		sql = mysqlPagedQuery(sql, page, false);
+        params = setParameterToQuery(page, params);
+		if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("分页查询的sql语句=[{}]", sql);
+        }
 		List<VO> list = queryList(sql, resultClass, params);
 		page.setResult(list);
 		return page;
