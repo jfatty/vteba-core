@@ -46,8 +46,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	protected Class<T> entityClass;
 	protected Class<ID> idClass;
 	protected EntityMetadata metadata;
-	
+//	protected ConcurrentMap<String, Map<List<String>, List<String>>> rowMapCache = new ConcurrentHashMap<K, V>();
+	// setter方法list
 	protected List<String> setterList = Lists.newArrayList();
+	// sql字段list
+    List<String> columnList = Lists.newArrayList();
 	
 	private static String INSERT_ALL = "insert into ${tableName}(${columns}) values(${placeholder})";
 	private static String DELETE_BYID = "delete from ${tableName} where ${id} = ?";
@@ -82,12 +85,22 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     public abstract void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate);
     
     /**
-     * 将结果集映射为实体对象Bean
+     * 将结果集映射为泛型实体T对象，当前dao的泛型参数实体类型
      * @param rs 结果集
      * @param rowNum 行号
-     * @return 实体对象
+     * @return 泛型参数T的对象
      */
     public abstract T mapRows(ResultSet rs, int rowNum) throws SQLException;
+    
+    /**
+     * 将结果集映射为resultClass参数所对应的VO对象。实现时，如果有多个VO要映射，可根据resultClass区分。
+     * @param rs 结果集
+     * @param sql sql语句
+     * @param resultClass 结果对象类，一般为VO对象
+     * @return resultClass对应的对象
+     * @throws SQLException
+     */
+    public abstract Object mapRows(ResultSet rs, String sql, Class<?> resultClass) throws SQLException;
     
     /**
      * 将实体 Bean转换为map，key为属性名，value为属性值。<br>
@@ -169,8 +182,6 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         Map<String, Class<?>> fieldInfo = Maps.newHashMap();
         // sql字段信息，key为字段名，value为栏字段类型
         Map<String, Class<?>> columnInfo = Maps.newHashMap();
-        // sql字段list
-        List<String> columnList = Lists.newArrayList();
         
 	    Class<Column> annoColClass = Column.class;
 	    Class<Id> annoIdClass = Id.class;
@@ -278,11 +289,28 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	    
 	    @Override
 	    public T mapRow(ResultSet rs, int rowNum) throws SQLException {
-	        return mapRows(rs, rowNum);
+            return mapRows(rs, rowNum);
 	    }
 
 	}
 
+	class BeanRowMapper<X> implements RowMapper<X> {
+        private Class<X> clazz;
+        private String sql;
+        
+        public BeanRowMapper(String sql, Class<X> clazz) {
+            this.clazz = clazz;
+            this.sql = sql;
+        }
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public X mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return (X) mapRows(rs, sql, clazz);
+        }
+
+    }
+	
 	@Override//OK
     public T unique(T entity) {
 		Map<String, Object> params = mapBean(entity, false, null);
@@ -438,7 +466,9 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public List<T> query(String sql, Object... params) {
-        return springJdbcTemplate.query(sql, entityClass, params);
+        ColumnRowMapper rowMapper = new ColumnRowMapper();
+        return springJdbcTemplate.query(sql, rowMapper, params);
+        //return springJdbcTemplate.query(sql, entityClass, params);
     }
 
     @Override//OK
@@ -623,13 +653,17 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	@Override//OK
 	public <VO> List<VO> queryList(String sql, Class<VO> resultClass,
 			Map<String, Object> params) {
-		return springJdbcTemplate.query(sql, resultClass, params);
+	    BeanRowMapper<VO> rowMapper = new BeanRowMapper<VO>(sql, resultClass);
+	    return springJdbcTemplate.query(sql, params, rowMapper);
+		//return springJdbcTemplate.query(sql, resultClass, params);
 	}
 
 	@Override//OK
 	public <VO> List<VO> queryList(String sql, Class<VO> resultClass,
 			Object... params) {
-		return springJdbcTemplate.query(sql, resultClass, params);
+	    BeanRowMapper<VO> rowMapper = new BeanRowMapper<VO>(sql, resultClass);
+	    return springJdbcTemplate.query(sql, rowMapper, params);
+		//return springJdbcTemplate.query(sql, resultClass, params);
 	}
 
 	@Override//OK

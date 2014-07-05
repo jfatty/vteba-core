@@ -63,4 +63,10 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
         return resultMap;
     }
 
+    @Override
+    public Object mapRows(ResultSet rs, String sql, Class<?> resultClass) throws SQLException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
