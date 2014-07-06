@@ -87,15 +87,16 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
         return entity;
 	}
     
-    @Override
-    public Map<String, Object> mapBean(T entity, boolean prefix, Map<String, Object> params) {
-        if (prefix) {
-            return BeanCopyUtils.get().toMaps(entity, params);
-        } else {
-            return BeanCopyUtils.get().toMap(entity);
-        }
+	@Override
+    public Map<String, Object> mapBean(T entity, boolean prefix) {
+        return BeanCopyUtils.get().toMap(entity, prefix);
     }
 
+	@Override
+	public Map<String, Object> mapBean(Object params) {
+		return BeanCopyUtils.get().toMap(params, false);
+	}
+	
     @Override
     @Autowired
     public void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate) {

@@ -53,14 +53,14 @@ public interface CommonService<T, ID extends Serializable> {
      * @param entity set参数
      * @param params where参数
      */
-    public int updateBatch(T entity, Map<String, Object> params);
+    public int updateBatch(T entity, Map<String, ?> params);
     
     /**
      * 批量更新实体entity，使用命名sql
      * @param sql 命名sql语句
      * @param params sql参数
      */
-    public int updateBatch(String sql, Map<String, Object> params);
+    public int updateBatch(String sql, Map<String, ?> params);
     
     /**
      * 批量更新实体entity，使用命名sql
@@ -95,7 +95,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 参数
      * @return 实体
      */
-    public T unique(Map<String, Object> params);
+    public T unique(Map<String, ?> params);
 	
 	/**
 	 * 根据主键删除实体
@@ -127,7 +127,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param sql sql语句
      * @param params sql参数
      */
-    public int deleteBatch(String sql, Map<String, Object> params);
+    public int deleteBatch(String sql, Map<String, ?> params);
     
     /**
      * 根据条件删除实体，使用普通sql，？为占位符
@@ -148,7 +148,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 条件参数
      * @return 实体list
      */
-    public List<T> query(Map<String, Object> params);
+    public List<T> query(Map<String, ?> params);
     
     /**
      * 根据条件查询实体指定栏位list，sql为命名sql
@@ -164,7 +164,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 条件参数
      * @return 实体list
      */
-    public List<T> query(String sql, Map<String, Object> params);
+    public List<T> query(String sql, Map<String, ?> params);
     
     /**
      * 根据条件查询实体list，sql为普通sql，？为占位符
@@ -189,7 +189,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param resultClass VO class，结果对象类型
      * @return VO bean list
      */
-    public <VO> List<VO> queryList(String sql, Class<VO> resultClass, Map<String, Object> params);
+    public <VO> List<VO> queryList(String sql, Class<VO> resultClass, Map<String, ?> params);
     
     /**
      * 根据条件查询VO list，sql为普通sql，一般用于多表连接
@@ -223,7 +223,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 查询条件参数
      * @return 实体分页数据
      */
-    public Page<T> queryForPage(Page<T> page, Map<String, Object> params);
+    public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
     
     /**
      * 根据条件分页查询实体list，使用命名sql
@@ -232,7 +232,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 查询条件参数
      * @return 实体分页数据
      */
-    public Page<T> queryForPage(Page<T> page, String sql, Map<String, Object> params);
+    public Page<T> queryForPage(Page<T> page, String sql, Map<String, ?> params);
     
     /**
      * 根据条件分页查询实体list，sql为普通sql，？为占位符
@@ -260,7 +260,7 @@ public interface CommonService<T, ID extends Serializable> {
      * @param params 查询条件参数
      * @return vo bean list
      */
-    public <VO> Page<VO> queryPageList(Page<VO> page, String sql, Class<VO> resultClass, Map<String, Object> params);
+    public <VO> Page<VO> queryPageList(Page<VO> page, String sql, Class<VO> resultClass, Map<String, ?> params);
     
     /**
      * 根据条件分页查询vo bean list，使用命名sql，一般用于多表连接

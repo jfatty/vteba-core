@@ -7,6 +7,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.tx.jdbc.spring.impl.AbstractGenericDao;
+import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
  * spring generic dao使用例子，以后会使用代码生成工具生成。
@@ -39,21 +40,19 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
 
     // 完全可以使用代码生成工具来生成
     @Override
-    public Map<String, Object> mapBean(EmpUser entity, boolean prefix, Map<String, Object> params) {
+    public Map<String, Object> mapBean(EmpUser entity, boolean prefix) {
         Map<String, Object> resultMap = Maps.newHashMap();
         if (entity != null) {
             if (prefix) {
                 if (entity.getUserName() != null) {
-                    resultMap.put("getUserName", entity.getUserName());
-                    params.put("getUserName", entity.getUserName());
+                    resultMap.put("_user_name", entity.getUserName());
                 }
                 if (entity.getAge() != null) {
-                    resultMap.put("getAge", entity.getAge());
-                    params.put("getAge", entity.getAge());
+                    resultMap.put("_age", entity.getAge());
                 }
             } else {
                 if (entity.getUserName() != null) {
-                    resultMap.put("userName", entity.getUserName());
+                    resultMap.put("user_name", entity.getUserName());
                 }
                 if (entity.getAge() != null) {
                     resultMap.put("age", entity.getAge());
@@ -64,7 +63,12 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
     }
 
     @Override
-    public Object mapRows(ResultSet rs, String sql, Class<?> resultClass) throws SQLException {
+    public Map<String, Object> mapBean(Object entity) {
+    	return BeanCopyUtils.get().toMap(entity, false);
+    }
+    
+    @Override
+    public EmpUser mapRows(ResultSet rs, String sql, Class<?> resultClass) throws SQLException {
         // TODO Auto-generated method stub
         return null;
     }

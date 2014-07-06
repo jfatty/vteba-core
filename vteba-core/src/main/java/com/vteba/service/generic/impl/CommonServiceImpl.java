@@ -32,11 +32,11 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.updateBatch(entity, criteria);
 	}
 
-	public int updateBatch(T entity, Map<String, Object> params) {
+	public int updateBatch(T entity, Map<String, ?> params) {
 		return springGenericDaoImpl.updateBatch(entity, params);
 	}
 
-	public int updateBatch(String sql, Map<String, Object> params) {
+	public int updateBatch(String sql, Map<String, ?> params) {
 		return springGenericDaoImpl.updateBatch(sql, params);
 	}
 
@@ -56,7 +56,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.unique(entity);
 	}
 
-	public T unique(Map<String, Object> params) {
+	public T unique(Map<String, ?> params) {
 		return springGenericDaoImpl.unique(params);
 	}
 
@@ -72,7 +72,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.deleteBatch(sql, entity);
 	}
 
-	public int deleteBatch(String sql, Map<String, Object> params) {
+	public int deleteBatch(String sql, Map<String, ?> params) {
 		return springGenericDaoImpl.deleteBatch(sql, params);
 	}
 
@@ -84,7 +84,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.query(entity);
 	}
 
-	public List<T> query(Map<String, Object> params) {
+	public List<T> query(Map<String, ?> params) {
 		return springGenericDaoImpl.query(params);
 	}
 
@@ -92,7 +92,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.query(sql, params);
 	}
 
-	public List<T> query(String sql, Map<String, Object> params) {
+	public List<T> query(String sql, Map<String, ?> params) {
 		return springGenericDaoImpl.query(sql, params);
 	}
 
@@ -105,7 +105,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 	}
 
 	public <VO> List<VO> queryList(String sql, Class<VO> resultClass,
-			Map<String, Object> params) {
+			Map<String, ?> params) {
 		return springGenericDaoImpl.queryList(sql, resultClass, params);
 	}
 
@@ -122,12 +122,12 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.queryForPage(page, sql, params);
 	}
 
-	public Page<T> queryForPage(Page<T> page, Map<String, Object> params) {
+	public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
 		return springGenericDaoImpl.queryForPage(page, params);
 	}
 
 	public Page<T> queryForPage(Page<T> page, String sql,
-			Map<String, Object> params) {
+			Map<String, ?> params) {
 		return springGenericDaoImpl.queryForPage(page, sql, params);
 	}
 
@@ -140,7 +140,7 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 	}
 
 	public <VO> Page<VO> queryPageList(Page<VO> page, String sql,
-			Class<VO> resultClass, Map<String, Object> params) {
+			Class<VO> resultClass, Map<String, ?> params) {
 		return springGenericDaoImpl.queryPageList(page, sql, resultClass,
 				params);
 	}
