@@ -32,12 +32,16 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.update(entity);
 	}
 
-	public int updateBatch(T entity, T criteria) {
-		return springGenericDaoImpl.updateBatch(entity, criteria);
+	public int saveOrUpdate(T entity) {
+	    return springGenericDaoImpl.saveOrUpdate(entity);
+	}
+	
+	public int updateBatch(T setValue, T params) {
+		return springGenericDaoImpl.updateBatch(setValue, params);
 	}
 
-	public int updateBatch(T entity, Map<String, ?> params) {
-		return springGenericDaoImpl.updateBatch(entity, params);
+	public int updateBatch(T setValue, Map<String, ?> params) {
+		return springGenericDaoImpl.updateBatch(setValue, params);
 	}
 
 	public int updateBatch(String sql, Map<String, ?> params) {

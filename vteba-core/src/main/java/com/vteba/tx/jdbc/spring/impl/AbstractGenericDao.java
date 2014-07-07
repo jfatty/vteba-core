@@ -241,6 +241,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		return convertId(key, idClass);
 	}
 
+    @Override
     public int persist(T entity) {
         Map<String, Object> params = mapBean(entity, false);
         String sql = dynamicColumn(INSERT_ALL, params);
@@ -375,7 +376,6 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         if (id == null) {
             throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
         }
-        
         String sql = buildUpdateSet(params, false);// update set 部分
         sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
         params.put(metadata.getIdName(), id);//将id条件加回去
@@ -386,19 +386,41 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         
     }
     
-    @Override//OK
-    public int updateBatch(T entity, T criteria) {
-        Map<String, Object> params = mapBean(criteria, false);
-        return updateBatch(entity, params);
+    /**
+     * 保存或者更新实体，ID非空update，否则insert。
+     * @param entity 要保存或者更新的实体
+     * @return 更新或者保存条数
+     */
+    @Override
+    public int saveOrUpdate(T entity) {
+        Map<String, Object> params = mapBean(entity, false);
+        Object id = params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+        String sql = null;
+        if (id == null) {// 新增
+            sql = dynamicColumn(INSERT_ALL, params);
+        } else {// 更新
+            sql = buildUpdateSet(params, false);// update set 部分
+            sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
+            params.put(metadata.getIdName(), id);//将id条件加回去
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("saveOrUpdate实体对象sql=[{}]", sql);
+        }
+        return springJdbcTemplate.update(sql, params);
     }
     
     @Override//OK
-    public int updateBatch(T entity, Map<String, ?> params) {
+    public int updateBatch(T setValue, T params) {
+        return updateBatch(setValue, mapBean(params, false));
+    }
+    
+    @Override//OK
+    public int updateBatch(T setValue, Map<String, ?> params) {
         StringBuilder sb = new StringBuilder(UPDATE_SET);
         //1、构造where条件
         String where = buildWhere(params);
         //2、将set参数转成Map，同时放入参数Map params中
-        Map<String, Object> setMap = mapBean(entity, true);
+        Map<String, Object> setMap = mapBean(setValue, true);
         //3、构造update set语句部分
         String set = buildUpdateSet(setMap, true);
         
@@ -433,9 +455,15 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * @return where语句
      *///OK
     private String buildWhere(Map<String, ?> params) {
-        StringBuilder sb = new StringBuilder().append(" where 1=1");
-        for (Entry<String, ?> entry : params.entrySet()) {
-            sb.append(" and ").append(entry.getKey()).append(" = :").append(entry.getKey());
+        StringBuilder sb = new StringBuilder().append(" where ");
+        boolean b = true;
+        for (String key : params.keySet()) {
+            if (b) {
+                sb.append(key).append(" = :").append(key);
+                b = false;
+            } else {
+                sb.append(" and ").append(key).append(" = :").append(key);
+            }
         }
         return sb.toString();
     }

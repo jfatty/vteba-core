@@ -34,24 +34,25 @@ public interface SpringGenericDao<T, ID extends Serializable> {
 	public int update(T entity);
 	
 	/**
-     * 根据id更新实体entity所有栏位（主键属性非空）
-     * @param entity
+     * 保存或者更新实体，ID非空update，否则insert。
+     * @param entity 要保存或者更新的实体
+     * @return 更新或者保存条数
      */
-    //public int updateAll(T entity);
+    public int saveOrUpdate(T entity);
 	
 	/**
      * 批量更新实体entity，使用命名sql
-     * @param entity set参数
-     * @param criteria where参数
+     * @param setValue set参数
+     * @param params where参数
      */
-    public int updateBatch(T entity, T criteria);
+    public int updateBatch(T setValue, T params);
 	
     /**
      * 批量更新实体entity，使用命名sql
-     * @param entity set参数
+     * @param setValue set参数
      * @param params where参数
      */
-    public int updateBatch(T entity, Map<String, ?> params);
+    public int updateBatch(T setValue, Map<String, ?> params);
     
     /**
      * 批量更新实体entity，使用命名sql
