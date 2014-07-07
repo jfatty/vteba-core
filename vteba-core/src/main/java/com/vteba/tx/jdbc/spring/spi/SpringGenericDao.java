@@ -14,18 +14,18 @@ import com.vteba.tx.generic.Page;
 public interface SpringGenericDao<T, ID extends Serializable> {
     
     /**
-	 * 保存实体entity（新增，insert非空栏位）
+	 * 保存实体entity，insert非空栏位，返回主键。
 	 * @param entity
 	 * @return 实体主键
 	 */
 	public ID save(T entity);
 	
 	/**
-     * 保存实体entity（新增，insert所有栏位）
+     * 保存实体entity，insert非空栏位，返回插入成功条数。
      * @param entity
-     * @return 实体主键
+     * @return 插入条数
      */
-    //public ID saveAll(T entity);
+	public int persist(T entity);
 	
 	/**
 	 * 根据id更新实体entity非空栏位（主键属性非空）

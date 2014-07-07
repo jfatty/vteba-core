@@ -24,6 +24,10 @@ public abstract class CommonServiceImpl<T, ID extends Serializable> implements C
 		return springGenericDaoImpl.save(entity);
 	}
 
+	public int persist(T entity) {
+	    return springGenericDaoImpl.persist(entity);
+	}
+	
 	public int update(T entity) {
 		return springGenericDaoImpl.update(entity);
 	}

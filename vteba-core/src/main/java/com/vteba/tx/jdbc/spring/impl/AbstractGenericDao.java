@@ -106,7 +106,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     /**
      * 将实体 Bean转换为map，key为属性名 下划线命名法，value为属性值。<br>
-     * 以后可以抽象，延迟到子类中自己实现，避免字节码处理
+     * 为提高性能，建议子类重写该方法，避免字节码处理。
      * @param entity 要转换的实体
      * @param prefix entity转换成Map的key是否要加前缀；前缀为 _
      * @return map，参数entity转成的Map
@@ -231,18 +231,25 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     @Override//OK
 	public ID save(T entity) {
 		Map<String, Object> params = mapBean(entity, false);
-		String sql = INSERT_ALL;
-		sql = dynamicColumn(sql, params);
+		String sql = dynamicColumn(INSERT_ALL, params);
 		if (LOGGER.isDebugEnabled()) {
 		    LOGGER.debug("保存实体对象sql=[{}]", sql);
 		}
 		GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 		springJdbcTemplate.update(sql, params, keyHolder);
-		//Number key = (Number) keyHolder.getKeys().get("GENERATED_KEY");
 		Number key = keyHolder.getKey();// 自增主键或者序列，如果是应用程序自己生成的id，这里要调整
 		return convertId(key, idClass);
 	}
 
+    public int persist(T entity) {
+        Map<String, Object> params = mapBean(entity, false);
+        String sql = dynamicColumn(INSERT_ALL, params);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("保存实体对象sql=[{}]", sql);
+        }
+        return springJdbcTemplate.update(sql, params);
+    }
+    
     /**
      * 转换ID
      * @param value key值
@@ -364,8 +371,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     @Override//OK
     public int update(T entity) {
         Map<String, Object> params = mapBean(entity, false);
-        Object id = params.get(metadata.getIdName());
-        params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+        Object id = params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+        if (id == null) {
+            throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
+        }
+        
         String sql = buildUpdateSet(params, false);// update set 部分
         sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
         params.put(metadata.getIdName(), id);//将id条件加回去
