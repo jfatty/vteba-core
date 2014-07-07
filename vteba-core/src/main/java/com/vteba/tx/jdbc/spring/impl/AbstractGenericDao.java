@@ -441,14 +441,14 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int update(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.NULL);
-        Object id = params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
-        if (id == null) {
-            throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
-        }
-        String sql = buildUpdateSet(params, false);// update set 部分
-        sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
-        params.put(metadata.getIdName(), id);//将id条件加回去
+        Map<String, Object> params = mapBean(entity, false, SqlType.UPDATE);
+//        Object id = params.get(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+//        if (id == null) {
+//            throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
+//        }
+        String sql = params.remove(SQL_KEY).toString();//buildUpdateSet(params, false);// update set 部分
+        //sql = UPDATE_BYID.replace("${sets}", sql);// 生成sql语句
+        //params.put(metadata.getIdName(), id);//将id条件加回去
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("update实体对象sql=[{}]", sql);
         }

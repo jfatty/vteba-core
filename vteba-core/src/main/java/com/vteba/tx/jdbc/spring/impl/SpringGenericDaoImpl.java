@@ -173,25 +173,32 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 break;
             case UPDATE:
                 updateSets.append("update ").append(table);
-                
+                String subKey = null;
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            column = getColumn(prefix, methodName);
+                            if (prefix) {
+                                column = CaseUtils.toUnderCase(methodName.substring(3));
+                                subKey = column.substring(1);
+                            } else {
+                                column = CaseUtils.underCase(methodName.substring(3));
+                                subKey = column;
+                            }
+                            
                             if (append) {
-                                columns.append(" where ").append(column).append(" = :").append(column);
-                                updateSets.append(" set ").append(column).append(" = :").append(column);
+                                updateSets.append(" set ").append(subKey).append(" = :").append(column);
                                 append = false;
                             } else {
-                                columns.append(" and ").append(column).append(" = :").append(column);
-                                updateSets.append(", ").append(column).append(" = :").append(column);
+                                updateSets.append(", ").append(subKey).append(" = :").append(column);
                             }
                             resultMap.put(column, value);
                         }
                     } 
                 }
-                updateSets.append(columns);
+                String id = metadata.getIdName();
+                updateSets.append(" where ").append(id).append(" = :").append(id);
+                
                 resultMap.put(SQL_KEY, updateSets.toString());
                 break;
             case WHERE:
@@ -209,7 +216,6 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 break;
             case UPDATESET:
                 updateSets.append("update ").append(table);
-                String subKey = "";
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
