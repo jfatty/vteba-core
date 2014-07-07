@@ -419,14 +419,13 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     @Override//OK
     public int deleteBatch(T entity) {
         Map<String, Object> params = mapBean(entity, false, SqlType.DELETE);
-        String where = buildWhere(params);
-        String sql = DELETE_ALL + where;
+        String sql = params.remove(SQL_KEY).toString();
         return deleteBatch(sql, params);
     }
 
     @Override//OK
     public int deleteBatch(String sql, T entity) {
-        return deleteBatch(sql, mapBean(entity, false, SqlType.DELETE));
+        return deleteBatch(sql, mapBean(entity, false, SqlType.NULL));
     }
 
     @Override//OK
@@ -457,10 +456,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     }
     
     /**
-     * 保存或者更新实体，ID非空update，否则insert。
+     * 保存或者更新实体，ID非空update，否则insert。建议直接使用save或update替换。
      * @param entity 要保存或者更新的实体
      * @return 更新或者保存条数
      */
+    @Deprecated
     @Override
     public int saveOrUpdate(T entity) {
         Map<String, Object> params = mapBean(entity, false, SqlType.NULL);
@@ -481,21 +481,25 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int updateBatch(T setValue, T params) {
-        return updateBatch(setValue, mapBean(params, false, SqlType.WHERE));
+        Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATESET);
+        String sql = setMap.remove(SQL_KEY).toString();
+        Map<String, Object> paramMap = mapBean(params, false, SqlType.WHERE);        
+        
+        sql = sql + paramMap.remove(SQL_KEY).toString();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("updateBatch sql = [{}]", sql);
+        }
+        setMap.putAll(paramMap);
+        
+        return springJdbcTemplate.update(sql, setMap);
     }
     
     @Override//OK
     public int updateBatch(T setValue, Map<String, ?> params) {
-        //StringBuilder sb = new StringBuilder(UPDATE_SET);
-        //1、构造where条件
-        String where = params.remove(SQL_KEY).toString();//buildWhere(params);
-        //2、将set参数转成Map，同时放入参数Map params中
         Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATESET);
-        //3、构造update set语句部分
-        String set = setMap.remove(SQL_KEY).toString();//buildUpdateSet(setMap, true);
+        String sql = setMap.remove(SQL_KEY).toString();
+        sql = sql + buildWhere(params);
         
-        //sb.append(set).append(where);
-        String sql = set + where;//sb.toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("updateBatch sql = [{}]", sql);
         }
