@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -507,7 +508,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		} else {
 			page.setTotalRecordCount(count);
 		}
-		sql = preparePagedQuery(page, sql, params);
+		//sql = preparePagedQuery(page, sql, params);
+		
+		sql = mysqlPagedQuery(sql, page, true);
+        params = setParameterToQuery(page, params);
+		
 		if (LOGGER.isDebugEnabled()) {
 		    LOGGER.debug("分页查询的sql语句=[{}]", sql);
 		}
@@ -565,9 +570,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param page 分页数据
 	 * @param params sql参数
 	 *///OK
-	protected <X> void setParameterToQuery(Page<X> page, Map<String, Object> params) {
-		params.put("startIndex", page.getStartIndex());
-		params.put("pageSize", page.getPageSize());
+	protected <X> Map<String, Object> setParameterToQuery(Page<X> page, Map<String, ?> params) {
+	    Map<String, Object> map = new HashMap<String, Object>();
+		map.put("startIndex", page.getStartIndex());
+		map.put("pageSize", page.getPageSize());
+		map.putAll(params);
+		return map;
 	}
 	
 	/**
@@ -588,6 +596,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param sql sql语句
 	 * @param params sql参数
 	 *///OK
+    @Deprecated
 	protected <X> String preparePagedQuery(Page<X> page, String sql, Map<String, ?> params) {
 		sql = mysqlPagedQuery(sql, page, true);
 		setParameterToQuery(page, params);
@@ -632,7 +641,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	 * @param params 参数
 	 * @return 记录数
 	 *///OK
-	protected int count(String sql, Map<String, Object> params) {
+	protected int count(String sql, Map<String, ?> params) {
 		String countSQL = prepareCountSql(sql);
 		return springJdbcTemplate.queryForObject(countSQL, params, Integer.class);
 	}
@@ -687,7 +696,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 		} else {
 			page.setTotalRecordCount(count);
 		}
-		sql = preparePagedQuery(page, sql, params);
+		//sql = preparePagedQuery(page, sql, params);
+		
+		sql = mysqlPagedQuery(sql, page, true);
+        params = setParameterToQuery(page, params);
+		
 		List<VO> list = queryList(sql, resultClass, params);
 		page.setResult(list);
 		return page;
