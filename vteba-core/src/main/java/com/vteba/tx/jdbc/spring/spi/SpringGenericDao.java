@@ -38,7 +38,7 @@ public interface SpringGenericDao<T, ID extends Serializable> {
      * @param entity 要保存或者更新的实体
      * @return 更新或者保存条数
      */
-    public int saveOrUpdate(T entity);
+    //public int saveOrUpdate(T entity);
 	
 	/**
      * 批量更新实体entity，使用命名sql

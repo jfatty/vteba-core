@@ -171,7 +171,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 }
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
-            case UPDATE:
+            case UPDATE:// 根据主键更新实体
                 updateSets.append("update ").append(table);
                 String subKey = null;
                 for (String methodName : methodNames) {
@@ -214,7 +214,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 }
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
-            case UPDATESET:
+            case UPDATESET:// update 语句的set部分 
                 updateSets.append("update ").append(table);
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
