@@ -107,44 +107,34 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
         MethodAccess methodAccess = AsmUtils.get().createMethodAccess(fromBean.getClass());
         String[] methodNames = methodAccess.getMethodNames();
         Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
+        
+        StringBuilder columns = new StringBuilder();
+        StringBuilder updateSets = new StringBuilder();
+        String column = null;
+        boolean append = true;
+        
         switch (sqlType) {
             case INSERT:
-                StringBuilder columns = new StringBuilder();
-                columns = columns.append("insert into ").append(table).append("(");
+                columns.append("insert into ").append(table).append("(");
                 
                 StringBuilder holders = new StringBuilder(") values(");
-                String column = null;
-                boolean append = true;
                 
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            if (prefix) {
-                                column = CaseUtils.toUnderCase(methodName.substring(3));
-                                if (append) {
-                                    columns.append(column);
-                                    holders.append(":").append(column);
-                                    append = false;
-                                } else {
-                                    columns.append(",").append(column);
-                                    holders.append(",").append(":").append(column);
-                                }
-                                resultMap.put(column, value);
+                            column = getColumn(prefix, methodName);
+                            if (append) {
+                                columns.append(column);
+                                holders.append(":").append(column);
+                                //holders.append("?");
+                                append = false;
                             } else {
-                                column = CaseUtils.underCase(methodName.substring(3));
-                                if (append) {
-                                    columns.append(column);
-                                    holders.append(":").append(column);
-                                    //holders.append("?");
-                                    append = false;
-                                } else {
-                                    columns.append(",").append(column);
-                                    holders.append(",").append(":").append(column);
-                                    //holders.append(",").append("?");
-                                }
-                                resultMap.put(column, value);
+                                columns.append(",").append(column);
+                                holders.append(",").append(":").append(column);
+                                //holders.append(",").append("?");
                             }
+                            resultMap.put(column, value);
                         }
                     } 
                 }
@@ -152,9 +142,98 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
             case SELECT:
+                columns.append("select * from ").append(table);
                 
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            column = getColumn(prefix, methodName);
+                            append = buildWhere(columns, column, append);
+                            resultMap.put(column, value);
+                        }
+                    } 
+                }
+                resultMap.put(SQL_KEY, columns.toString());
+                break;
+            case DELETE:
+                columns.append("delete from ").append(table);
+                
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            column = getColumn(prefix, methodName);
+                            append = buildWhere(columns, column, append);
+                            resultMap.put(column, value);
+                        }
+                    } 
+                }
+                resultMap.put(SQL_KEY, columns.toString());
+                break;
             case UPDATE:
+                updateSets.append("update ").append(table);
                 
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            column = getColumn(prefix, methodName);
+                            if (append) {
+                                columns.append(" where ").append(column).append(" = :").append(column);
+                                updateSets.append(" set ").append(column).append(" = :").append(column);
+                                append = false;
+                            } else {
+                                columns.append(" and ").append(column).append(" = :").append(column);
+                                updateSets.append(", ").append(column).append(" = :").append(column);
+                            }
+                            resultMap.put(column, value);
+                        }
+                    } 
+                }
+                updateSets.append(columns);
+                resultMap.put(SQL_KEY, updateSets.toString());
+                break;
+            case WHERE:
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            column = getColumn(prefix, methodName);
+                            append = buildWhere(columns, column, append);
+                            resultMap.put(column, value);
+                        }
+                    } 
+                }
+                resultMap.put(SQL_KEY, columns.toString());
+                break;
+            case UPDATESET:
+                updateSets.append("update ").append(table);
+                String subKey = "";
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            if (prefix) {
+                                column = CaseUtils.toUnderCase(methodName.substring(3));
+                                subKey = column.substring(1);
+                            } else {
+                                column = CaseUtils.underCase(methodName.substring(3));
+                                subKey = column;
+                            }
+                            
+                            if (append) {
+                                updateSets.append(" set ").append(subKey).append(" = :").append(column);
+                                append = false;
+                            } else {
+                                updateSets.append(", ").append(subKey).append(" = :").append(column);
+                            }
+                            resultMap.put(column, value);
+                        }
+                    } 
+                }
+                resultMap.put(SQL_KEY, updateSets.toString());
+                break;
             case NULL:
                 
             default:
@@ -173,6 +252,26 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 break;
         }
         return resultMap;
+    }
+
+    private boolean buildWhere(StringBuilder columns, String column, boolean append) {
+        if (append) {
+            columns.append(" where ").append(column).append(" = :").append(column);
+            append = false;
+        } else {
+            columns.append(" and ").append(column).append(" = :").append(column);
+        }
+        return append;
+    }
+
+    private String getColumn(boolean prefix, String methodName) {
+        String column;
+        if (prefix) {
+            column = CaseUtils.toUnderCase(methodName.substring(3));
+        } else {
+            column = CaseUtils.underCase(methodName.substring(3));
+        }
+        return column;
     }
 	
     @Override

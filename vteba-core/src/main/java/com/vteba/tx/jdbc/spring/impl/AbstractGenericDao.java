@@ -344,6 +344,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
         return sql;
     }
     
+    @Deprecated
     protected Object[] dynamicColumn(Map<String, Object> params) {
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
@@ -395,7 +396,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	
 	@Override//OK
     public T unique(T entity) {
-		Map<String, Object> params = mapBean(entity, false, SqlType.WHERE);
+		Map<String, Object> params = mapBean(entity, false, SqlType.NULL);
         return unique(params);
     }
 	
@@ -440,7 +441,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int update(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.UPDATE);
+        Map<String, Object> params = mapBean(entity, false, SqlType.NULL);
         Object id = params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
         if (id == null) {
             throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
@@ -462,7 +463,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      */
     @Override
     public int saveOrUpdate(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.WHERE);
+        Map<String, Object> params = mapBean(entity, false, SqlType.NULL);
         Object id = params.remove(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
         String sql = null;
         if (id == null) {// 新增
@@ -480,21 +481,21 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int updateBatch(T setValue, T params) {
-        return updateBatch(setValue, mapBean(params, false, SqlType.UPDATE));
+        return updateBatch(setValue, mapBean(params, false, SqlType.WHERE));
     }
     
     @Override//OK
     public int updateBatch(T setValue, Map<String, ?> params) {
-        StringBuilder sb = new StringBuilder(UPDATE_SET);
+        //StringBuilder sb = new StringBuilder(UPDATE_SET);
         //1、构造where条件
-        String where = buildWhere(params);
+        String where = params.remove(SQL_KEY).toString();//buildWhere(params);
         //2、将set参数转成Map，同时放入参数Map params中
-        Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATE);
+        Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATESET);
         //3、构造update set语句部分
-        String set = buildUpdateSet(setMap, true);
+        String set = setMap.remove(SQL_KEY).toString();//buildUpdateSet(setMap, true);
         
-        sb.append(set).append(where);
-        String sql = sb.toString();
+        //sb.append(set).append(where);
+        String sql = set + where;//sb.toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("updateBatch sql = [{}]", sql);
         }
@@ -509,7 +510,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public int updateBatch(String sql, T params) {
-        Map<String, Object> paramMap = mapBean(params, false, SqlType.UPDATE);
+        Map<String, Object> paramMap = mapBean(params, false, SqlType.NULL);
         return springJdbcTemplate.update(sql, paramMap);
     }
 
@@ -546,20 +547,29 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      *///OK
     private String buildUpdateSet(Map<String, Object> params, boolean prefix) {
         StringBuilder sb = new StringBuilder();
-        for (Entry<String, ?> entry : params.entrySet()) {
-            String key = entry.getKey();
+        boolean append = true;
+        String subKey = null;
+        for (String key : params.keySet()) {
             if (prefix) {
-                key = key.substring(1);
+                subKey = key.substring(1);
+            } else {
+                subKey = key;
             }
-            sb.append(key).append(" = :").append(entry.getKey()).append(", ");
+            if (append) {
+                sb.append(subKey).append(" = :").append(key);
+                append = false;
+            } else {
+                sb.append(",").append(subKey).append(" = :").append(key);
+            }
         }
-        return sb.substring(0, sb.length() - 2);
+        return sb.toString();
     }
     
     @Override//OK
     public List<T> query(T entity) {
         Map<String, Object> params = mapBean(entity, false, SqlType.SELECT);
-        return query(params);
+        String sql = params.remove(SQL_KEY).toString();
+        return query(sql, params);
     }
 
     @Override//OK
@@ -586,18 +596,18 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public List<T> query(String sql, T params) {
-        return query(sql, mapBean(params, false, SqlType.SELECT));
+        return query(sql, mapBean(params, false, SqlType.NULL));
     }
 
 	@Override//OK
 	public Page<T> queryForPage(Page<T> page, T params) {
-	    Map<String, Object> paramMap = mapBean(params, false, SqlType.SELECT);
+	    Map<String, Object> paramMap = mapBean(params, false, SqlType.NULL);
 		return queryForPage(page, paramMap);
 	}
 
 	@Override//OK
 	public Page<T> queryForPage(Page<T> page, String sql, T params) {
-	    Map<String, Object> paramMap = mapBean(params, false, SqlType.SELECT);
+	    Map<String, Object> paramMap = mapBean(params, false, SqlType.NULL);
 		return queryForPage(page, sql, paramMap);
 	}
 
