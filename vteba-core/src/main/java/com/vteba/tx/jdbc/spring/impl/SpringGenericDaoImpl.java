@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.tx.jdbc.spring.spi.SpringGenericDao;
 import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
-import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
  * spring通用泛型dao实现。
@@ -88,14 +88,92 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
 	}
     
 	@Override
-    public Map<String, Object> mapBean(T entity, boolean prefix) {
-        return BeanCopyUtils.get().toMap(entity, prefix);
+    public Map<String, Object> mapBean(T entity, boolean prefix, SqlType sqlType) {
+        return toMap(entity, prefix, sqlType, tableName);
     }
 
 	@Override
 	public Map<String, Object> mapBean(Object params) {
-		return BeanCopyUtils.get().toMap(params, false);
+		return toMap(params, false, SqlType.NULL, null);
 	}
+	
+	/**
+     * 将Bean转换为Map，map key使用下划线命名法（prefix == true，将以 _ 开头的），性能最好。
+     * @param fromBean 源JavaBean
+     * @param prefix key是否加 _ 前缀
+     * @return fromBean转化成的Map
+     */
+    protected Map<String, Object> toMap(Object fromBean, boolean prefix, SqlType sqlType, String table) {
+        MethodAccess methodAccess = AsmUtils.get().createMethodAccess(fromBean.getClass());
+        String[] methodNames = methodAccess.getMethodNames();
+        Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
+        switch (sqlType) {
+            case INSERT:
+                StringBuilder columns = new StringBuilder();
+                columns = columns.append("insert into ").append(table).append("(");
+                
+                StringBuilder holders = new StringBuilder(") values(");
+                String column = null;
+                boolean append = true;
+                
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            if (prefix) {
+                                column = CaseUtils.toUnderCase(methodName.substring(3));
+                                if (append) {
+                                    columns.append(column);
+                                    holders.append(":").append(column);
+                                    append = false;
+                                } else {
+                                    columns.append(",").append(column);
+                                    holders.append(",").append(":").append(column);
+                                }
+                                resultMap.put(column, value);
+                            } else {
+                                column = CaseUtils.underCase(methodName.substring(3));
+                                if (append) {
+                                    columns.append(column);
+                                    holders.append(":").append(column);
+                                    //holders.append("?");
+                                    append = false;
+                                } else {
+                                    columns.append(",").append(column);
+                                    holders.append(",").append(":").append(column);
+                                    //holders.append(",").append("?");
+                                }
+                                resultMap.put(column, value);
+                            }
+                        }
+                    } 
+                }
+                columns.append(holders).append(")");
+                resultMap.put(SQL_KEY, columns.toString());
+                break;
+            case SELECT:
+                
+            case UPDATE:
+                
+            case NULL:
+                
+            default:
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            if (prefix) {
+                                resultMap.put(CaseUtils.toUnderCase(methodName.substring(3)), value);
+                            } else {
+                                resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
+                            }
+                        }
+                    } 
+                }
+                break;
+        }
+        return resultMap;
+    }
 	
     @Override
     @Autowired

@@ -7,6 +7,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.tx.jdbc.spring.impl.AbstractGenericDao;
+import com.vteba.tx.jdbc.spring.impl.SqlType;
 import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
@@ -40,7 +41,7 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
 
     // 完全可以使用代码生成工具来生成
     @Override
-    public Map<String, Object> mapBean(EmpUser entity, boolean prefix) {
+    public Map<String, Object> mapBean(EmpUser entity, boolean prefix, SqlType sqlType) {
         Map<String, Object> resultMap = Maps.newHashMap();
         if (entity != null) {
             if (prefix) {
@@ -64,7 +65,7 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
 
     @Override
     public Map<String, Object> mapBean(Object entity) {
-    	return BeanCopyUtils.get().toMap(entity, false);
+    	return BeanCopyUtils.get().toMap(entity, false, false, null);
     }
     
     @Override
