@@ -41,25 +41,15 @@ public class UserDaoImpl extends AbstractGenericDao<EmpUser, Long> {
 
     // 完全可以使用代码生成工具来生成
     @Override
-    public Map<String, Object> mapBean(EmpUser entity, boolean prefix, SqlType sqlType) {
+    public Map<String, Object> mapBean(EmpUser entity, SqlType sqlType) {
         Map<String, Object> resultMap = Maps.newHashMap();
         if (entity != null) {
-            if (prefix) {
-                if (entity.getUserName() != null) {
-                    resultMap.put("_user_name", entity.getUserName());
-                }
-                if (entity.getAge() != null) {
-                    resultMap.put("_age", entity.getAge());
-                }
-            } else {
-                if (entity.getUserName() != null) {
-                    resultMap.put("user_name", entity.getUserName());
-                }
-                if (entity.getAge() != null) {
-                    resultMap.put("age", entity.getAge());
-                }
+            if (entity.getUserName() != null) {
+                resultMap.put("user_name", entity.getUserName());
             }
-        }
+            if (entity.getAge() != null) {
+                resultMap.put("age", entity.getAge());
+            }        }
         return resultMap;
     }
 

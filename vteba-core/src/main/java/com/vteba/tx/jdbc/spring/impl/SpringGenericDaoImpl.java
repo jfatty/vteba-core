@@ -88,13 +88,13 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
 	}
     
 	@Override
-    public Map<String, Object> mapBean(T entity, boolean prefix, SqlType sqlType) {
-        return toMap(entity, prefix, sqlType, tableName);
+    public Map<String, Object> mapBean(T entity, SqlType sqlType) {
+        return toMap(entity, sqlType, tableName);
     }
 
 	@Override
 	public Map<String, Object> mapBean(Object params) {
-		return toMap(params, false, SqlType.NULL, null);
+		return toMap(params, SqlType.NULL, null);
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
      * @param prefix key是否加 _ 前缀
      * @return fromBean转化成的Map
      */
-    protected Map<String, Object> toMap(Object fromBean, boolean prefix, SqlType sqlType, String table) {
+    protected Map<String, Object> toMap(Object fromBean, SqlType sqlType, String table) {
         MethodAccess methodAccess = AsmUtils.get().createMethodAccess(fromBean.getClass());
         String[] methodNames = methodAccess.getMethodNames();
         Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
@@ -123,7 +123,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            column = getColumn(prefix, methodName);
+                            column = CaseUtils.underCase(methodName.substring(3));
                             if (append) {
                                 columns.append(column);
                                 holders.append(":").append(column);
@@ -144,53 +144,29 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
             case SELECT:
                 columns.append("select * from ").append(table);
                 
-                for (String methodName : methodNames) {
-                    if (methodName.startsWith("get")) {
-                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
-                        if (value != null) {
-                            column = getColumn(prefix, methodName);
-                            append = buildWhere(columns, column, append);
-                            resultMap.put(column, value);
-                        }
-                    } 
-                }
+                append = buildWhere(fromBean, methodAccess, methodNames, resultMap, columns, append);
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
             case DELETE:
                 columns.append("delete from ").append(table);
                 
-                for (String methodName : methodNames) {
-                    if (methodName.startsWith("get")) {
-                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
-                        if (value != null) {
-                            column = getColumn(prefix, methodName);
-                            append = buildWhere(columns, column, append);
-                            resultMap.put(column, value);
-                        }
-                    } 
-                }
+                append = buildWhere(fromBean, methodAccess, methodNames, resultMap, columns, append);
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
             case UPDATE:// 根据主键更新实体
                 updateSets.append("update ").append(table);
-                String subKey = null;
+                //String subKey = null;
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            if (prefix) {
-                                column = CaseUtils.toUnderCase(methodName.substring(3));
-                                subKey = column.substring(1);
-                            } else {
-                                column = CaseUtils.underCase(methodName.substring(3));
-                                subKey = column;
-                            }
+                            column = CaseUtils.underCase(methodName.substring(3));
                             
                             if (append) {
-                                updateSets.append(" set ").append(subKey).append(" = :").append(column);
+                                updateSets.append(" set ").append(column).append(" = :").append(column);
                                 append = false;
                             } else {
-                                updateSets.append(", ").append(subKey).append(" = :").append(column);
+                                updateSets.append(", ").append(column).append(" = :").append(column);
                             }
                             resultMap.put(column, value);
                         }
@@ -202,32 +178,18 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                 resultMap.put(SQL_KEY, updateSets.toString());
                 break;
             case WHERE:
-                for (String methodName : methodNames) {
-                    if (methodName.startsWith("get")) {
-                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
-                        if (value != null) {
-                            column = getColumn(prefix, methodName);
-                            append = buildWhere(columns, column, append);
-                            resultMap.put(column, value);
-                        }
-                    } 
-                }
+                append = buildWhere(fromBean, methodAccess, methodNames, resultMap, columns, append);
                 resultMap.put(SQL_KEY, columns.toString());
                 break;
             case UPDATESET:// update 语句的set部分 
                 updateSets.append("update ").append(table);
+                String subKey = null;
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            if (prefix) {
-                                column = CaseUtils.toUnderCase(methodName.substring(3));
-                                subKey = column.substring(1);
-                            } else {
-                                column = CaseUtils.underCase(methodName.substring(3));
-                                subKey = column;
-                            }
-                            
+                            column = CaseUtils.toUnderCase(methodName.substring(3));
+                            subKey = column.substring(1);
                             if (append) {
                                 updateSets.append(" set ").append(subKey).append(" = :").append(column);
                                 append = false;
@@ -247,11 +209,7 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            if (prefix) {
-                                resultMap.put(CaseUtils.toUnderCase(methodName.substring(3)), value);
-                            } else {
-                                resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
-                            }
+                            resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
                         }
                     } 
                 }
@@ -260,26 +218,27 @@ public class SpringGenericDaoImpl<T, ID extends Serializable> extends AbstractGe
         return resultMap;
     }
 
-    private boolean buildWhere(StringBuilder columns, String column, boolean append) {
-        if (append) {
-            columns.append(" where ").append(column).append(" = :").append(column);
-            append = false;
-        } else {
-            columns.append(" and ").append(column).append(" = :").append(column);
+    protected boolean buildWhere(Object fromBean, MethodAccess methodAccess, String[] methodNames,
+                                 Map<String, Object> resultMap, StringBuilder columns, boolean append) {
+        String column;
+        for (String methodName : methodNames) {
+            if (methodName.startsWith("get")) {
+                Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                if (value != null) {
+                    column = CaseUtils.underCase(methodName.substring(3));
+                    if (append) {
+                        columns.append(" where ").append(column).append(" = :").append(column);
+                        append = false;
+                    } else {
+                        columns.append(" and ").append(column).append(" = :").append(column);
+                    }
+                    resultMap.put(column, value);
+                }
+            } 
         }
         return append;
     }
 
-    private String getColumn(boolean prefix, String methodName) {
-        String column;
-        if (prefix) {
-            column = CaseUtils.toUnderCase(methodName.substring(3));
-        } else {
-            column = CaseUtils.underCase(methodName.substring(3));
-        }
-        return column;
-    }
-	
     @Override
     @Autowired
     public void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate) {

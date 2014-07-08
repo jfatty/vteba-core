@@ -111,12 +111,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
      * 将实体 Bean转换为map，key为属性名 下划线命名法，value为属性值。<br>
      * 为提高性能，建议子类重写该方法，避免字节码处理。
      * @param entity 要转换的实体
-     * @param prefix entity转换成Map的key是否要加前缀；前缀为 _
      * @param sqlType 自动构建sql语句的类型 
      * @return map，参数entity转成的Map
      * @see #mapRows(ResultSet, int)
      */
-    public abstract Map<String, Object> mapBean(T entity, boolean prefix, SqlType sqlType);
+    public abstract Map<String, Object> mapBean(T entity, SqlType sqlType);
     
     /**
 	 * 使用字节码将JavaBean转成Map，key为属性的下划线命名法，如果想要更高性能，建议子类重写该方法。（多表连接时会使用）
@@ -234,8 +233,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	
     @Override//OK
 	public ID save(T entity) {
-		Map<String, Object> params = mapBean(entity, false, SqlType.INSERT);
-		final String sql = params.remove(SQL_KEY).toString();
+		Map<String, Object> params = mapBean(entity, SqlType.INSERT);
+		final String sql = params.get(SQL_KEY).toString();
 		if (LOGGER.isDebugEnabled()) {
 		    LOGGER.debug("保存实体对象sql=[{}]", sql);
 		}
@@ -247,8 +246,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override
     public int persist(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.INSERT);
-        String sql = params.remove(SQL_KEY).toString();
+        Map<String, Object> params = mapBean(entity, SqlType.INSERT);
+        String sql = params.get(SQL_KEY).toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("保存实体对象sql=[{}]", sql);
         }
@@ -330,8 +329,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	
 	@Override//OK
     public T unique(T entity) {
-		Map<String, Object> params = mapBean(entity, false, SqlType.SELECT);
-		String sql = params.remove(SQL_KEY).toString();
+		Map<String, Object> params = mapBean(entity, SqlType.SELECT);
+		String sql = params.get(SQL_KEY).toString();
 		List<T> list = query(sql, params);
 		if (list == null || list.isEmpty()) {
 			throw new NonUniqueException("查询结果集为空。");
@@ -359,14 +358,14 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public int deleteBatch(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.DELETE);
-        String sql = params.remove(SQL_KEY).toString();
+        Map<String, Object> params = mapBean(entity, SqlType.DELETE);
+        String sql = params.get(SQL_KEY).toString();
         return deleteBatch(sql, params);
     }
 
     @Override//OK
     public int deleteBatch(String sql, T entity) {
-        return deleteBatch(sql, mapBean(entity, false, SqlType.NULL));
+        return deleteBatch(sql, mapBean(entity, SqlType.NULL));
     }
 
     @Override//OK
@@ -381,12 +380,12 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int update(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.UPDATE);
-//        Object id = params.get(metadata.getIdName());// 如果不去掉id，那么构建的set语句有id
+        Map<String, Object> params = mapBean(entity, SqlType.UPDATE);
+//        Object id = params.get(metadata.getIdName());// id的值
 //        if (id == null) {
 //            throw new NullPointerException("update方法是根据ID更新实体，ID属性为空，请设置ID属性值；要么使用updateBatch。");
 //        }
-        String sql = params.remove(SQL_KEY).toString();
+        String sql = params.get(SQL_KEY).toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("update实体对象sql=[{}]", sql);
         }
@@ -420,11 +419,11 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int updateBatch(T setValue, T params) {
-        Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATESET);
-        String sql = setMap.remove(SQL_KEY).toString();// 没有where条件的update sql
-        Map<String, Object> paramMap = mapBean(params, false, SqlType.WHERE);        
+        Map<String, Object> setMap = mapBean(setValue, SqlType.UPDATESET);
+        String sql = setMap.get(SQL_KEY).toString();// 没有where条件的update sql
+        Map<String, Object> paramMap = mapBean(params, SqlType.WHERE);        
         
-        sql = sql + paramMap.remove(SQL_KEY).toString();// 加上where条件
+        sql = sql + paramMap.get(SQL_KEY).toString();// 加上where条件
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("updateBatch sql = [{}]", sql);
         }
@@ -435,8 +434,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public int updateBatch(T setValue, Map<String, ?> params) {
-        Map<String, Object> setMap = mapBean(setValue, true, SqlType.UPDATESET);
-        String sql = setMap.remove(SQL_KEY).toString();
+        Map<String, Object> setMap = mapBean(setValue, SqlType.UPDATESET);
+        String sql = setMap.get(SQL_KEY).toString();
         sql = sql + buildWhere(params);
         
         if (LOGGER.isDebugEnabled()) {
@@ -453,7 +452,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public int updateBatch(String sql, T params) {
-        Map<String, Object> paramMap = mapBean(params, false, SqlType.NULL);
+        Map<String, Object> paramMap = mapBean(params, SqlType.NULL);
         return springJdbcTemplate.update(sql, paramMap);
     }
 
@@ -529,8 +528,8 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
     
     @Override//OK
     public List<T> query(T entity) {
-        Map<String, Object> params = mapBean(entity, false, SqlType.SELECT);
-        String sql = params.remove(SQL_KEY).toString();
+        Map<String, Object> params = mapBean(entity, SqlType.SELECT);
+        String sql = params.get(SQL_KEY).toString();
         return query(sql, params);
     }
 
@@ -556,19 +555,19 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 
     @Override//OK
     public List<T> query(String sql, T params) {
-        return query(sql, mapBean(params, false, SqlType.NULL));
+        return query(sql, mapBean(params, SqlType.NULL));
     }
 
 	@Override//OK
 	public Page<T> queryForPage(Page<T> page, T params) {
-	    Map<String, Object> paramMap = mapBean(params, false, SqlType.SELECT);
-	    String sql = paramMap.remove(SQL_KEY).toString();
+	    Map<String, Object> paramMap = mapBean(params, SqlType.SELECT);
+	    String sql = paramMap.get(SQL_KEY).toString();
 		return queryForPage(page, sql, paramMap);
 	}
 
 	@Override//OK
 	public Page<T> queryForPage(Page<T> page, String sql, T params) {
-	    Map<String, Object> paramMap = mapBean(params, false, SqlType.NULL);
+	    Map<String, Object> paramMap = mapBean(params, SqlType.NULL);
 		return queryForPage(page, sql, paramMap);
 	}
 
