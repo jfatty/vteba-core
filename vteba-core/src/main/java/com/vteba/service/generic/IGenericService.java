@@ -61,6 +61,8 @@ public interface IGenericService<T, ID extends Serializable> {
      * @see com.vteba.tx.generic.IGenericDao#update(java.lang.Object)
      */
     public abstract void update(T entity);
+    
+    public abstract void saveOrUpdate(T entity);
 
     /**
      * 批量更新实体entity，使用命名参数

@@ -511,7 +511,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	/**
 	 * 初始化延迟加载的对象，load默认延迟加载
 	 */
-	//public void initProxyObject(Object proxy);
+	public void initProxyObject(Object proxy);
 	
 	/**
 	 * 分页查询，使用criteria实现

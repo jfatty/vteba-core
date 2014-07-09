@@ -94,6 +94,11 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
         hibernateGenericDaoImpl.update(entity);
     }
 
+    @Override
+    public void saveOrUpdate(T entity) {
+    	hibernateGenericDaoImpl.saveOrUpdate(entity);
+    }
+    
     /* (non-Javadoc)
      * @see com.vteba.service.generic.impl.IBaseService#getEntityList(java.lang.String, java.lang.Object, java.lang.String, java.lang.Object)
      */

@@ -81,10 +81,13 @@ public interface IGenericDao<T, ID extends Serializable> {
 	public T get(ID id);
 	
 	public List<T> getEntityList(Map<String, ?> params);
+	public List<T> getEntityList(Map<String, ?> params, Map<String, String> orderMaps);
 	public List<T> getEntityList(T params);
 	public List<T> getEntityList(T params, Map<String, String> orderMaps);
 	public List<T> getEntityList(String propName, Object value);    
+	public List<T> getEntityList(String propName, Object value, Map<String, String> orderMaps);    
 	public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
+	public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2, Map<String, String> orderMaps);
 	public List<T> getAll();
 	
 	/**
@@ -170,7 +173,7 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @author yinlei
      * date 2013-6-11 下午5:19:04
      */
-    public T uniqueResult(Map<String, Object> params);
+    public T uniqueResult(Map<String, ?> params);
     
     /**
      * QBE条件查询获得唯一实体，请确保属性具有唯一性
