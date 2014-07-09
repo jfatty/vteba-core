@@ -57,6 +57,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
 	/**问号*/
 	public static final String QMARK = "?";
+	protected static String SELECT_ALL = "select e from ${entity} e";
 	
 	public HibernateGenericDaoImpl() {
 		super();
@@ -65,6 +66,49 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	public HibernateGenericDaoImpl(Class<T> entityClass) {
 		super(entityClass);
 	}
+	
+	public List<T> getEntityList(Map<String, ?> params) {
+	    String hql = buildHql(params);
+        Query query = createQuery(hql, params);
+        List<T> list = query.list();
+        if (list == null) {
+            list = Collections.emptyList();
+        }
+        return list;
+    }
+	
+	public List<T> getEntityList(String hql, Map<String, ?> params) {
+        Query query = getSession().createQuery(hql);//createQuery(hql, params);
+        query.setProperties(params);
+        List<T> list = query.list();
+        if (list == null) {
+            list = Collections.emptyList();
+        }
+        return list;
+    }
+	
+	public List<T> getEntityList(String hql, Object... values) {
+        Query query = createQuery(hql, values);
+        List<T> list = query.list();
+        if (list == null) {
+            list = Collections.emptyList();
+        }
+        return list;
+    }
+	
+	protected String buildHql(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder(SELECT_ALL);
+        boolean b = true;
+        for (String key : params.keySet()) {
+            if (b) {
+                sb.append(" where ").append(key).append(" = :").append(key);
+                b = false;
+            } else {
+                sb.append(" and ").append(key).append(" = :").append(key);
+            }
+        }
+        return sb.toString();
+    }
 	
 	public List<T> getEntityListByHql(String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
@@ -914,7 +958,6 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return page;
 	}
 	
-	@Override
 	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL Paged Query, hql = [{}], parameter = {}, page from [{}] to [{}].", 

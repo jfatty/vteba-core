@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.criterion.DetachedCriteria;
-
 import com.vteba.tx.generic.IGenericDao;
 import com.vteba.tx.generic.Page;
 
@@ -29,7 +27,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param hql 可用Jpa风格参数： ?1、?2。命名参数： :subjectName。Hibernate参数： ? (deprecated)。
 	 * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
 	 */
-	public List<T> getEntityListByHql(String hql, Object... values);
+	//public List<T> getEntityListByHql(String hql, Object... values);
 	
 	/**
 	 * 命名hql查询当前实体Class&lt;T&gt;实例List。是{@link #getEntityListByHql(String, Object...)}的命名参数版。 <br>
@@ -43,7 +41,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param namedQuery 命名hql语句名，可用Jpa风格参数： ?1、?2，命名参数： :subjectCode
 	 * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
 	 */
-	public List<T> getEntityListByNamedHql(String namedQuery, Object... values);
+	//public List<T> getEntityListByNamedHql(String namedQuery, Object... values);
 	
 	/** 
      * hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br> 
@@ -58,7 +56,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午10:35:09
 	 */
-	public <E> List<E> getListByHql(String hql, Object... values);
+	//public <E> List<E> getListByHql(String hql, Object... values);
 	
 	/** 
      * hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br> 
@@ -74,7 +72,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午10:35:09
 	 */
-	public <E> List<E> getListByHql(String hql, Class<E> clazz, Object... values);
+	//public <E> List<E> getListByHql(String hql, Class<E> clazz, Object... values);
 	
 	/** 
      * hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br>
@@ -90,7 +88,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午10:35:09
 	 */
-	public <E> List<E> getListByNamedHql(String hql, Object... values);
+	//public <E> List<E> getListByNamedHql(String hql, Object... values);
 	
 	/**
 	 * 命名hql查询VO List。一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br>
@@ -107,7 +105,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午10:35:09
 	 */
-	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz, Object... values);
+	//public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz, Object... values);
 	
 	/**
 	 * 通过sql查询当前实体Class&lt;T&gt;实例的List&lt;T&gt;。<br>
@@ -118,7 +116,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param sql 要执行的sql
 	 * @param values sql参数值
 	 */
-	public List<T> getEntityListBySql(String sql, Object... values);
+	//public List<T> getEntityListBySql(String sql, Object... values);
 	
 	/**
 	 * 通过命名sql查询当前实体Class&lt;T&gt;实例的List&lt;T&gt;。<br>
@@ -131,7 +129,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午9:33:29
 	 */
-	public List<T> getEntityListByNamedSql(String namedSql, Object... values);
+	//public List<T> getEntityListByNamedSql(String namedSql, Object... values);
 	
 	/**
 	 * 根据sql查询实体List&lt;E&gt;，将结果集转换为Class&lt;E&gt;的实例。可多表连接。<br>
@@ -146,7 +144,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-12-17 下午10:47:38
 	 */
-	public <E> List<E> getListBySql(String sql, Class<E> clazz, Object... values);
+	//public <E> List<E> getListBySql(String sql, Class<E> clazz, Object... values);
 	
 	/**
 	 * 根据命名sql查询实体List&lt;E&gt;，将结果集转换为Class&lt;E&gt;的实例。可多表连接。<br>
@@ -162,7 +160,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-10 下午3:54:54
 	 */
-	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass, Object... values);
+	//public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass, Object... values);
 	
 	/**
 	 * 通过Spring JdbcTemplate查询当前实体，使用字节码自动构建实体Class&lt;T&gt;实例。性能略低于回调2%以内。<br>
@@ -173,7 +171,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * @date 2013年6月25日 下午10:19:45
 	 */
-	public List<T> getEntityListBySpring(String sql, Object... values);
+	//public List<T> getEntityListBySpring(String sql, Object... values);
 	
 	/**
 	 * 通过Spring JdbcTemplate查询任意数据，使用字节码自动构建VO Class&lt;T&gt;实例。性能略低于回调2%以内。<br>
@@ -184,7 +182,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * @date 2013年6月25日 下午10:17:45
 	 */
-	public <E> List<E> getListBySpring(String sql, Class<E> resultClass, Object... values);
+	//public <E> List<E> getListBySpring(String sql, Class<E> resultClass, Object... values);
 	
 	/**
 	 * 获得指定entity的实体list，<em>慎用</em>，确保不会返回很多对象。
@@ -207,7 +205,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param detachedCriteria 携带查询条件，DetachedCriteria实例，复杂条件
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(DetachedCriteria detachedCriteria);
+	//public List<T> getListByCriteria(DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -215,7 +213,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param detachedCriteria 携带查询条件，DetachedCriteria实例，复杂条件
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria);
+	//public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -289,7 +287,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:10:53
 	 */
-	public List<Object[]> sqlQueryForObject(String sql, Object... values);
+	//public List<Object[]> sqlQueryForObject(String sql, Object... values);
 	
 	/**
 	 * sql查询基本类型及其封装类，String，Date和大数值List&lt;X&gt;
@@ -300,7 +298,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:09:08
 	 */
-	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz, Object... values);
+	//public <X> List<X> sqlQueryForList(String sql, Class<X> clazz, Object... values);
 	
 	/**
 	 * sql查询基本类型及其封装类，String，Date和大数值
@@ -311,7 +309,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-4 下午10:17:32
 	 */
-	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values);
+	//public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values);
 
 	/**
 	 * hql查询标量值，返回List&lt;Object[]&gt;
@@ -322,7 +320,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:12:18
 	 */
-	public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery, Object... values);
+	//public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery, Object... values);
 	
 	/**
 	 * hql查询基本类型及其封装类，String，Date和大数值List&lt;X&gt;
@@ -333,7 +331,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:13:42
 	 */
-	public <X> List<X> hqlQueryForList(String hql, Class<X> clazz, Object... values);
+	//public <X> List<X> hqlQueryForList(String hql, Class<X> clazz, Object... values);
 	
 	/**
 	 * hql查询基本类型及其封装类，String，Date和大数值
@@ -344,7 +342,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-4 下午10:15:36
 	 */
-	public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values);
+	//public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values);
 	
 	/**
 	 * QBC条件查询获得唯一实体，请确保属性具有唯一性
@@ -410,7 +408,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values hql中绑定的参数值
 	 * @return 当前实体&lt;T&gt;
 	 */
-	public T uniqueResultByHql(String hql, Object... values);
+	//public T uniqueResultByHql(String hql, Object... values);
 	
 	/**
 	 * 使用命名hql获得唯一实体。<br>
@@ -421,7 +419,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values hql中绑定的参数值
 	 * @return 当前实体&lt;T&gt;
 	 */
-	public T uniqueResultByNamedHql(String hql, Object... values);
+	//public T uniqueResultByNamedHql(String hql, Object... values);
 	
 	/**
 	 * 通过hql获得唯一实体，hql语句可进行多实体连接。<br>
@@ -438,7 +436,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values hql参数值
 	 * @return 实体&lt;X&gt;
 	 */
-	public <X> X uniqueResultByHql(String hql, Class<X> resultClass, Object... values);
+	//public <X> X uniqueResultByHql(String hql, Class<X> resultClass, Object... values);
 	
 	/**
 	 * 通过hql获得唯一实体，hql语句可进行多实体连接。<br>
@@ -456,7 +454,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values hql参数值
 	 * @return 实体&lt;X&gt;
 	 */
-	public <X> X uniqueResultByHql(String hql, Class<X> resultClass, boolean namedQuery, Object... values);
+	//public <X> X uniqueResultByHql(String hql, Class<X> resultClass, boolean namedQuery, Object... values);
 	
 	/**
 	 * 使用sql获得唯一实体<br>
@@ -468,7 +466,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values sql绑定的参数
 	 * @return 当前实体&lt;T&gt;
 	 */
-	public T uniqueResultBySql(String sql, Object...values);
+	//public T uniqueResultBySql(String sql, Object...values);
 	
 	/**
 	 * 通过sql获得唯一实体<br>
@@ -482,7 +480,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values sql参数值
 	 * @return 实体&lt;X&gt;
 	 */
-	public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values);
+	//public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values);
 	
 	/**
 	 * 执行任意hql，常用于update，delete，insert
@@ -491,7 +489,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param namedQuery 是否命名查询
 	 * @return 影响的实体数
 	 */
-	public int executeHqlUpdate(String hql, boolean namedQuery, Object... values);
+	//public int executeHqlUpdate(String hql, boolean namedQuery, Object... values);
 	
 	/**
 	 * 执行任意sql，常用于update，delete，insert
@@ -499,12 +497,12 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values sql中绑定的参数值
 	 * @return 影响的记录数
 	 */
-	public int executeSqlUpdate(String sql, Object... values);
+	//public int executeSqlUpdate(String sql, Object... values);
 	
 	/**
 	 * 初始化延迟加载的对象，load默认延迟加载
 	 */
-	public void initProxyObject(Object proxy);
+	//public void initProxyObject(Object proxy);
 	
 	/**
 	 * 分页查询，使用criteria实现
@@ -524,7 +522,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:35:13
 	 */
-	public Page<T> queryForPageByCriteria(Page<T> page, DetachedCriteria detachedCriteria);
+	//public Page<T> queryForPageByCriteria(Page<T> page, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 分页查询，使用criteria实现
@@ -535,7 +533,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:37:22
 	 */
-	public Page<T> queryForPageByCriteria(Page<T> page, T entity, DetachedCriteria detachedCriteria);
+	//public Page<T> queryForPageByCriteria(Page<T> page, T entity, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 分页查询，使用criteria实现，左外连接立即初始化延迟加载的集合
@@ -557,7 +555,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-6-26 下午4:50:03
 	 */
-	public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects);
+	//public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects);
 	
 	/**
 	 * 使用hql进行分页查询
@@ -568,7 +566,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:28:27
 	 */
-	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values);
+	//public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values);
 	
 	/**
 	 * 分页查询但是不返回总记录数。
@@ -579,7 +577,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-10-4 17:27
 	 */
-	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values);
+	//public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values);
 	
 	/**
 	 * 使用sql进行分页查询
@@ -590,7 +588,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:28:32
 	 */
-	public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values);
+	//public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values);
 
 	/**
 	 * 统计hql查询返回多少条记录，分页查询使用
@@ -600,7 +598,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-5-14 下午11:39:33
 	 */
-	public long countHqlResult(String hql, Object... values);
+	//public long countHqlResult(String hql, Object... values);
 	/**
 	 * 统计sql查询返回多少条记录，分页查询使用
 	 * @param sql 要执行的sql
@@ -609,7 +607,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-5-14 下午11:40:33
 	 */
-	public long countSqlResult(String sql, Object... values);
+	//public long countSqlResult(String sql, Object... values);
 	
 	/**
 	 * table模拟sequence，使用mysql function实现
@@ -618,5 +616,5 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-3 下午3:33:12
 	 */
-	public Long getSequenceLongValue(String sequenceName);
+	//public Long getSequenceLongValue(String sequenceName);
 }

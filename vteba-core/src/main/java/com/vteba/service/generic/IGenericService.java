@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.criterion.DetachedCriteria;
-
 import com.vteba.tx.generic.Page;
 
 /**
@@ -34,7 +32,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityListByHql(java.lang.String, java.lang.Object[])
 	 */
-	public List<T> getEntityListByHql(String hql, Object... values);
+	//public List<T> getEntityListByHql(String hql, Object... values);
 
 	/**
 	 * @param entity
@@ -69,7 +67,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityListByNamedHql(java.lang.String, java.lang.Object[])
 	 */
-	public List<T> getEntityListByNamedHql(String namedQuery, Object... values);
+	//public List<T> getEntityListByNamedHql(String namedQuery, Object... values);
 
 	/**
 	 * @param id
@@ -111,7 +109,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByHql(java.lang.String, java.lang.Object[])
 	 */
-	public <E> List<E> getListByHql(String hql, Object... values);
+	//public <E> List<E> getListByHql(String hql, Object... values);
 	
 	/**
 	 * @param hql
@@ -120,7 +118,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByHql(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <E> List<E> getListByHql(String hql, Class<E> clazz, Object... values);
+	//public <E> List<E> getListByHql(String hql, Class<E> clazz, Object... values);
 
 	/**
 	 * @param namedQuery
@@ -128,7 +126,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByNamedHql(java.lang.String, java.lang.Object[])
 	 */
-	public <E> List<E> getListByNamedHql(String namedQuery, Object... values);
+	//public <E> List<E> getListByNamedHql(String namedQuery, Object... values);
 	
 	/**
 	 * @param namedQuery
@@ -137,7 +135,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByNamedHql(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz, Object... values);
+	//public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz, Object... values);
 
 	/**
 	 * @param sql
@@ -145,7 +143,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityListBySql(java.lang.String, java.lang.Object[])
 	 */
-	public List<T> getEntityListBySql(String sql, Object... values);
+	//public List<T> getEntityListBySql(String sql, Object... values);
 
 	/**
 	 * @param namedSql
@@ -153,7 +151,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityListByNamedSql(java.lang.String, java.lang.Object[])
 	 */
-	public List<T> getEntityListByNamedSql(String namedSql, Object... values);
+	//public List<T> getEntityListByNamedSql(String namedSql, Object... values);
 
 	/**
 	 * @param sql
@@ -162,7 +160,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListBySql(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <E> List<E> getListBySql(String sql, Class<E> clazz, Object... values);
+	//public <E> List<E> getListBySql(String sql, Class<E> clazz, Object... values);
 
 	/**
 	 * @param namedSql
@@ -171,7 +169,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByNamedSql(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass, Object... values);
+	//public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass, Object... values);
 
 	/**
 	 * @param entityClass
@@ -185,7 +183,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @param detachedCriteria 携带查询条件，DetachedCriteria实例，复杂条件
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(DetachedCriteria detachedCriteria);
+	//public List<T> getListByCriteria(DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -193,14 +191,14 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @param detachedCriteria 携带查询条件，DetachedCriteria实例，复杂条件
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria);
+	//public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
 	 * @param model 携带查询条件model
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(T model);
+	//public List<T> getListByCriteria(T model);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -251,7 +249,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#sqlQueryForObject(java.lang.String, java.lang.Object[])
 	 */
-	public List<Object[]> sqlQueryForObject(String sql, Object... values);
+	//public List<Object[]> sqlQueryForObject(String sql, Object... values);
 
 	/**
 	 * @param sql
@@ -260,7 +258,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#sqlQueryForList(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz, Object... values);
+	//public <X> List<X> sqlQueryForList(String sql, Class<X> clazz, Object... values);
 
 	/**
 	 * @param sql
@@ -269,7 +267,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#sqlQueryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values);
+	//public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values);
 
 	/**
 	 * @param hql
@@ -278,7 +276,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#hqlQueryForObject(java.lang.String, boolean, java.lang.Object[])
 	 */
-	public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery, Object... values);
+	//public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery, Object... values);
 
 	/**
 	 * @param hql
@@ -287,7 +285,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#hqlQueryForList(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <X> List<X> hqlQueryForList(String hql, Class<X> clazz, Object... values);
+	//public <X> List<X> hqlQueryForList(String hql, Class<X> clazz, Object... values);
 
 	/**
 	 * @param hql
@@ -296,7 +294,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#hqlQueryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values);
+	//public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values);
 
 	/**
 	 * 获得唯一实体，请确保属性具有唯一性
@@ -361,7 +359,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @param values hql中绑定的参数值
 	 * @return 当前实体&lt;T&gt;
 	 */
-	public T uniqueResultByHql(String hql, Object... values);
+	//public T uniqueResultByHql(String hql, Object... values);
 	
 	/**
 	 * 使用命名hql获得唯一实体。<br>
@@ -373,7 +371,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @param values hql中绑定的参数值
 	 * @return 当前实体&lt;T&gt;
 	 */
-	public T uniqueResultByNamedHql(String hql, Object... values);
+	//public T uniqueResultByNamedHql(String hql, Object... values);
 	
 	/**
 	 * @param hql
@@ -382,7 +380,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tm.hibernate.IHibernateGenericDao#uniqueResultByHql(java.lang.String, boolean, java.lang.Object[])
 	 */
-	//public T uniqueResultByHql(String hql, boolean namedQuery, Object... values);
+	///public T uniqueResultByHql(String hql, boolean namedQuery, Object... values);
 	
 	/**
 	 * @param hql
@@ -392,7 +390,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResultByHql(java.lang.String, java.lang.Class, boolean, java.lang.Object[])
 	 */
-	public <X> X uniqueResultByHql(String hql, Class<X> resultClass, boolean namedQuery, Object... values);
+	//public <X> X uniqueResultByHql(String hql, Class<X> resultClass, boolean namedQuery, Object... values);
 
 	/**
 	 * @param sql
@@ -400,7 +398,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResultBySql(java.lang.String, java.lang.Object[])
 	 */
-	public T uniqueResultBySql(String sql, Object... values);
+	//public T uniqueResultBySql(String sql, Object... values);
 
 	/**
 	 * @param sql
@@ -409,7 +407,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#getUniqueResultBySql(java.lang.String, java.lang.Class, java.lang.Object[])
 	 */
-	public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values);
+	//public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values);
 
 	/**
 	 * @param hql
@@ -418,7 +416,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#executeUpdateByHql(java.lang.String, boolean, java.lang.Object[])
 	 */
-	public int executeHqlUpdate(String hql, boolean namedQuery, Object... values);
+	//public int executeHqlUpdate(String hql, boolean namedQuery, Object... values);
 
 	/**
 	 * @param sql
@@ -426,7 +424,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#executeUpdateBySql(java.lang.String, java.lang.Object[])
 	 */
-	public int executeSqlUpdate(String sql, Object... values);
+	//public int executeSqlUpdate(String sql, Object... values);
 
 	/**
 	 * @param page
@@ -443,7 +441,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPageByLeftJoin(com.vteba.tx.generic.Page, java.lang.Object, java.lang.Object[])
 	 */
-	public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects);
+	//public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects);
 
 	/**
 	 * @param page
@@ -452,7 +450,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPageBySubSelect(com.vteba.tx.generic.Page, java.lang.Object, java.lang.Object[])
 	 */
-	public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects);
+	//public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects);
 
 	/**
 	 * @param page
@@ -461,7 +459,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPageByHql(com.vteba.tx.generic.Page, java.lang.String, java.lang.Object[])
 	 */
-	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values);
+	//public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values);
 
 	/**
 	 * 分页查询但是不返回总记录数。
@@ -472,7 +470,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @author yinlei
 	 * @date 2013年10月4日 下午5:32:29
 	 */
-	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values);
+	//public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values);
 	
 	/**
 	 * @param page
@@ -481,7 +479,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPageBySql(com.vteba.tx.generic.Page, java.lang.String, java.lang.Object[])
 	 */
-	public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values);
+	//public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values);
 
 	/**
 	 * @param hql
@@ -489,7 +487,7 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tm.hibernate.IHibernateGenericDao#countHqlResult(java.lang.String, java.lang.Object[])
 	 */
-	//public long countHqlResult(String hql, Object... values);
+	///public long countHqlResult(String hql, Object... values);
 
 	/**
 	 * @param sql
@@ -497,14 +495,14 @@ public interface IGenericService<T, ID extends Serializable> {
 	 * @return
 	 * @see com.vteba.tm.hibernate.IHibernateGenericDao#countSqlResult(java.lang.String, java.lang.Object[])
 	 */
-	//public long countSqlResult(String sql, Object... values);
+	///public long countSqlResult(String sql, Object... values);
 
 	/**
 	 * @param sequenceName
 	 * @return
 	 * @see com.vteba.tm.hibernate.IHibernateGenericDao#getSequenceLongValue(java.lang.String)
 	 */
-	//public Long getSequenceLongValue(String sequenceName);
+	///public Long getSequenceLongValue(String sequenceName);
 
 	/**
 	 * 批量保存一批数据

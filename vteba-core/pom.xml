@@ -9,12 +9,12 @@
   <url>http://maven.apache.org</url>
   <properties> 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <spring-version>4.0.2.RELEASE</spring-version>
+      <spring-version>4.0.6.RELEASE</spring-version>
       <spring-security-version>3.2.3.RELEASE</spring-security-version>
-      <struts2-version>2.3.16</struts2-version>
+      <struts2-version>2.3.16.3</struts2-version>
       <tiles-version>2.2.2</tiles-version>
       <tiles3>3.0.1</tiles3>
-      <hibernate-version>4.3.0.Final</hibernate-version>
+      <hibernate-version>4.3.5.Final</hibernate-version>
       <jibx-version>1.2.4.5</jibx-version>
       <cxf-version>2.7.4</cxf-version>
       <activemq-version>5.8.0</activemq-version>

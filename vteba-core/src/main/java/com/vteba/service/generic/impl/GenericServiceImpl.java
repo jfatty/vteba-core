@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.criterion.DetachedCriteria;
-
 import com.vteba.service.generic.IGenericService;
 import com.vteba.tx.generic.Page;
 import com.vteba.tx.hibernate.IHibernateGenericDao;
@@ -54,10 +52,9 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		hibernateGenericDaoImpl.persist(entity);
 	}
 
-	@Override
-	public List<T> getEntityListByHql(String hql, Object... values) {
-		return hibernateGenericDaoImpl.getEntityListByHql(hql, values);
-	}
+//	public List<T> getEntityListByHql(String hql, Object... values) {
+//		return hibernateGenericDaoImpl.getEntityListByHql(hql, values);
+//	}
 
 	@Override
 	public void saveOrUpdate(T entity) {
@@ -79,11 +76,10 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		return hibernateGenericDaoImpl.load(entity, id);
 	}
 
-	@Override
-	public List<T> getEntityListByNamedHql(String namedQuery, Object... values) {
-		return hibernateGenericDaoImpl.getEntityListByNamedHql(namedQuery,
-				values);
-	}
+//	public List<T> getEntityListByNamedHql(String namedQuery, Object... values) {
+//		return hibernateGenericDaoImpl.getEntityListByNamedHql(namedQuery,
+//				values);
+//	}
 
 	@Override
 	public T load(ID id) {
@@ -105,74 +101,63 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		hibernateGenericDaoImpl.delete(id);
 	}
 
-	@Override
-	public <E> List<E> getListByHql(String hql, Object... values) {
-		return hibernateGenericDaoImpl.getListByHql(hql, values);
-	}
-	
-	@Override
-	public <E> List<E> getListByHql(String hql, Class<E> clazz,
-			Object... values) {
-		return hibernateGenericDaoImpl.getListByHql(hql, clazz, values);
-	}
+//	public <E> List<E> getListByHql(String hql, Object... values) {
+//		return hibernateGenericDaoImpl.getListByHql(hql, values);
+//	}
+//	
+//	public <E> List<E> getListByHql(String hql, Class<E> clazz,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.getListByHql(hql, clazz, values);
+//	}
 
 	@Override
 	public void delete(T entity) {
 		hibernateGenericDaoImpl.delete(entity);
 	}
 
-	@Override
-	public <E> List<E> getListByNamedHql(String namedQuery, Object... values) {
-		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, values);
-	}
-	
-	@Override
-	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz,
-			Object... values) {
-		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, clazz,
-				values);
-	}
-
-	@Override
-	public List<T> getEntityListBySql(String sql, Object... values) {
-		return hibernateGenericDaoImpl.getEntityListBySql(sql, values);
-	}
-
-	@Override
-	public List<T> getEntityListByNamedSql(String namedSql, Object... values) {
-		return hibernateGenericDaoImpl
-				.getEntityListByNamedSql(namedSql, values);
-	}
-
-	@Override
-	public <E> List<E> getListBySql(String sql, Class<E> clazz,
-			Object... values) {
-		return hibernateGenericDaoImpl.getListBySql(sql, clazz, values);
-	}
-
-	@Override
-	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass,
-			Object... values) {
-		return hibernateGenericDaoImpl.getListByNamedSql(namedSql, resultClass,
-				values);
-	}
+//	public <E> List<E> getListByNamedHql(String namedQuery, Object... values) {
+//		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, values);
+//	}
+//	
+//	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, clazz,
+//				values);
+//	}
+//
+//	public List<T> getEntityListBySql(String sql, Object... values) {
+//		return hibernateGenericDaoImpl.getEntityListBySql(sql, values);
+//	}
+//
+//	public List<T> getEntityListByNamedSql(String namedSql, Object... values) {
+//		return hibernateGenericDaoImpl
+//				.getEntityListByNamedSql(namedSql, values);
+//	}
+//
+//	public <E> List<E> getListBySql(String sql, Class<E> clazz,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.getListBySql(sql, clazz, values);
+//	}
+//
+//	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.getListByNamedSql(namedSql, resultClass,
+//				values);
+//	}
 
 	@Override
 	public <X> List<X> getAll(Class<X> entityClass) {
 		return hibernateGenericDaoImpl.getAll(entityClass);
 	}
 	
-	@Override
-	public List<T> getListByCriteria(DetachedCriteria detachedCriteria) {
-		return hibernateGenericDaoImpl.getListByCriteria(detachedCriteria);
-	}
+//	public List<T> getListByCriteria(DetachedCriteria detachedCriteria) {
+//		return hibernateGenericDaoImpl.getListByCriteria(detachedCriteria);
+//	}
+//	
+//	public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria) {
+//		return hibernateGenericDaoImpl.getListByCriteria(model, detachedCriteria);
+//	}
 	
-	@Override
-	public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria) {
-		return hibernateGenericDaoImpl.getListByCriteria(model, detachedCriteria);
-	}
-	
-	@Override
 	public List<T> getListByCriteria(T model) {
 		return hibernateGenericDaoImpl.getListByCriteria(model);
 	}
@@ -202,39 +187,33 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		return hibernateGenericDaoImpl.getListByCriteriaLike(entityClass, model, orderMaps);
 	}
 
-	@Override
-	public List<Object[]> sqlQueryForObject(String sql, Object... values) {
-		return hibernateGenericDaoImpl.sqlQueryForObject(sql, values);
-	}
-
-	@Override
-	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz,
-			Object... values) {
-		return hibernateGenericDaoImpl.sqlQueryForList(sql, clazz, values);
-	}
-
-	@Override
-	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values) {
-		return hibernateGenericDaoImpl.sqlQueryForObject(sql, clazz, values);
-	}
-
-	@Override
-	public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery,
-			Object... values) {
-		return hibernateGenericDaoImpl.hqlQueryForObject(hql, namedQuery,
-				values);
-	}
-
-	@Override
-	public <X> List<X> hqlQueryForList(String hql, Class<X> clazz,
-			Object... values) {
-		return hibernateGenericDaoImpl.hqlQueryForList(hql, clazz, values);
-	}
-
-	@Override
-	public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values) {
-		return hibernateGenericDaoImpl.hqlQueryForObject(hql, clazz, values);
-	}
+//	public List<Object[]> sqlQueryForObject(String sql, Object... values) {
+//		return hibernateGenericDaoImpl.sqlQueryForObject(sql, values);
+//	}
+//
+//	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.sqlQueryForList(sql, clazz, values);
+//	}
+//
+//	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values) {
+//		return hibernateGenericDaoImpl.sqlQueryForObject(sql, clazz, values);
+//	}
+//
+//	public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.hqlQueryForObject(hql, namedQuery,
+//				values);
+//	}
+//
+//	public <X> List<X> hqlQueryForList(String hql, Class<X> clazz,
+//			Object... values) {
+//		return hibernateGenericDaoImpl.hqlQueryForList(hql, clazz, values);
+//	}
+//
+//	public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values) {
+//		return hibernateGenericDaoImpl.hqlQueryForObject(hql, clazz, values);
+//	}
 
 	@Override
 	public T uniqueResultByCriteria(String propertyName, Object value) {
@@ -269,73 +248,61 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		return hibernateGenericDaoImpl.uniqueResultByCriteria(entityClass, model);
 	}
 	
-	@Override
-	public T uniqueResultByHql(String hql, Object... values) {
-		return hibernateGenericDaoImpl.uniqueResultByHql(hql, values);
-	}
-	
-	@Override
-	public T uniqueResultByNamedHql(String hql, Object... values) {
-		return hibernateGenericDaoImpl.uniqueResultByNamedHql(hql, values);
-	}
-
-	@Override
-	public <X> X uniqueResultByHql(String hql, Class<X> resultClass,
-			boolean namedQuery, Object... values) {
-		return hibernateGenericDaoImpl.uniqueResultByHql(hql, resultClass,
-				namedQuery, values);
-	}
-	
-	@Override
-	public T uniqueResultBySql(String sql, Object... values) {
-		return hibernateGenericDaoImpl.uniqueResultBySql(sql, values);
-	}
-
-
-	@Override
-	public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values) {
-		return hibernateGenericDaoImpl.uniqueResultBySql(sql, resultClass, values);
-	}
-
-	@Override
-	public int executeHqlUpdate(String hql, boolean namedQuery, Object... values) {
-		return hibernateGenericDaoImpl.executeHqlUpdate(hql, namedQuery, values);
-	}
-
-	@Override
-	public int executeSqlUpdate(String sql, Object... values) {
-		return hibernateGenericDaoImpl.executeSqlUpdate(sql, values);
-	}
+//	public T uniqueResultByHql(String hql, Object... values) {
+//		return hibernateGenericDaoImpl.uniqueResultByHql(hql, values);
+//	}
+//	
+//	public T uniqueResultByNamedHql(String hql, Object... values) {
+//		return hibernateGenericDaoImpl.uniqueResultByNamedHql(hql, values);
+//	}
+//
+//	public <X> X uniqueResultByHql(String hql, Class<X> resultClass,
+//			boolean namedQuery, Object... values) {
+//		return hibernateGenericDaoImpl.uniqueResultByHql(hql, resultClass,
+//				namedQuery, values);
+//	}
+//	
+//	public T uniqueResultBySql(String sql, Object... values) {
+//		return hibernateGenericDaoImpl.uniqueResultBySql(sql, values);
+//	}
+//
+//
+//	public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values) {
+//		return hibernateGenericDaoImpl.uniqueResultBySql(sql, resultClass, values);
+//	}
+//
+//	public int executeHqlUpdate(String hql, boolean namedQuery, Object... values) {
+//		return hibernateGenericDaoImpl.executeHqlUpdate(hql, namedQuery, values);
+//	}
+//
+//	public int executeSqlUpdate(String sql, Object... values) {
+//		return hibernateGenericDaoImpl.executeSqlUpdate(sql, values);
+//	}
 
 	@Override
 	public Page<T> queryForPageByCriteria(Page<T> page, T entity) {
 		return hibernateGenericDaoImpl.queryForPageByCriteria(page, entity);
 	}
 
-	@Override
 	public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects) {
 		return hibernateGenericDaoImpl.queryForPageByLeftJoin(page, entity, objects);
 	}
 
-	@Override
-	public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects) {
-		return hibernateGenericDaoImpl.queryForPageBySubSelect(page, entity, objects);
-	}
-
-	@Override
-	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
-		return hibernateGenericDaoImpl.queryForPageByHql(page, hql, values);
-	}
-
-	@Override
-	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
-		return hibernateGenericDaoImpl.pagedQueryByHql(page, hql, values);
-	}
-	
-	@Override
-	public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values) {
-		return hibernateGenericDaoImpl.queryForPageBySql(page, sql, values);
-	}
+//	public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects) {
+//		return hibernateGenericDaoImpl.queryForPageBySubSelect(page, entity, objects);
+//	}
+//
+//	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
+//		return hibernateGenericDaoImpl.queryForPageByHql(page, hql, values);
+//	}
+//
+//	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
+//		return hibernateGenericDaoImpl.pagedQueryByHql(page, hql, values);
+//	}
+//	
+//	public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values) {
+//		return hibernateGenericDaoImpl.queryForPageBySql(page, sql, values);
+//	}
 	
 	@Override
 	public void saveEntityBatch(List<T> list, int batchSize) {
