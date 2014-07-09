@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vteba.common.exception.BasicException;
 import com.vteba.common.model.AstModel;
+import com.vteba.lang.bytecode.MethodAccess;
 import com.vteba.tx.generic.Page;
 import com.vteba.tx.generic.impl.GenericDaoImpl;
 import com.vteba.tx.hibernate.IHibernateGenericDao;
@@ -43,6 +45,8 @@ import com.vteba.tx.hibernate.transformer.FieldAliasedTransformer;
 import com.vteba.tx.hibernate.transformer.HqlAliasedResultTransformer;
 import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.tx.hibernate.transformer.SqlAliasedResultTransformer;
+import com.vteba.utils.common.CaseUtils;
+import com.vteba.utils.reflection.AsmUtils;
 import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
@@ -58,7 +62,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 
 	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
 	/**问号*/
-	public static final String QMARK = "?";
+	protected static final String QMARK = "?";
+	protected static final String HQL_KEY = "_sql_";
 	protected static String SELECT_ALL = "select e from ${entity} e";
 	
 	public HibernateGenericDaoImpl() {
@@ -1271,8 +1276,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return sb.toString();
     }
 	
-	protected String buildUpdate(Map<String, ?> params) {
-        StringBuilder sb = new StringBuilder("delete from ").append(entityClass.getSimpleName());
+	protected String buildWhere(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder();
         boolean b = true;
         for (String key : params.keySet()) {
             if (b) {
@@ -1296,8 +1301,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
     
     /**
      * 根据条件删除实体，使用命名参数
-     * @param sql sql语句
-     * @param params sql参数
+     * @param params 参数
      */
     public int deleteBatch(Map<String, ?> params) {
         String hql = buildDelete(params);
@@ -1310,8 +1314,13 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, T params) {
+        Map<String, Object> setMap = toMap(setValue, 2, entityClass.getSimpleName());
+        String hql = setMap.get(HQL_KEY).toString();// 没有where条件的update sql
+        Map<String, Object> paramMap = toMap(params, 1, null);        
         
-        return 0;
+        hql = hql + paramMap.get(HQL_KEY).toString();// 加上where条件
+        setMap.putAll(paramMap);// 参数放在一起
+        return executeHqlUpdate(hql, false, setMap);
     }
     
     /**
@@ -1320,7 +1329,86 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, Map<String, ?> params) {
+        Map<String, Object> setMap = toMap(setValue, 2, entityClass.getSimpleName());
+        String hql = setMap.get(HQL_KEY).toString();
+        hql = hql + buildWhere(params);
+        setMap.putAll(params);
+        return executeHqlUpdate(hql, false, setMap);
+    }
+    
+    /**
+     * 根据bean构建查询条件和参数
+     * @param fromBean 目标Bean
+     * @param sqlType 1：where，2：update set
+     * @param table 表名
+     * @return
+     */
+    protected Map<String, Object> toMap(Object fromBean, int sqlType, String table) {
+        MethodAccess methodAccess = AsmUtils.get().createMethodAccess(fromBean.getClass());
+        String[] methodNames = methodAccess.getMethodNames();
+        Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
         
-        return 0;
+        StringBuilder columns = new StringBuilder();
+        StringBuilder updateSets = new StringBuilder();
+        boolean append = true;
+        
+        switch (sqlType) {
+            case 1:
+                append = buildWhere(fromBean, methodAccess, methodNames, resultMap, columns, append);
+                resultMap.put(HQL_KEY, columns.toString());
+                break;
+            case 2: 
+                updateSets.append("update ").append(table);
+                String subKey = null;
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            subKey = StringUtils.upperCase(methodName.substring(3));
+                            if (append) {
+                                updateSets.append(" set ").append(subKey).append(" = :").append(methodName);
+                                append = false;
+                            } else {
+                                updateSets.append(", ").append(subKey).append(" = :").append(methodName);
+                            }
+                            resultMap.put(methodName, value);
+                        }
+                    } 
+                }
+                resultMap.put(HQL_KEY, updateSets.toString());
+                break;
+            default:
+                for (String methodName : methodNames) {
+                    if (methodName.startsWith("get")) {
+                        Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                        if (value != null) {
+                            resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
+                        }
+                    } 
+                }
+                break;
+        }
+        return resultMap;
+    }
+
+    protected boolean buildWhere(Object fromBean, MethodAccess methodAccess, String[] methodNames,
+                                 Map<String, Object> resultMap, StringBuilder columns, boolean append) {
+        String column;
+        for (String methodName : methodNames) {
+            if (methodName.startsWith("get")) {
+                Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
+                if (value != null) {
+                    column = StringUtils.uncapitalize(methodName.substring(3));
+                    if (append) {
+                        columns.append(" where ").append(column).append(" = :").append(column);
+                        append = false;
+                    } else {
+                        columns.append(" and ").append(column).append(" = :").append(column);
+                    }
+                    resultMap.put(column, value);
+                }
+            } 
+        }
+        return append;
     }
 }
