@@ -63,6 +63,20 @@ public interface IGenericService<T, ID extends Serializable> {
     public abstract void update(T entity);
 
     /**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, T params);
+    
+    /**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, Map<String, ?> params);
+    
+    /**
      * @param propName1
      * @param value1
      * @param propName2
@@ -120,6 +134,18 @@ public interface IGenericService<T, ID extends Serializable> {
      */
     public abstract void delete(T entity);
 
+    /**
+     * 根据entity携带的条件删除实体，命名参数
+     * @param entity 条件
+     */
+    public int deleteBatch(T entity);
+    
+    /**
+     * 根据条件删除实体，使用命名参数
+     * @param params sql参数
+     */
+    public int deleteBatch(Map<String, ?> params);
+    
     /**
      * @param propertyName
      * @param propertyValue

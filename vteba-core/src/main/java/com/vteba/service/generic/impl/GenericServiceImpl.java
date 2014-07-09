@@ -231,5 +231,25 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 			delete(id);
 		}
 	}
+
+	@Override
+	public int updateBatch(T setValue, T params) {
+		return hibernateGenericDaoImpl.updateBatch(setValue, params);
+	}
+
+	@Override
+	public int updateBatch(T setValue, Map<String, ?> params) {
+		return hibernateGenericDaoImpl.updateBatch(setValue, params);
+	}
+
+	@Override
+	public int deleteBatch(T entity) {
+		return hibernateGenericDaoImpl.deleteBatch(entity);
+	}
+
+	@Override
+	public int deleteBatch(Map<String, ?> params) {
+		return hibernateGenericDaoImpl.deleteBatch(params);
+	}
 	
 }

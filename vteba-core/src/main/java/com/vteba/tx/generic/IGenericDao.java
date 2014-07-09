@@ -108,7 +108,6 @@ public interface IGenericDao<T, ID extends Serializable> {
     
     /**
      * 根据条件删除实体，使用命名参数
-     * @param sql sql语句
      * @param params sql参数
      */
     public int deleteBatch(Map<String, ?> params);
