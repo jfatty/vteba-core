@@ -15,7 +15,16 @@ import com.vteba.tx.generic.Page;
  * @param <ID> 主键类型，一般是String或者Long
  */
 public interface IHibernateGenericDao<T, ID extends Serializable> extends IGenericDao<T, ID> {
-	/** 
+    public List<T> getEntityList(Map<String, ?> params);
+    public List<T> getEntityList(T params);
+    public List<T> getEntityList(T params, Map<String, String> orderMaps);
+    public List<T> getEntityList(String propName, Object value);    
+    public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
+    public List<T> getAll();
+    
+    public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
+    
+    /** 
      * 查询当前PO List，一般查询单实体。多实体关联查询，请使用{@link #getListByHql(String, Class, Object...)}。<br>
      * 用法：<br>
      * 1、查询全部栏位，select u from User u where...<br>
@@ -188,7 +197,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * 获得指定entity的实体list，<em>慎用</em>，确保不会返回很多对象。
 	 * @param entityClass 实体class
 	 */
-	public <X> List<X> getAll(Class<X> entityClass);
+	//public <X> List<X> getAll(Class<X> entityClass);
 	
 	/**
 	 * 强制hibernate将对象与数据库同步。
@@ -221,14 +230,14 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param propertyValue 属性值
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(String propertyName, Object propertyValue);
+	//public List<T> getListByCriteria(String propertyName, Object propertyValue);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
 	 * @param model 携带查询条件model
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(T model);
+	//public List<T> getListByCriteria(T model);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -236,7 +245,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc。
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteria(T model, Map<String, String> orderMaps);
+	//public List<T> getListByCriteria(T model, Map<String, String> orderMaps);
 	
 	/**
 	 * 根据属性equal查询，使用QBE实现
@@ -245,7 +254,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc。
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public <X> List<X> getListByCriteria(Class<X> entityClass, X model, Map<String, String> orderMaps);
+	//public <X> List<X> getListByCriteria(Class<X> entityClass, X model, Map<String, String> orderMaps);
 	
 	/**
 	 * String属性like查询，使用QBE实现
@@ -253,14 +262,14 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param propertyValue 属性值
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByCriteriaLike(String propertyName, String propertyValue);
+	public List<T> getListByLike(String propertyName, String propertyValue);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
 	 * @param model 携带查询条件model
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public List<T> getListByCriteriaLike(T model);
+	public List<T> getListByLike(T model);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
@@ -268,7 +277,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public List<T> getListByCriteriaLike(T model, Map<String, String> orderMaps);
+	public List<T> getListByLike(T model, Map<String, String> orderMaps);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
@@ -277,7 +286,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public <X> List<X> getListByCriteriaLike(Class<X> entityClass, X model, Map<String, String> orderMaps);
+	//public <X> List<X> getListByCriteriaLike(Class<X> entityClass, X model, Map<String, String> orderMaps);
 
 	/**
 	 * sql查询标量值，返回List&lt;Object[]&gt;
@@ -350,7 +359,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param value 属性值
 	 * @return 实体&lt;T&gt;
 	 */
-	public T uniqueResultByCriteria(String propertyName, Object value);
+	public T uniqueResult(String propertyName, Object value);
 	
 	/**
 	 * QBC条件查询获得唯一实体，请确保属性具有唯一性
@@ -359,7 +368,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param value 属性值
 	 * @return 实体&lt;X&gt;
 	 */
-	public <X> X uniqueResultByCriteria(Class<X> entityClass, String propertyName, Object value);
+	//public <X> X uniqueResult(Class<X> entityClass, String propertyName, Object value);
 	
 	/**
 	 * QBC条件查询获得唯一实体，请确保属性具有唯一性
@@ -368,7 +377,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:19:04
 	 */
-	public T uniqueResultByCriteria(Map<String, Object> params);
+	public T uniqueResult(Map<String, Object> params);
 	
 	/**
 	 * QBE条件查询获得唯一实体，请确保属性具有唯一性
@@ -378,7 +387,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:19:04
 	 */
-	public <X> X uniqueResultByCriteria(Class<X> entityClass, Map<String, Object> params);
+	//public <X> X uniqueResult(Class<X> entityClass, Map<String, Object> params);
 	
 	/**
 	 * QBE条件查询获得唯一实体，请确保属性具有唯一性
@@ -387,7 +396,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:21:11
 	 */
-	public T uniqueResultByCriteria(T model);
+	public T uniqueResult(T model);
 	
 	/**
 	 * QBE条件查询获得唯一实体，请确保属性具有唯一性
@@ -397,7 +406,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:22:34
 	 */
-	public <X> X uniqueResultByCriteria(Class<X> entityClass, X model);
+	//public <X> X uniqueResult(Class<X> entityClass, X model);
 	
 	/**
 	 * 使用hql获得唯一实体。<br>
@@ -512,7 +521,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:34:23
 	 */
-	public Page<T> queryForPageByCriteria(Page<T> page, T entity);
+	public Page<T> queryForPage(Page<T> page, T entity);
 	
 	/**
 	 * 分页查询，使用criteria实现
@@ -522,7 +531,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:35:13
 	 */
-	//public Page<T> queryForPageByCriteria(Page<T> page, DetachedCriteria detachedCriteria);
+	//public Page<T> queryForPage(Page<T> page, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 分页查询，使用criteria实现
@@ -533,7 +542,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:37:22
 	 */
-	//public Page<T> queryForPageByCriteria(Page<T> page, T entity, DetachedCriteria detachedCriteria);
+	//public Page<T> queryForPage(Page<T> page, T entity, DetachedCriteria detachedCriteria);
 	
 	/**
 	 * 分页查询，使用criteria实现，左外连接立即初始化延迟加载的集合
@@ -544,7 +553,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-6-26 下午4:50:03
 	 */
-	public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects);
+	//public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects);
 	
 	/**
 	 * 分页查询，使用criteria实现，第二个select立即初始化延迟加载的集合

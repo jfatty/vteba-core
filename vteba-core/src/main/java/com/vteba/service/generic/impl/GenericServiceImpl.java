@@ -30,10 +30,6 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 		this.springJdbcTemplate = springJdbcTemplate;
 	}
 	
-	public SpringJdbcTemplate getSpringJdbcTemplate() {
-		return springJdbcTemplate;
-	}
-	
 	/**
 	 * 延迟到子类中注入具体dao实例
 	 * @param hibernateGenericDaoImpl 实现IHibernateGenericDao具体的dao实例
@@ -42,267 +38,189 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	 */
 	public abstract void setHibernateGenericDaoImpl(IHibernateGenericDao<T, ID> hibernateGenericDaoImpl);
 	
-	@Override
-	public ID save(T entity) {
-		return hibernateGenericDaoImpl.save(entity);
-	}
+	/* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#save(T)
+     */
+    @Override
+    public ID save(T entity) {
+        return hibernateGenericDaoImpl.save(entity);
+    }
 
-	@Override
-	public void persist(T entity) {
-		hibernateGenericDaoImpl.persist(entity);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#persist(T)
+     */
+    @Override
+    public void persist(T entity) {
+        hibernateGenericDaoImpl.persist(entity);
+    }
 
-//	public List<T> getEntityListByHql(String hql, Object... values) {
-//		return hibernateGenericDaoImpl.getEntityListByHql(hql, values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getEntityList(java.util.Map)
+     */
+    @Override
+    public List<T> getEntityList(Map<String, ?> params) {
+        return hibernateGenericDaoImpl.getEntityList(params);
+    }
 
-	@Override
-	public void saveOrUpdate(T entity) {
-		hibernateGenericDaoImpl.saveOrUpdate(entity);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getEntityList(T)
+     */
+    @Override
+    public List<T> getEntityList(T params) {
+        return hibernateGenericDaoImpl.getEntityList(params);
+    }
 
-	@Override
-	public void update(T entity) {
-		hibernateGenericDaoImpl.update(entity);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getEntityList(T, java.util.Map)
+     */
+    @Override
+    public List<T> getEntityList(T params, Map<String, String> orderMaps) {
+        return hibernateGenericDaoImpl.getEntityList(params, orderMaps);
+    }
 
-	@Override
-	public T merge(T entity) {
-		return hibernateGenericDaoImpl.merge(entity);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getEntityList(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public List<T> getEntityList(String propName, Object value) {
+        return hibernateGenericDaoImpl.getEntityList(propName, value);
+    }
 
-	@Override
-	public T load(Class<T> entity, ID id) {
-		return hibernateGenericDaoImpl.load(entity, id);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#update(T)
+     */
+    @Override
+    public void update(T entity) {
+        hibernateGenericDaoImpl.update(entity);
+    }
 
-//	public List<T> getEntityListByNamedHql(String namedQuery, Object... values) {
-//		return hibernateGenericDaoImpl.getEntityListByNamedHql(namedQuery,
-//				values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getEntityList(java.lang.String, java.lang.Object, java.lang.String, java.lang.Object)
+     */
+    @Override
+    public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2) {
+        return hibernateGenericDaoImpl.getEntityList(propName1, value1, propName2, value2);
+    }
 
-	@Override
-	public T load(ID id) {
-		return hibernateGenericDaoImpl.load(id);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#merge(T)
+     */
+    @Override
+    public T merge(T entity) {
+        return hibernateGenericDaoImpl.merge(entity);
+    }
 
-	@Override
-	public <X> X get(Class<X> entity, ID id) {
-		return hibernateGenericDaoImpl.get(entity, id);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getAll()
+     */
+    @Override
+    public List<T> getAll() {
+        return hibernateGenericDaoImpl.getAll();
+    }
 
-	@Override
-	public T get(ID id) {
-		return hibernateGenericDaoImpl.get(id);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#queryForPage(com.vteba.tx.generic.Page, java.util.Map)
+     */
+    @Override
+    public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
+        return hibernateGenericDaoImpl.queryForPage(page, params);
+    }
 
-	@Override
-	public void delete(ID id) {
-		hibernateGenericDaoImpl.delete(id);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#load(java.lang.Class, ID)
+     */
+    @Override
+    public T load(Class<T> entity, ID id) {
+        return hibernateGenericDaoImpl.load(entity, id);
+    }
 
-//	public <E> List<E> getListByHql(String hql, Object... values) {
-//		return hibernateGenericDaoImpl.getListByHql(hql, values);
-//	}
-//	
-//	public <E> List<E> getListByHql(String hql, Class<E> clazz,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.getListByHql(hql, clazz, values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#load(ID)
+     */
+    @Override
+    public T load(ID id) {
+        return hibernateGenericDaoImpl.load(id);
+    }
 
-	@Override
-	public void delete(T entity) {
-		hibernateGenericDaoImpl.delete(entity);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#get(ID)
+     */
+    @Override
+    public T get(ID id) {
+        return hibernateGenericDaoImpl.get(id);
+    }
 
-//	public <E> List<E> getListByNamedHql(String namedQuery, Object... values) {
-//		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, values);
-//	}
-//	
-//	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> clazz,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.getListByNamedHql(namedQuery, clazz,
-//				values);
-//	}
-//
-//	public List<T> getEntityListBySql(String sql, Object... values) {
-//		return hibernateGenericDaoImpl.getEntityListBySql(sql, values);
-//	}
-//
-//	public List<T> getEntityListByNamedSql(String namedSql, Object... values) {
-//		return hibernateGenericDaoImpl
-//				.getEntityListByNamedSql(namedSql, values);
-//	}
-//
-//	public <E> List<E> getListBySql(String sql, Class<E> clazz,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.getListBySql(sql, clazz, values);
-//	}
-//
-//	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.getListByNamedSql(namedSql, resultClass,
-//				values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#delete(ID)
+     */
+    @Override
+    public void delete(ID id) {
+        hibernateGenericDaoImpl.delete(id);
+    }
 
-	@Override
-	public <X> List<X> getAll(Class<X> entityClass) {
-		return hibernateGenericDaoImpl.getAll(entityClass);
-	}
-	
-//	public List<T> getListByCriteria(DetachedCriteria detachedCriteria) {
-//		return hibernateGenericDaoImpl.getListByCriteria(detachedCriteria);
-//	}
-//	
-//	public List<T> getListByCriteria(T model, DetachedCriteria detachedCriteria) {
-//		return hibernateGenericDaoImpl.getListByCriteria(model, detachedCriteria);
-//	}
-	
-	public List<T> getListByCriteria(T model) {
-		return hibernateGenericDaoImpl.getListByCriteria(model);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#delete(T)
+     */
+    @Override
+    public void delete(T entity) {
+        hibernateGenericDaoImpl.delete(entity);
+    }
 
-	@Override
-	public List<T> getListByCriteria(T model, Map<String, String> orderMaps) {
-		return hibernateGenericDaoImpl.getListByCriteria(model, orderMaps);
-	}
-	
-	@Override
-	public <X> List<X> getListByCriteria(Class<X> entityClass, X model, Map<String, String> orderMaps) {
-		return hibernateGenericDaoImpl.getListByCriteria(entityClass, model, orderMaps);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getListByLike(java.lang.String, java.lang.String)
+     */
+    @Override
+    public List<T> getListByLike(String propertyName, String propertyValue) {
+        return hibernateGenericDaoImpl.getListByLike(propertyName, propertyValue);
+    }
 
-	@Override
-	public List<T> getListByCriteriaLike(T model) {
-		return hibernateGenericDaoImpl.getListByCriteriaLike(model);
-	}
-	
-	@Override
-	public List<T> getListByCriteriaLike(T model, Map<String, String> orderMaps) {
-		return hibernateGenericDaoImpl.getListByCriteriaLike(model, orderMaps);
-	}
-	
-	@Override
-	public <X> List<X> getListByCriteriaLike(Class<X> entityClass, X model, Map<String, String> orderMaps) {
-		return hibernateGenericDaoImpl.getListByCriteriaLike(entityClass, model, orderMaps);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getListByLike(T)
+     */
+    @Override
+    public List<T> getListByLike(T model) {
+        return hibernateGenericDaoImpl.getListByLike(model);
+    }
 
-//	public List<Object[]> sqlQueryForObject(String sql, Object... values) {
-//		return hibernateGenericDaoImpl.sqlQueryForObject(sql, values);
-//	}
-//
-//	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.sqlQueryForList(sql, clazz, values);
-//	}
-//
-//	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values) {
-//		return hibernateGenericDaoImpl.sqlQueryForObject(sql, clazz, values);
-//	}
-//
-//	public List<Object[]> hqlQueryForObject(String hql, boolean namedQuery,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.hqlQueryForObject(hql, namedQuery,
-//				values);
-//	}
-//
-//	public <X> List<X> hqlQueryForList(String hql, Class<X> clazz,
-//			Object... values) {
-//		return hibernateGenericDaoImpl.hqlQueryForList(hql, clazz, values);
-//	}
-//
-//	public <X> X hqlQueryForObject(String hql, Class<X> clazz, Object... values) {
-//		return hibernateGenericDaoImpl.hqlQueryForObject(hql, clazz, values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#getListByLike(T, java.util.Map)
+     */
+    @Override
+    public List<T> getListByLike(T model, Map<String, String> orderMaps) {
+        return hibernateGenericDaoImpl.getListByLike(model, orderMaps);
+    }
 
-	@Override
-	public T uniqueResultByCriteria(String propertyName, Object value) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(propertyName, value);
-	}
-	
-	@Override
-	public <X> X uniqueResultByCriteria(Class<X> entityClass,
-			String propertyName, Object value) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(entityClass,
-				propertyName, value);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#uniqueResult(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public T uniqueResult(String propertyName, Object value) {
+        return hibernateGenericDaoImpl.uniqueResult(propertyName, value);
+    }
 
-	@Override
-	public T uniqueResultByCriteria(Map<String, Object> params) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(params);
-	}
-	
-	@Override
-	public <X> X uniqueResultByCriteria(Class<X> entityClass,
-			Map<String, Object> params) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(entityClass, params);
-	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#uniqueResult(java.util.Map)
+     */
+    @Override
+    public T uniqueResult(Map<String, Object> params) {
+        return hibernateGenericDaoImpl.uniqueResult(params);
+    }
 
-	@Override
-	public T uniqueResultByCriteria(T model) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(model);
-	}
-	
-	@Override
-	public <X> X uniqueResultByCriteria(Class<X> entityClass, X model) {
-		return hibernateGenericDaoImpl.uniqueResultByCriteria(entityClass, model);
-	}
-	
-//	public T uniqueResultByHql(String hql, Object... values) {
-//		return hibernateGenericDaoImpl.uniqueResultByHql(hql, values);
-//	}
-//	
-//	public T uniqueResultByNamedHql(String hql, Object... values) {
-//		return hibernateGenericDaoImpl.uniqueResultByNamedHql(hql, values);
-//	}
-//
-//	public <X> X uniqueResultByHql(String hql, Class<X> resultClass,
-//			boolean namedQuery, Object... values) {
-//		return hibernateGenericDaoImpl.uniqueResultByHql(hql, resultClass,
-//				namedQuery, values);
-//	}
-//	
-//	public T uniqueResultBySql(String sql, Object... values) {
-//		return hibernateGenericDaoImpl.uniqueResultBySql(sql, values);
-//	}
-//
-//
-//	public <X> X uniqueResultBySql(String sql, Class<X> resultClass, Object... values) {
-//		return hibernateGenericDaoImpl.uniqueResultBySql(sql, resultClass, values);
-//	}
-//
-//	public int executeHqlUpdate(String hql, boolean namedQuery, Object... values) {
-//		return hibernateGenericDaoImpl.executeHqlUpdate(hql, namedQuery, values);
-//	}
-//
-//	public int executeSqlUpdate(String sql, Object... values) {
-//		return hibernateGenericDaoImpl.executeSqlUpdate(sql, values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#uniqueResult(T)
+     */
+    @Override
+    public T uniqueResult(T model) {
+        return hibernateGenericDaoImpl.uniqueResult(model);
+    }
 
-	@Override
-	public Page<T> queryForPageByCriteria(Page<T> page, T entity) {
-		return hibernateGenericDaoImpl.queryForPageByCriteria(page, entity);
-	}
-
-	public Page<T> queryForPageByLeftJoin(Page<T> page, T entity, Object... objects) {
-		return hibernateGenericDaoImpl.queryForPageByLeftJoin(page, entity, objects);
-	}
-
-//	public Page<T> queryForPageBySubSelect(Page<T> page, T entity, Object... objects) {
-//		return hibernateGenericDaoImpl.queryForPageBySubSelect(page, entity, objects);
-//	}
-//
-//	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
-//		return hibernateGenericDaoImpl.queryForPageByHql(page, hql, values);
-//	}
-//
-//	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
-//		return hibernateGenericDaoImpl.pagedQueryByHql(page, hql, values);
-//	}
-//	
-//	public Page<T> queryForPageBySql(Page<T> page, String sql, Object... values) {
-//		return hibernateGenericDaoImpl.queryForPageBySql(page, sql, values);
-//	}
+    /* (non-Javadoc)
+     * @see com.vteba.service.generic.impl.IBaseService#queryForPage(com.vteba.tx.generic.Page, T)
+     */
+    @Override
+    public Page<T> queryForPage(Page<T> page, T entity) {
+        return hibernateGenericDaoImpl.queryForPage(page, entity);
+    }
 	
 	@Override
 	public void saveEntityBatch(List<T> list, int batchSize) {

@@ -1,8 +1,8 @@
 package com.vteba.tx.generic;
 
 import java.io.Serializable;
-
-import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 公共DAO泛型接口
@@ -65,7 +65,7 @@ public interface IGenericDao<T, ID extends Serializable> {
 	 * @param id 主键
 	 * @return 实体
 	 */
-	public <X> X get(Class<X> entity, ID id);
+	//public <X> X get(Class<X> entity, ID id);
 	
 	/**
 	 * 根据ID get实体，立即命中数据库，为空时返回null，同JPA find()
@@ -86,5 +86,82 @@ public interface IGenericDao<T, ID extends Serializable> {
 	 */
 	public void delete(T entity);
 	
-	public SpringJdbcTemplate getSpringJdbcTemplate();
+	//public SpringJdbcTemplate getSpringJdbcTemplate();
+	
+	public List<T> getEntityList(Map<String, ?> params);
+    public List<T> getEntityList(T params);
+    public List<T> getEntityList(T params, Map<String, String> orderMaps);
+    public List<T> getEntityList(String propName, Object value);    
+    public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
+    public List<T> getAll();
+    
+    /**
+     * 分页查询，使用查询语句实现
+     * @param page 分页数据
+     * @param params 携带查询条件，一般简单“等于”条件
+     * @return Page&lt;T&gt;分页，携带查询结果
+     * @author yinlei
+     * date 2012-7-8 下午10:34:23
+     */
+    public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
+    
+    /**
+     * 分页查询，使用criteria实现
+     * @param page 分页数据
+     * @param entity 携带查询条件，一般简单“等于”条件
+     * @return Page&lt;T&gt;分页，携带查询结果
+     * @author yinlei
+     * date 2012-7-8 下午10:34:23
+     */
+    public Page<T> queryForPage(Page<T> page, T entity);
+    
+    /**
+     * String属性like查询，使用QBE实现
+     * @param propertyName 属性名
+     * @param propertyValue 属性值
+     * @return list 查询结果List&lt;T&gt;
+     */
+    public List<T> getListByLike(String propertyName, String propertyValue);
+    
+    /**
+     * String属性like查询，其它等于，使用QBE实现
+     * @param model 携带查询条件model
+     * @return list 查询结果List&lt;X&gt;
+     */
+    public List<T> getListByLike(T model);
+	
+    /**
+     * String属性like查询，其它等于，使用QBE实现
+     * @param model 携带查询条件model
+     * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc
+     * @return list 查询结果List&lt;X&gt;
+     */
+    public List<T> getListByLike(T model, Map<String, String> orderMaps);
+    
+    /**
+     * QBC条件查询获得唯一实体，请确保属性具有唯一性
+     * @param propertyName 属性名
+     * @param value 属性值
+     * @return 实体&lt;T&gt;
+     */
+    public T uniqueResult(String propertyName, Object value);
+    
+    /**
+     * QBC条件查询获得唯一实体，请确保属性具有唯一性
+     * @param params 携带查询参数，key为属性名，value为值
+     * @return 实体&lt;X&gt;
+     * @author yinlei
+     * date 2013-6-11 下午5:19:04
+     */
+    public T uniqueResult(Map<String, Object> params);
+    
+    /**
+     * QBE条件查询获得唯一实体，请确保属性具有唯一性
+     * @param model 携带查询参数实体
+     * @return 实体&lt;T&gt;实例
+     * @author yinlei
+     * date 2013-6-11 下午5:21:11
+     */
+    public T uniqueResult(T model);
+    
 }
