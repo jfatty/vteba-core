@@ -262,14 +262,14 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param propertyValue 属性值
 	 * @return list 查询结果List&lt;T&gt;
 	 */
-	public List<T> getListByLike(String propertyName, String propertyValue);
+	//public List<T> getListByLike(String propertyName, String propertyValue);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
 	 * @param model 携带查询条件model
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public List<T> getListByLike(T model);
+	//public List<T> getListByLike(T model);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
@@ -277,7 +277,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc
 	 * @return list 查询结果List&lt;X&gt;
 	 */
-	public List<T> getListByLike(T model, Map<String, String> orderMaps);
+	//public List<T> getListByLike(T model, Map<String, String> orderMaps);
 	
 	/**
 	 * String属性like查询，其它等于，使用QBE实现
@@ -359,7 +359,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param value 属性值
 	 * @return 实体&lt;T&gt;
 	 */
-	public T uniqueResult(String propertyName, Object value);
+	//public T uniqueResult(String propertyName, Object value);
 	
 	/**
 	 * QBC条件查询获得唯一实体，请确保属性具有唯一性
@@ -377,7 +377,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:19:04
 	 */
-	public T uniqueResult(Map<String, Object> params);
+	//public T uniqueResult(Map<String, Object> params);
 	
 	/**
 	 * QBE条件查询获得唯一实体，请确保属性具有唯一性
@@ -396,7 +396,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2013-6-11 下午5:21:11
 	 */
-	public T uniqueResult(T model);
+	//public T uniqueResult(T model);
 	
 	/**
 	 * QBE条件查询获得唯一实体，请确保属性具有唯一性
@@ -521,7 +521,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-8 下午10:34:23
 	 */
-	public Page<T> queryForPage(Page<T> page, T entity);
+	//public Page<T> queryForPage(Page<T> page, T entity);
 	
 	/**
 	 * 分页查询，使用criteria实现
