@@ -73,13 +73,6 @@ public interface IGenericService<T, ID extends Serializable> {
     public abstract List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
 
     /**
-     * @param entity
-     * @return
-     * @see com.vteba.tx.generic.IGenericDao#merge(java.lang.Object)
-     */
-    public abstract T merge(T entity);
-
-    /**
      * @return
      * @see com.vteba.tx.hibernate.IHibernateGenericDao#getAll()
      */

@@ -43,6 +43,7 @@ import com.vteba.tx.hibernate.transformer.FieldAliasedTransformer;
 import com.vteba.tx.hibernate.transformer.HqlAliasedResultTransformer;
 import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.tx.hibernate.transformer.SqlAliasedResultTransformer;
+import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
  * 泛型DAO Hibernate实现，简化Entity DAO实现。
@@ -1256,4 +1257,70 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return getQueryPlanCache().getHQLQueryPlan(hql, false, Collections.EMPTY_MAP);
 	}
 	
+	protected String buildDelete(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder("delete from ").append(entityClass.getSimpleName());
+        boolean b = true;
+        for (String key : params.keySet()) {
+            if (b) {
+                sb.append(" where ").append(key).append(" = :").append(key);
+                b = false;
+            } else {
+                sb.append(" and ").append(key).append(" = :").append(key);
+            }
+        }
+        return sb.toString();
+    }
+	
+	protected String buildUpdate(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder("delete from ").append(entityClass.getSimpleName());
+        boolean b = true;
+        for (String key : params.keySet()) {
+            if (b) {
+                sb.append(" where ").append(key).append(" = :").append(key);
+                b = false;
+            } else {
+                sb.append(" and ").append(key).append(" = :").append(key);
+            }
+        }
+        return sb.toString();
+    }
+	
+	/**
+     * 根据entity携带的条件删除实体，命名参数
+     * @param entity 条件
+     */
+    public int deleteBatch(T entity) {
+        Map<String, Object> params = BeanCopyUtils.get().beanToMaps(entity);
+        return deleteBatch(params);
+    }
+    
+    /**
+     * 根据条件删除实体，使用命名参数
+     * @param sql sql语句
+     * @param params sql参数
+     */
+    public int deleteBatch(Map<String, ?> params) {
+        String hql = buildDelete(params);
+        return executeHqlUpdate(hql, false, params);
+    }
+    
+    /**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, T params) {
+        
+        return 0;
+    }
+    
+    /**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, Map<String, ?> params) {
+        
+        return 0;
+    }
 }

@@ -103,14 +103,6 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
     }
 
     /* (non-Javadoc)
-     * @see com.vteba.service.generic.impl.IBaseService#merge(T)
-     */
-    @Override
-    public T merge(T entity) {
-        return hibernateGenericDaoImpl.merge(entity);
-    }
-
-    /* (non-Javadoc)
      * @see com.vteba.service.generic.impl.IBaseService#getAll()
      */
     @Override

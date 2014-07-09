@@ -38,6 +38,20 @@ public interface IGenericDao<T, ID extends Serializable> {
 	public void update(T entity);
 	
 	/**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, T params);
+    
+    /**
+     * 批量更新实体entity，使用命名参数
+     * @param setValue set参数
+     * @param params where参数
+     */
+    public int updateBatch(T setValue, Map<String, ?> params);
+	
+	/**
 	 * 合并实体entity，session.merge(entity)，同JPA merge()
 	 * @param entity 实体
 	 * @return 实体
@@ -60,19 +74,18 @@ public interface IGenericDao<T, ID extends Serializable> {
 	public T load(ID id);
 	
 	/**
-	 * 根据ID get指定entity实体，立即命中数据库，为空时返回null，同JPA find()
-	 * @param entity
-	 * @param id 主键
-	 * @return 实体
-	 */
-	//public <X> X get(Class<X> entity, ID id);
-	
-	/**
 	 * 根据ID get实体，立即命中数据库，为空时返回null，同JPA find()
 	 * @param id 主键
 	 * @return 实体
 	 */
 	public T get(ID id);
+	
+	public List<T> getEntityList(Map<String, ?> params);
+	public List<T> getEntityList(T params);
+	public List<T> getEntityList(T params, Map<String, String> orderMaps);
+	public List<T> getEntityList(String propName, Object value);    
+	public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
+	public List<T> getAll();
 	
 	/**
 	 * 根据ID删除实体
@@ -86,15 +99,20 @@ public interface IGenericDao<T, ID extends Serializable> {
 	 */
 	public void delete(T entity);
 	
-	//public SpringJdbcTemplate getSpringJdbcTemplate();
-	
-	public List<T> getEntityList(Map<String, ?> params);
-    public List<T> getEntityList(T params);
-    public List<T> getEntityList(T params, Map<String, String> orderMaps);
-    public List<T> getEntityList(String propName, Object value);    
-    public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
-    public List<T> getAll();
     
+	/**
+     * 根据entity携带的条件删除实体，命名参数
+     * @param entity 条件
+     */
+    public int deleteBatch(T entity);
+    
+    /**
+     * 根据条件删除实体，使用命名参数
+     * @param sql sql语句
+     * @param params sql参数
+     */
+    public int deleteBatch(Map<String, ?> params);
+	
     /**
      * 分页查询，使用查询语句实现
      * @param page 分页数据
