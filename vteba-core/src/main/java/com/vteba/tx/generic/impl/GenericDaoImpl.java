@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vteba.tx.generic.IGenericDao;
 import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
+import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.ReflectUtils;
 
 /**
@@ -24,13 +25,19 @@ public abstract class GenericDaoImpl<T, ID extends Serializable> implements IGen
 	protected Class<T> entityClass;
 	protected SessionFactory sessionFactory;
 	protected SpringJdbcTemplate springJdbcTemplate;
+	protected static String SELECT_ALL = "select e from ${entity} e";
+	protected String tableName;
 	
 	public GenericDaoImpl(){
-		entityClass = ReflectUtils.getClassGenericType(this.getClass());
+		this.entityClass = ReflectUtils.getClassGenericType(this.getClass());
+		SELECT_ALL = SELECT_ALL.replace("${entity}", entityClass.getSimpleName());
+		this.tableName = CaseUtils.underCase(entityClass.getSimpleName());
 	}
 	
 	public GenericDaoImpl(Class<T> entityClass){
 		this.entityClass = entityClass;
+		SELECT_ALL = SELECT_ALL.replace("${entity}", entityClass.getSimpleName());
+		this.tableName = CaseUtils.underCase(entityClass.getSimpleName());
 	}
 
 	public SpringJdbcTemplate getSpringJdbcTemplate() {
