@@ -136,6 +136,26 @@ public interface IGenericDao<T, ID extends Serializable> {
     public Page<T> queryForPage(Page<T> page, T entity);
     
     /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件
+     * @return 结果List
+     * @author yinlei
+     * date 2013-10-4 17:27
+     */
+    public List<T> pagedQueryList(Page<T> page, Map<String, ?> params);
+    
+    /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件
+     * @return 结果List
+     * @author yinlei
+     * date 2013-10-4 17:27
+     */
+    public List<T> pagedQueryList(Page<T> page, T params);
+    
+    /**
      * String属性like查询，使用QBE实现
      * @param propertyName 属性名
      * @param propertyValue 属性值

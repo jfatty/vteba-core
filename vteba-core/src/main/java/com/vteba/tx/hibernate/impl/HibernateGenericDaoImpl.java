@@ -3,7 +3,6 @@ package com.vteba.tx.hibernate.impl;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,7 @@ import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.tx.hibernate.transformer.SqlAliasedResultTransformer;
 import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
+import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
  * 泛型DAO Hibernate实现，简化Entity DAO实现。
@@ -178,7 +178,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
     	StringBuilder hql = new StringBuilder(SELECT_ALL);
         hql.append(" where ").append(propName1).append(" = :").append(propName1);
         hql.append(" and ").append(propName2).append(" = :").append(propName2);
-        hql.append(buildHql(null, orderMaps));
+        hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
         query.setParameter(propName1, value1);
         query.setParameter(propName2, value2);
@@ -244,10 +244,21 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return sb.toString();
     }
 	
-	protected Map<String, Object> buildHql(T params) {
-        Map<String, Object> maps = new HashMap<String, Object>();
-        
-        return maps;
+	protected String buildOrderBy(Map<String, String> orderMaps) {
+	    if (orderMaps != null) {
+            boolean b = true;
+            StringBuilder sb = new StringBuilder();
+            for (Entry<String, String> entry : orderMaps.entrySet()) {
+                if (b) {
+                    sb.append(" order by ").append(entry.getKey()).append(" ").append(entry.getValue());
+                    b = false;
+                } else {
+                    sb.append(", ").append(entry.getKey()).append(" ").append(entry.getValue());
+                }
+            }
+            return sb.toString();
+        }
+	    return "";
     }
 	
 	protected Query createQuery(String hql, Map<String, ?> params) {
@@ -520,7 +531,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 				}
 			} else {
 				logger.info("SQL Query, use position parameter binding.");
-				sqlQuery.setParameter(i, values[i]);
+				sqlQuery.setParameter(i + 1, values[i]);
 			}
 		}
 		setResultTransformer(sqlQuery, resultClass, sql);
@@ -851,7 +862,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	public T uniqueResult(T model) {
-		return uniqueResult(entityClass, model);
+	    Map<String, Object> params = BeanCopyUtils.get().beanToMaps(model);
+		return uniqueResult(params);
 	}
 	
 	//self
@@ -1052,12 +1064,13 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 
 	//spi
+	@Override
 	public Page<T> queryForPage(Page<T> page, T entity) {
 		if (logger.isInfoEnabled()) {
 			logger.info("Criteria Paged Query, entity = [{}], page from [{}] to [{}].", 
 					entity.getClass().getName(), page.getStartIndex(), page.getPageSize());
 		}
-		Criteria criteria = createCriteriaByModel(entity);
+		Criteria criteria = createCriteria(entity);
 		long totalRecordCount = countCriteriaResult(criteria);
 		if (totalRecordCount <= 0) {
 		    return page;
@@ -1070,6 +1083,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	//spi
+	@Override
 	public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
 	    String hql = buildHql(params, page.getOrders());
 	    Query query = createQuery(hql, params);
@@ -1080,6 +1094,31 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         page.setResult(result);
 	    return page;
 	}
+	
+	@Override
+	public List<T> pagedQueryList(Page<T> page, T params) {
+	    Criteria criteria = createCriteria(params);
+	    // 不需要返回总记录数
+//        long totalRecordCount = countCriteriaResult(criteria);
+//        if (totalRecordCount <= 0) {
+//            return Collections.emptyList();
+//        }
+//        page.setTotalRecordCount(totalRecordCount);
+        setParameterToCriteria(page, criteria);
+        List<T> result = criteria.list();
+        return result;
+    }
+	
+	@Override
+	public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
+	    String hql = buildHql(params, page.getOrders());
+        Query query = createQuery(hql, params);
+//        long totalRecordCount = countHqlResult(hql, params);
+//        page.setTotalRecordCount(totalRecordCount);
+        setParameterToQuery(page, query);
+        List<T> result = query.list();
+        return result;
+    }
 	
 	//self
 	public Page<T> queryForPage(Page<T> page, DetachedCriteria detachedCriteria) {
@@ -1366,7 +1405,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      */
     public int deleteBatch(Map<String, ?> params) {
         String sql = buildSqlDelete(params);
-        return executeSqlUpdate(sql, false, params);
+        return executeSqlUpdate(sql, params);
     }
     
     /**
@@ -1376,12 +1415,12 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      */
     public int updateBatch(T setValue, T params) {
         Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.get(SQL_KEY).toString();// 没有where条件的update sql
+        String sql = setMap.remove(SQL_KEY).toString();// 没有where条件的update sql
         Map<String, Object> paramMap = toMap(params, 1, null);        
         
-        sql = sql + paramMap.get(SQL_KEY).toString();// 加上where条件
+        sql = sql + paramMap.remove(SQL_KEY).toString();// 加上where条件
         setMap.putAll(paramMap);// 参数放在一起
-        return executeSqlUpdate(sql, false, setMap);
+        return executeSqlUpdate(sql, setMap);
     }
     
     /**
@@ -1391,11 +1430,11 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      */
     public int updateBatch(T setValue, Map<String, ?> params) {
         Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.get(SQL_KEY).toString();
+        String sql = setMap.remove(SQL_KEY).toString();
         sql = sql + buildSqlWhere(params);
         setMap.putAll(params);
         
-        return executeSqlUpdate(sql, false, setMap);
+        return executeSqlUpdate(sql, setMap);
     }
     
     /**
