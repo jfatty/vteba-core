@@ -184,8 +184,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @param page 分页数据
      * @param params 查询条件，key为属性名
      * @return Page&lt;T&gt;分页，携带查询结果
-     * @author yinlei
-     * date 2012-7-8 下午10:34:23
      */
     public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
     
@@ -194,8 +192,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @param page 分页数据
      * @param entity 携带查询条件
      * @return Page&lt;T&gt;分页，携带查询结果
-     * @author yinlei
-     * date 2012-7-8 下午10:34:23
      */
     public Page<T> queryForPage(Page<T> page, T entity);
     
@@ -204,8 +200,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @param page 分页参数，以及排序参数
      * @param params 参数，where条件，key为属性名
      * @return 结果List
-     * @author yinlei
-     * date 2012-10-4 17:27
      */
     public List<T> pagedQueryList(Page<T> page, Map<String, ?> params);
     
@@ -214,8 +208,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @param page 分页参数，以及排序参数
      * @param params 参数，where条件
      * @return 结果List
-     * @author yinlei
-     * date 2012-10-4 17:27
      */
     public List<T> pagedQueryList(Page<T> page, T params);
     
@@ -254,8 +246,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * QBC条件查询获得唯一实体，请确保属性具有唯一性
      * @param params 携带查询参数，key为属性名，value为值
      * @return 实体&lt;X&gt;
-     * @author yinlei
-     * date 2012-6-11 下午5:19:04
      */
     public T uniqueResult(Map<String, ?> params);
     
@@ -263,8 +253,6 @@ public interface IGenericDao<T, ID extends Serializable> {
      * QBC条件查询获得唯一实体，请确保属性具有唯一性
      * @param model 携带查询参数实体
      * @return 实体&lt;T&gt;实例
-     * @author yinlei
-     * date 2012-6-11 下午5:21:11
      */
     public T uniqueResult(T model);
     

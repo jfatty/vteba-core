@@ -210,8 +210,6 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param page 分页参数，以及排序参数
      * @param params 参数，where条件，key为属性名
      * @return 结果List
-     * @author yinlei
-     * date 2012-10-4 17:27
      */
     public abstract List<T> pagedQueryList(Page<T> page, Map<String, ?> params);
     
@@ -220,8 +218,6 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param page 分页参数，以及排序参数
      * @param params 参数，where条件
      * @return 结果List
-     * @author yinlei
-     * date 2012-10-4 17:27
      */
     public abstract List<T> pagedQueryList(Page<T> page, T params);
     
@@ -229,16 +225,12 @@ public interface IGenericService<T, ID extends Serializable> {
      * 批量保存一批数据
      * @param list 实体list
      * @param batchSize 批次大小，每batchSize flush一次
-     * @author yinlei
-     * date 2012-7-7 下午10:10:15
      */
     public abstract void saveEntityBatch(List<T> list, int batchSize);
 
     /**
      * 根据id list批量删除实体
      * @param list ids列表
-     * @author yinlei
-     * date 2012-9-5 下午3:34:40
      */
     public abstract void deleteEntityBatch(List<ID> list);
     
