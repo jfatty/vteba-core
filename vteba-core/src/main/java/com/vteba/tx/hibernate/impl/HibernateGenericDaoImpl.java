@@ -3,7 +3,6 @@ package com.vteba.tx.hibernate.impl;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +44,8 @@ import com.vteba.tx.hibernate.transformer.FieldAliasedTransformer;
 import com.vteba.tx.hibernate.transformer.HqlAliasedResultTransformer;
 import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.tx.hibernate.transformer.SqlAliasedResultTransformer;
-import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
+import com.vteba.utils.reflection.BeanCopyUtils;
 
 /**
  * 泛型DAO Hibernate实现，简化Entity DAO实现。
@@ -62,7 +61,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
 	/**问号*/
 	protected static final String QMARK = "?";
-	protected static final String SQL_KEY = "_sql_";
+	protected static final String HQL_KEY = "_sql_";
 	
 	public HibernateGenericDaoImpl() {
 		super();
@@ -178,7 +177,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
     	StringBuilder hql = new StringBuilder(SELECT_ALL);
         hql.append(" where ").append(propName1).append(" = :").append(propName1);
         hql.append(" and ").append(propName2).append(" = :").append(propName2);
-        hql.append(buildHql(null, orderMaps));
+        hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
         query.setParameter(propName1, value1);
         query.setParameter(propName2, value2);
@@ -198,24 +197,6 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         }
         return list;
     }
-	
-	/**
-	 * 根据hql语句查询实体List
-	 * @param hql hql语句
-	 * @param values hql参数，每一个都是单值，不能使集合
-	 * @return 实体List
-	 */
-//	public List<T> getEntityList(String hql, Object... values) {
-//	    Query query = getSession().createQuery(hql);
-//	    for (int i = 0, len = values.length; i < len; i++) {
-//	        query.setParameter(Integer.toString(i + 1), values[i]);
-//	    }
-//        List<T> list = query.list();
-//        if (list == null) {
-//            list = Collections.emptyList();
-//        }
-//        return list;
-//    }
 	
 	protected String buildHql(Map<String, ?> params, Map<String, String> orderMaps) {
         StringBuilder sb = new StringBuilder(SELECT_ALL);
@@ -244,10 +225,21 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return sb.toString();
     }
 	
-	protected Map<String, Object> buildHql(T params) {
-        Map<String, Object> maps = new HashMap<String, Object>();
-        
-        return maps;
+	protected String buildOrderBy(Map<String, String> orderMaps) {
+	    if (orderMaps != null) {
+            boolean b = true;
+            StringBuilder sb = new StringBuilder();
+            for (Entry<String, String> entry : orderMaps.entrySet()) {
+                if (b) {
+                    sb.append(" order by ").append(entry.getKey()).append(" ").append(entry.getValue());
+                    b = false;
+                } else {
+                    sb.append(", ").append(entry.getKey()).append(" ").append(entry.getValue());
+                }
+            }
+            return sb.toString();
+        }
+	    return "";
     }
 	
 	protected Query createQuery(String hql, Map<String, ?> params) {
@@ -262,7 +254,18 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	    return query;
 	}
 	
-	//self
+	/** 
+     * 查询当前PO List，一般查询单实体。多实体关联查询，请使用{@link #getListByHql(String, Class, Object...)}。<br>
+     * 用法：<br>
+     * 1、查询全部栏位，select u from User u where...<br>
+     * 2、使用select new查询部分栏位，select new User(u.id,u.name) from User u where...，<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;实体类中要有相应的构造函数<br>
+     * 3、直接查询部分栏位，则返回List&lt;Object[]&gt;，不建议这么使用。建议使用第二点中的<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;select new语法；或使用{@link #getListByHql(String, Class, Object...)}可直接返回JavaBean<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * @param hql 可用Jpa风格参数： ?1、?2。命名参数： :subjectName。Hibernate参数： ? (deprecated)。
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     */
 	public List<T> getEntityListByHql(String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL query, hql = [{}], parameter = {}.", hql, Arrays.toString(values));
@@ -275,7 +278,18 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
-	//self
+	/**
+     * 命名hql查询当前实体Class&lt;T&gt;实例List。是{@link #getEntityListByHql(String, Object...)}的命名参数版。 <br>
+     * 用法：<br>
+     * 1、hql应查询Class&lt;T&gt;实例所有的属性，如：select s from Subject s where .... 。<br>
+     * 2、使用select new T()查询指定属性，如：select new Subject(id, subjectCode) from Subject s where ....<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;同时Subject实体中要有对应的构造函数。<br>
+     * 3、直接查询部分栏位，返回List&lt;Object[]&gt;。不建议这么使用。建议使用第二点中的<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;select new语法；或使用{@link #getListByHql(String, Class, Object...)}可直接返回JavaBean<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * @param namedQuery 命名hql语句名，可用Jpa风格参数： ?1、?2，命名参数： :subjectCode
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     */
 	public List<T> getEntityListByNamedHql(String namedQuery, Object... values) {
 		Query query = createNamedQuery(namedQuery, values);
 		if (logger.isInfoEnabled()) {
@@ -288,7 +302,19 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
-	//self
+	/** 
+     * hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br> 
+     * 用法：<br>
+     * 1、使用select new查询VO Bean，select new com.vteba.model.AUser(i.sbillno,u) from Inventory i, User u 
+     *   &nbsp;&nbsp;&nbsp;&nbsp;where i.scustomerno = u.userAccount，VO中要有对应的构造函数，且要使用包名全路径。<br>
+     * 2、直接select i.sbillno,u from Inventory i, User u...，则返回List&lt;Object[]&gt;，其中Object[]是{"billno", User}<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;，不建议这么用，建议使用{@link #getListByHql(String, Class, Object...)}根据别名进行结果集转换 <br> 
+     * 3、直接查询PO也是可以的，但是建议使用{@link #getEntityListByHql(String, Object...)}代替<br> 
+     * @param hql 可用Jpa风格参数： ?1、?2，命名参数： :subjectName，Hibernate参数： ? (deprecated)
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     * @author yinlei
+     * date 2012-12-17 下午10:35:09
+     */
 	public <E> List<E> getListByHql(String hql, Object... values){
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL query, 建议使用 select new 语法 , hql = [{}], parameter = {}.",
@@ -302,7 +328,20 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
-	//self
+	/** 
+     * hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br> 
+     * 用法：<br>
+     * 1、使用别名查询VO Bean，select i.billNo as id,u as user from Inventory i, User u where i.customerNo<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;= u.userAccount...，栏位别名要和VO中的属性名一致<br>
+     * 2、如果不使用别名进行转换（clazz参数设为null），则返回List&lt;Object[]&gt;，对于第二点中的结果返回<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;的Object[]是{"billno", User}，不建议这么使用<br> 
+     * 3、查询PO也是可以的（clazz参数设为null），但是建议使用{@link #getEntityListByHql(String, Object...)}代替<br> 
+     * @param hql 可用Jpa风格参数： ?1、?2，命名参数： :subjectName，Hibernate参数： ? (deprecated)
+     * @param resultClass 结果类型Class&lt;E&gt;。
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     * @author yinlei
+     * date 2012-12-17 下午10:35:09
+     */
 	public <E> List<E> getListByHql(String hql, Class<E> resultClass, Object... values){
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL query, 使用HqlAliasedResultTransformer转换结果集, hql = [{}], parameter = {}.",
@@ -321,7 +360,6 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	
 	/**
 	 * 根据hql查询po/vo list，结果集使用hql栏位别名转换成Class&lt;E&gt;类型。<br>
-	 * hql
 	 * @param hql hql语句
 	 * @param resultClass 结果集类型
 	 * @param queryType 查询类型
@@ -341,7 +379,20 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
-	//self
+	/** 
+     * 命名hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br>
+     * 是{@link #getListByHql(String, Object...)}的命名参数版。 <br> 
+     * 用法：<br>
+     * 1、使用select new查询VO Bean，select new com.vteba.model.AUser(i.sbillno,u) from Inventory i, User u 
+     *   &nbsp;&nbsp;&nbsp;&nbsp;where i.scustomerno = u.userAccount，VO中要有对应的构造函数，且要使用包名全路径。<br>
+     * 2、直接select i.sbillno,u from Inventory i, User u...，则返回List&lt;Object[]&gt;，其中Object[]是{"billno", User}<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;，不建议这么用，建议使用{@link #getListByHql(String, Class, Object...)}根据别名进行结果集转换 <br> 
+     * 3、直接查询PO也是可以的，但是建议使用{@link #getEntityListByHql(String, Object...)}代替<br> 
+     * @param hql 可用Jpa风格参数： ?1、?2，命名参数： :subjectName，Hibernate参数： ? (deprecated)
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     * @author yinlei
+     * date 2012-12-17 下午10:35:09
+     */
 	public <E> List<E> getListByNamedHql(String namedQuery, Object... values){
 		Query query = createNamedQuery(namedQuery, values);
 		if (logger.isInfoEnabled()) {
@@ -355,7 +406,21 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
-	//self
+	/**
+     * 命名hql查询VO List。一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br>
+     * 是{@link #getListByHql(String, Class, Object...)}的命名参数版。 <br>
+     * 用法：<br>
+     * 1、使用别名查询VO Bean，select i.billNo as id,u as user from Inventory i, User u where i.customerNo<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;= u.userAccount...，栏位别名要和VO中的属性名一致<br>
+     * 2、如果不使用别名进行转换（clazz参数设为null），则返回List&lt;Object[]&gt;，对于第二点中的结果返回<br>
+     *   &nbsp;&nbsp;&nbsp;&nbsp;的Object[]是{"billno", User}，不建议这么使用<br>
+     * 3、查询PO也是可以的（clazz参数设为null），但是强烈建议使用{@link #getEntityListByHql(String, Object...)}代替<br> 
+     * @param namedQuery 命名hql语句名，可用Jpa风格参数： ?1、?2，命名参数： :subjectName
+     * @param resultClass 结果类型Class&lt;E&gt;
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     * @author yinlei
+     * date 2012-12-17 下午10:35:09
+     */
 	public <E> List<E> getListByNamedHql(String namedQuery, Class<E> resultClass, Object... values){
 		Query query = createNamedQuery(namedQuery, values);
 		if (logger.isInfoEnabled()) {
@@ -372,6 +437,15 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
+	/**
+     * 通过sql查询当前实体Class&lt;T&gt;实例的List&lt;T&gt;。<br>
+     * 1、sql栏位或者别名要和实体的属性一致，栏位和实体属性名不一致要指定别名。<br>
+     * 如：select id, subject_code subjectCode, subject_name subjectName from subject s where ....<br>
+     * 其中id属性和sql栏位一样，不需要指定别名。<br>
+     * 2、基于别名，使用AliasedResultTransformer，可转换任意列。
+     * @param sql 要执行的sql
+     * @param values sql参数值
+     */
 	@Deprecated
 	public List<T> getEntityListBySql(String sql, Object... values){
 		if (logger.isInfoEnabled()) {
@@ -386,6 +460,15 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
+	/**
+     * 通过Spring JdbcTemplate查询当前实体，使用字节码自动构建实体Class&lt;T&gt;实例。性能略低于回调2%以内。<br>
+     * 使用时，dao要注入相应的SpringJdbcTemplate
+     * @param sql sql语句
+     * @param values sql参数
+     * @return
+     * @author yinlei
+     * @date 2012年6月25日 下午10:19:45
+     */
 	//self，单表操作，没有必要
 	@Deprecated
 	public List<T> getEntityListBySpring(String sql, Object... values) {
@@ -396,6 +479,17 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return springJdbcTemplate.query(sql, entityClass, values);
 	}
 	
+	/**
+     * 通过命名sql查询当前实体Class&lt;T&gt;实例的List&lt;T&gt;。<br>
+     * 1、命名sql中配置了resultClass或resultSetMapping，按规则转换。<br>
+     * 2、如果命名sql中没有配置resultClass或resultSetMapping，返回List&lt;Object[]&gt;。
+     *    可能出现转型错误。不建议(deprecated)这么用。<br>
+     * 3、如果没有配置resultClass或resultSetMapping，建议指定sql栏位别名使用{@link IHibernateGenericDao#getListByNamedSql}
+     * @param namedSql 命名sql名
+     * @param values 命名sql参数
+     * @author yinlei
+     * date 2012-12-17 下午9:33:29
+     */
 	@Deprecated
 	public List<T> getEntityListByNamedSql(String namedSql, Object... values){
 		SQLQuery query = createNamedSQLQuery(namedSql, values);
@@ -410,6 +504,19 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
+	/**
+     * 根据sql查询实体List&lt;E&gt;，将结果集转换为Class&lt;E&gt;的实例。可多表连接。<br>
+     * 1、sql栏位或者别名要和实体的属性一致，栏位和实体属性名不一致要指定别名。<br>
+     *    如：select id, subject_code subjectCode, subject_name subjectName from subject s where ....<br>
+     *    其中id属性和sql栏位一样，不需要指定别名。<br>
+     * 2、查询全部栏位select * from user where...，此时VO中的属性要和数据库表中的栏位一一对应，不多不少。否则使用spring jdbc。<br>
+     * 3、基于别名，使用AliasedResultTransformer，可转换任意列。
+     * @param sql sql语句
+     * @param resultClass 结果集Class&lt;E&gt;类
+     * @param values sql中的参数
+     * @author yinlei
+     * date 2012-12-17 下午10:47:38
+     */
 	@Deprecated
 	public <E> List<E> getListBySql(String sql, Class<E> resultClass, Object... values){
 		if (logger.isInfoEnabled()) {
@@ -424,6 +531,16 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return list;
 	}
 	
+	/**
+     * 通过Spring JdbcTemplate查询当前实体，使用字节码自动构建实体Class&lt;T&gt;实例。性能略低于回调2%以内。<br>
+     * 使用时，dao要注入相应的SpringJdbcTemplate
+     * @param sql sql语句
+     * @param resultClass 结果类型
+     * @param values sql参数
+     * @return
+     * @author yinlei
+     * @date 2012年6月25日 下午10:19:45
+     */
 	//self，建议用于多表之间关联，返回VO
 	public <E> List<E> getListBySpring(String sql, Class<E> resultClass, Object... values){
 		if (logger.isInfoEnabled()) {
@@ -433,6 +550,19 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return springJdbcTemplate.query(sql, resultClass, values);
 	}
 	
+	/**
+     * 根据命名sql查询实体List&lt;E&gt;，将结果集转换为Class&lt;E&gt;的实例。可多表连接。<br>
+     * 1、sql栏位或者别名要和实体的属性一致，栏位和实体属性名不一致要指定别名。<br>
+     *    如：select id, subject_code subjectCode, subject_name subjectName from subject s where ....<br>
+     *    其中id属性和sql栏位一样，不需要指定别名。<br>
+     * 2、查询全部栏位select * from user where...<br>
+     * 3、基于别名，使用AliasedResultTransformer，可转换任意列。
+     * @param namedSql 命名sql名
+     * @param resultClass 结果集Class&lt;E&gt;类
+     * @param values sql参数
+     * @return 实体List
+     * @author yinlei
+     */
 	@Deprecated
 	public <E> List<E> getListByNamedSql(String namedSql, Class<E> resultClass, Object... values){
 		SQLQuery sqlQuery = createNamedSQLQuery(namedSql, values);// 事实上就是SQLQuery
@@ -520,7 +650,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 				}
 			} else {
 				logger.info("SQL Query, use position parameter binding.");
-				sqlQuery.setParameter(i, values[i]);
+				sqlQuery.setParameter(i + 1, values[i]);
 			}
 		}
 		setResultTransformer(sqlQuery, resultClass, sql);
@@ -851,7 +981,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	public T uniqueResult(T model) {
-		return uniqueResult(entityClass, model);
+	    Map<String, Object> params = BeanCopyUtils.get().beanToMaps(model);
+		return uniqueResult(params);
 	}
 	
 	//self
@@ -1052,12 +1183,13 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 
 	//spi
+	@Override
 	public Page<T> queryForPage(Page<T> page, T entity) {
 		if (logger.isInfoEnabled()) {
 			logger.info("Criteria Paged Query, entity = [{}], page from [{}] to [{}].", 
 					entity.getClass().getName(), page.getStartIndex(), page.getPageSize());
 		}
-		Criteria criteria = createCriteriaByModel(entity);
+		Criteria criteria = createCriteria(entity);
 		long totalRecordCount = countCriteriaResult(criteria);
 		if (totalRecordCount <= 0) {
 		    return page;
@@ -1070,6 +1202,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	//spi
+	@Override
 	public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
 	    String hql = buildHql(params, page.getOrders());
 	    Query query = createQuery(hql, params);
@@ -1080,6 +1213,31 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         page.setResult(result);
 	    return page;
 	}
+	
+	@Override
+	public List<T> pagedQueryList(Page<T> page, T params) {
+	    Criteria criteria = createCriteria(params);
+	    // 不需要返回总记录数
+//        long totalRecordCount = countCriteriaResult(criteria);
+//        if (totalRecordCount <= 0) {
+//            return Collections.emptyList();
+//        }
+//        page.setTotalRecordCount(totalRecordCount);
+        setParameterToCriteria(page, criteria);
+        List<T> result = criteria.list();
+        return result;
+    }
+	
+	@Override
+	public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
+	    String hql = buildHql(params, page.getOrders());
+        Query query = createQuery(hql, params);
+//        long totalRecordCount = countHqlResult(hql, params);
+//        page.setTotalRecordCount(totalRecordCount);
+        setParameterToQuery(page, query);
+        List<T> result = query.list();
+        return result;
+    }
 	
 	//self
 	public Page<T> queryForPage(Page<T> page, DetachedCriteria detachedCriteria) {
@@ -1321,31 +1479,29 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return getQueryPlanCache().getHQLQueryPlan(hql, false, Collections.EMPTY_MAP);
 	}
 	
-	//sql
-	protected String buildSqlDelete(Map<String, ?> params) {
-        StringBuilder sb = new StringBuilder("delete from ").append(tableName);
+	protected String buildDelete(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder("delete from ").append(entityName);
         boolean b = true;
         for (String key : params.keySet()) {
             if (b) {
-                sb.append(" where ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" where ").append(key).append(" = :").append(key);
                 b = false;
             } else {
-                sb.append(" and ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" and ").append(key).append(" = :").append(key);
             }
         }
         return sb.toString();
     }
 	
-	//sql
-	protected String buildSqlWhere(Map<String, ?> params) {
+	protected String buildWhere(Map<String, ?> params) {
         StringBuilder sb = new StringBuilder();
         boolean b = true;
         for (String key : params.keySet()) {
             if (b) {
-                sb.append(" where ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" where ").append(key).append(" = :").append(key);
                 b = false;
             } else {
-                sb.append(" and ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" and ").append(key).append(" = :").append(key);
             }
         }
         return sb.toString();
@@ -1365,8 +1521,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params 参数
      */
     public int deleteBatch(Map<String, ?> params) {
-        String sql = buildSqlDelete(params);
-        return executeSqlUpdate(sql, false, params);
+        String hql = buildDelete(params);
+        return executeHqlUpdate(hql, false, params);
     }
     
     /**
@@ -1375,13 +1531,13 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, T params) {
-        Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.get(SQL_KEY).toString();// 没有where条件的update sql
+        Map<String, Object> setMap = toMap(setValue, 2, entityName);
+        String hql = setMap.remove(HQL_KEY).toString();// 没有where条件的update sql
         Map<String, Object> paramMap = toMap(params, 1, null);        
         
-        sql = sql + paramMap.get(SQL_KEY).toString();// 加上where条件
+        hql = hql + paramMap.remove(HQL_KEY).toString();// 加上where条件
         setMap.putAll(paramMap);// 参数放在一起
-        return executeSqlUpdate(sql, false, setMap);
+        return executeHqlUpdate(hql, false, setMap);
     }
     
     /**
@@ -1390,12 +1546,12 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, Map<String, ?> params) {
-        Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.get(SQL_KEY).toString();
-        sql = sql + buildSqlWhere(params);
+        Map<String, Object> setMap = toMap(setValue, 2, entityName);
+        String hql = setMap.remove(HQL_KEY).toString();
+        hql = hql + buildWhere(params);
         setMap.putAll(params);
         
-        return executeSqlUpdate(sql, false, setMap);
+        return executeHqlUpdate(hql, false, setMap);
     }
     
     /**
@@ -1420,46 +1576,44 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                        	column = CaseUtils.underCase(methodName.substring(3));
+                        	column = StringUtils.uncapitalize(methodName.substring(3));
                             if (append) {
-                                columns.append(" where ").append(column).append(" = :").append(column);
+                                columns.append(" where ").append(column).append(" = :").append(methodName);
                                 append = false;
                             } else {
-                                columns.append(" and ").append(column).append(" = :").append(column);
+                                columns.append(" and ").append(column).append(" = :").append(methodName);
                             }
-                            resultMap.put(column, value);
+                            resultMap.put(methodName, value);
                         }
                     } 
                 }
-                resultMap.put(SQL_KEY, columns.toString());
+                resultMap.put(HQL_KEY, columns.toString());
                 break;
             case 2: // update set
             	columns.append("update ").append(table);
-                String subKey = null;
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                        	column = CaseUtils.toUnderCase(methodName.substring(3));
-                            subKey = column.substring(1);
+                        	column = StringUtils.uncapitalize(methodName.substring(3));
                             if (append) {
-                            	columns.append(" set ").append(subKey).append(" = :").append(column);
+                            	columns.append(" set ").append(column).append(" = :").append(methodName);
                                 append = false;
                             } else {
-                            	columns.append(", ").append(subKey).append(" = :").append(column);
+                            	columns.append(", ").append(column).append(" = :").append(methodName);
                             }
-                            resultMap.put(column, value);
+                            resultMap.put(methodName, value);
                         }
                     } 
                 }
-                resultMap.put(SQL_KEY, columns.toString());
+                resultMap.put(HQL_KEY, columns.toString());
                 break;
             default:
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
+                            resultMap.put(StringUtils.uncapitalize(methodName.substring(3)), value);
                         }
                     } 
                 }

@@ -12,7 +12,7 @@ import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 /**
  * 通用泛型Service实现，供其他Service继承，简化service实现。
  * @author yinlei 
- * date 2012-6-29 下午11:28:32
+ * date 2012-6-4 下午11:28:32
  */
 public abstract class GenericServiceImpl<T, ID extends Serializable> implements IGenericService<T, ID> {
 
@@ -24,7 +24,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	 * 并且只能用于查询，否则破坏hibernate一级和二级缓存。
 	 * @param springJdbcTemplate 具体的SpringJdbcTemplate实例
 	 * @author yinlei
-	 * date 2013-6-27 下午9:19:15
+	 * date 2013-6-5 下午9:19:15
 	 */
 	public void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate) {
 		this.springJdbcTemplate = springJdbcTemplate;
@@ -34,7 +34,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	 * 延迟到子类中注入具体dao实例
 	 * @param hibernateGenericDaoImpl 实现IHibernateGenericDao具体的dao实例
 	 * @author yinlei
-	 * date 2012-6-22 下午4:04:41
+	 * date 2012-6-5 下午4:04:41
 	 */
 	public abstract void setHibernateGenericDaoImpl(IHibernateGenericDao<T, ID> hibernateGenericDaoImpl);
 	
@@ -256,5 +256,15 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	public int deleteBatch(Map<String, ?> params) {
 		return hibernateGenericDaoImpl.deleteBatch(params);
 	}
+
+    @Override
+    public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
+        return pagedQueryList(page, params);
+    }
+
+    @Override
+    public List<T> pagedQueryList(Page<T> page, T params) {
+        return hibernateGenericDaoImpl.pagedQueryList(page, params);
+    }
 	
 }

@@ -9,7 +9,7 @@ import java.util.Map;
  * @author yinlei 
  * 2012-4-1 下午7:24:07
  * @param <T> 实体类型
- * @param <ID> 主键类型，一般是String或者Long
+ * @param <ID> 主键类型，一般是String或者Long或Integer
  */
 public interface IGenericDao<T, ID extends Serializable> {
 	/**
@@ -47,7 +47,7 @@ public interface IGenericDao<T, ID extends Serializable> {
     /**
      * 批量更新实体entity，使用命名参数
      * @param setValue set参数
-     * @param params where参数
+     * @param params where参数，key为属性名
      */
     public int updateBatch(T setValue, Map<String, ?> params);
 	
@@ -80,14 +80,78 @@ public interface IGenericDao<T, ID extends Serializable> {
 	 */
 	public T get(ID id);
 	
+	/**
+	 * 查询实体List
+	 * @param params 查询条件，key是属性名，value是属性值
+	 * @return 实体List
+	 */
 	public List<T> getEntityList(Map<String, ?> params);
+	
+	/**
+     * 查询实体List
+     * @param params 查询条件，key是属性名，value是属性值
+     * @param orderMaps 排序条件，key是要排序的属性名，value是"desc"或"asc"
+     * @return 实体List
+     */
 	public List<T> getEntityList(Map<String, ?> params, Map<String, String> orderMaps);
+	
+	/**
+     * 查询实体List
+     * @param params 查询条件
+     * @return 实体List
+     */
 	public List<T> getEntityList(T params);
+	
+	/**
+     * 查询实体List
+     * @param params 查询条件
+     * @param orderMaps 排序条件，key是要排序的属性名，value是"desc"或"asc"
+     * @return 实体List
+     */
 	public List<T> getEntityList(T params, Map<String, String> orderMaps);
-	public List<T> getEntityList(String propName, Object value);    
-	public List<T> getEntityList(String propName, Object value, Map<String, String> orderMaps);    
+	
+	/**
+     * 重载的便捷方法，查询实体List
+     * @param propName 查询条件，属性名
+     * @param value 查询条件，属性值
+     * @return 实体List
+     */
+	public List<T> getEntityList(String propName, Object value);
+	
+	/**
+     * 重载的便捷方法，查询实体List
+     * @param propName 查询条件，属性名
+     * @param value 查询条件，属性值
+     * @param orderMaps 排序条件，key是要排序的属性名，value是"desc"或"asc"
+     * @return 实体List
+     */
+	public List<T> getEntityList(String propName, Object value, Map<String, String> orderMaps);
+	
+	/**
+     * 重载的便捷方法，查询实体List
+     * @param propName1 查询条件1，属性名
+     * @param value1 查询条件1，属性值
+     * @param propName2 查询条件2，属性名
+     * @param value2 查询条件2，属性值
+     * @return 实体List
+     */
 	public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
+	
+	/**
+     * 重载的便捷方法，查询实体List
+     * @param propName1 查询条件1，属性名
+     * @param value1 查询条件1，属性值
+     * @param propName2 查询条件2，属性名
+     * @param value2 查询条件2，属性值
+     * @param orderMaps 排序条件，key是要排序的属性名，value是"desc"或"asc"
+     * @return 实体List
+     */
 	public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2, Map<String, String> orderMaps);
+	
+	/**
+     * 查询实体list，<em>慎用</em>，确保不会返回很多对象。
+     * @return 实体List
+     */
 	public List<T> getAll();
 	
 	/**
@@ -97,7 +161,7 @@ public interface IGenericDao<T, ID extends Serializable> {
 	public void delete(ID id);
 	
 	/**
-	 * 根据entity(带主键)删除实体，同JPA remove()
+	 * 根据entity（带主键）删除实体，同JPA remove()
 	 * @param entity
 	 */
 	public void delete(T entity);
@@ -111,29 +175,41 @@ public interface IGenericDao<T, ID extends Serializable> {
     
     /**
      * 根据条件删除实体，使用命名参数
-     * @param params sql参数
+     * @param params where条件参数，key为属性名
      */
     public int deleteBatch(Map<String, ?> params);
 	
     /**
      * 分页查询，使用查询语句实现
      * @param page 分页数据
-     * @param params 携带查询条件，一般简单“等于”条件
+     * @param params 查询条件，key为属性名
      * @return Page&lt;T&gt;分页，携带查询结果
-     * @author yinlei
-     * date 2012-7-8 下午10:34:23
      */
     public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
     
     /**
      * 分页查询，使用criteria实现
      * @param page 分页数据
-     * @param entity 携带查询条件，一般简单“等于”条件
+     * @param entity 携带查询条件
      * @return Page&lt;T&gt;分页，携带查询结果
-     * @author yinlei
-     * date 2012-7-8 下午10:34:23
      */
     public Page<T> queryForPage(Page<T> page, T entity);
+    
+    /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件，key为属性名
+     * @return 结果List
+     */
+    public List<T> pagedQueryList(Page<T> page, Map<String, ?> params);
+    
+    /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件
+     * @return 结果List
+     */
+    public List<T> pagedQueryList(Page<T> page, T params);
     
     /**
      * String属性like查询，使用QBE实现
@@ -153,7 +229,7 @@ public interface IGenericDao<T, ID extends Serializable> {
     /**
      * String属性like查询，其它等于，使用QBE实现
      * @param model 携带查询条件model
-     * @param orderMaps 使用Map传参，key是排序字段，value是asc或desc
+     * @param orderMaps 排序条件，key是排序字段，value是asc或desc
      * @return list 查询结果List&lt;X&gt;
      */
     public List<T> getListByLike(T model, Map<String, String> orderMaps);
@@ -170,18 +246,31 @@ public interface IGenericDao<T, ID extends Serializable> {
      * QBC条件查询获得唯一实体，请确保属性具有唯一性
      * @param params 携带查询参数，key为属性名，value为值
      * @return 实体&lt;X&gt;
-     * @author yinlei
-     * date 2013-6-11 下午5:19:04
      */
     public T uniqueResult(Map<String, ?> params);
     
     /**
-     * QBE条件查询获得唯一实体，请确保属性具有唯一性
+     * QBC条件查询获得唯一实体，请确保属性具有唯一性
      * @param model 携带查询参数实体
      * @return 实体&lt;T&gt;实例
-     * @author yinlei
-     * date 2013-6-11 下午5:21:11
      */
     public T uniqueResult(T model);
     
+    /**
+     * 查询某一基本类型List
+     * @param field 要查询哪个属性值
+     * @param resultClass 结果类型
+     * @param params 参数条件
+     * @return 属性值List
+     */
+    //public <X> List<X> queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
+    
+    /**
+     * 对某一属性求和
+     * @param field 要求和的属性
+     * @param resultClass 返回的基本类型类
+     * @param params 条件参数
+     * @return
+     */
+    //public <X extends Number> List<X> sum(String field, Class<X> resultClass, Map<String, ?> params);
 }
