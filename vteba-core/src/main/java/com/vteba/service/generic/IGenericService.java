@@ -62,21 +62,25 @@ public interface IGenericService<T, ID extends Serializable> {
      */
     public abstract void update(T entity);
     
+    /**
+     * @param entity
+     * @see com.vteba.tx.generic.IGenericDao#saveOrUpdate(java.lang.Object)
+     */
     public abstract void saveOrUpdate(T entity);
 
     /**
-     * 批量更新实体entity，使用命名参数
+     * 批量更新实体entity
      * @param setValue set参数
      * @param params where参数
      */
-    public int updateBatch(T setValue, T params);
+    public abstract int updateBatch(T setValue, T params);
     
     /**
-     * 批量更新实体entity，使用命名参数
+     * 批量更新实体entity
      * @param setValue set参数
-     * @param params where参数
+     * @param params where参数，key为属性名，value为属性值
      */
-    public int updateBatch(T setValue, Map<String, ?> params);
+    public abstract int updateBatch(T setValue, Map<String, ?> params);
     
     /**
      * @param propName1
@@ -140,13 +144,13 @@ public interface IGenericService<T, ID extends Serializable> {
      * 根据entity携带的条件删除实体，命名参数
      * @param entity 条件
      */
-    public int deleteBatch(T entity);
+    public abstract int deleteBatch(T entity);
     
     /**
      * 根据条件删除实体，使用命名参数
-     * @param params sql参数
+     * @param params 条件参数，key为属性名，value为属性值
      */
-    public int deleteBatch(Map<String, ?> params);
+    public abstract int deleteBatch(Map<String, ?> params);
     
     /**
      * @param propertyName
@@ -202,13 +206,33 @@ public interface IGenericService<T, ID extends Serializable> {
     public abstract Page<T> queryForPage(Page<T> page, T entity);
     
     /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件，key为属性名
+     * @return 结果List
+     * @author yinlei
+     * date 2012-10-4 17:27
+     */
+    public abstract List<T> pagedQueryList(Page<T> page, Map<String, ?> params);
+    
+    /**
+     * 分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param params 参数，where条件
+     * @return 结果List
+     * @author yinlei
+     * date 2012-10-4 17:27
+     */
+    public abstract List<T> pagedQueryList(Page<T> page, T params);
+    
+    /**
      * 批量保存一批数据
      * @param list 实体list
      * @param batchSize 批次大小，每batchSize flush一次
      * @author yinlei
      * date 2012-7-7 下午10:10:15
      */
-    public void saveEntityBatch(List<T> list, int batchSize);
+    public abstract void saveEntityBatch(List<T> list, int batchSize);
 
     /**
      * 根据id list批量删除实体
@@ -216,6 +240,6 @@ public interface IGenericService<T, ID extends Serializable> {
      * @author yinlei
      * date 2012-9-5 下午3:34:40
      */
-    public void deleteEntityBatch(List<ID> list);
+    public abstract void deleteEntityBatch(List<ID> list);
     
 }

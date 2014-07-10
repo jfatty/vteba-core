@@ -1,28 +1,17 @@
 package com.vteba.tx.hibernate;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
 
 import com.vteba.tx.generic.IGenericDao;
-import com.vteba.tx.generic.Page;
 
 /**
  * Hibernate 泛型 DAO接口，简化Entity DAO实现。
  * @author yinlei 
  * date 2012-5-6 下午10:42:35
  * @param <T> 实体类型
- * @param <ID> 主键类型，一般是String或者Long
+ * @param <ID> 主键类型，一般是String或者Long或Integer
  */
 public interface IHibernateGenericDao<T, ID extends Serializable> extends IGenericDao<T, ID> {
-    public List<T> getEntityList(Map<String, ?> params);
-    public List<T> getEntityList(T params);
-    public List<T> getEntityList(T params, Map<String, String> orderMaps);
-    public List<T> getEntityList(String propName, Object value);    
-    public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
-    public List<T> getAll();
-    
-    public Page<T> queryForPage(Page<T> page, Map<String, ?> params);
     
     /** 
      * 查询当前PO List，一般查询单实体。多实体关联查询，请使用{@link #getListByHql(String, Class, Object...)}。<br>
@@ -189,7 +178,7 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @param values sql参数
 	 * @return
 	 * @author yinlei
-	 * @date 2013年6月25日 下午10:17:45
+	 * @date 2012年6月25日 下午10:17:45
 	 */
 	//public <E> List<E> getListBySpring(String sql, Class<E> resultClass, Object... values);
 	

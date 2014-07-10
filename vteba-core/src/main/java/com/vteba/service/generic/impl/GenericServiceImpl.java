@@ -256,5 +256,15 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	public int deleteBatch(Map<String, ?> params) {
 		return hibernateGenericDaoImpl.deleteBatch(params);
 	}
+
+    @Override
+    public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
+        return pagedQueryList(page, params);
+    }
+
+    @Override
+    public List<T> pagedQueryList(Page<T> page, T params) {
+        return hibernateGenericDaoImpl.pagedQueryList(page, params);
+    }
 	
 }
