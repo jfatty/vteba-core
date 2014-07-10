@@ -15,7 +15,7 @@
       <tiles-version>2.2.2</tiles-version>
       <tiles3>3.0.1</tiles3>
       <hibernate-version>4.3.5.Final</hibernate-version>
-      <jibx-version>1.2.4.5</jibx-version>
+      <jibx-version>1.2.4.5</jibx-version> 
       <cxf-version>2.7.4</cxf-version>
       <activemq-version>5.8.0</activemq-version>
       <infinispan-version>5.3.0.Final</infinispan-version>
@@ -1646,6 +1646,22 @@
 		  <artifactId>maven-jar-plugin</artifactId>
 		  <version>2.4</version>
 	  	</plugin>
+
+		<plugin>
+			<artifactId>maven-source-plugin</artifactId>
+			<version>2.2.1</version>
+			<configuration>
+				<attach>true</attach>
+			</configuration>
+			<executions>
+				<execution>
+					<phase>compile</phase>
+					<goals>
+						<goal>jar</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
 	  	
 	  	<plugin>
 	      <groupId>org.apache.maven.plugins</groupId>
