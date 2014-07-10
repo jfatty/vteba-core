@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DetachedCriteria {
+public class Criteria {
 	private String clazzName;
 	private List<Criterion> criterionList = new ArrayList<Criterion>();
 	private boolean distinct;
@@ -13,37 +13,37 @@ public class DetachedCriteria {
 	
 	private Map<String, Object> maps = new HashMap<String, Object>();
 	
-	protected DetachedCriteria() {
+	protected Criteria() {
 		super();
 	}
 	
-	protected DetachedCriteria(Class<?> clazz) {
+	protected Criteria(Class<?> clazz) {
 		super();
 		this.clazzName = clazz.getName();
 	}
 	
-	public static DetachedCriteria forClass(Class<?> clazz) {
-		return new DetachedCriteria(clazz);
+	public static Criteria forClass(Class<?> clazz) {
+		return new Criteria(clazz);
 	}
 	
-	public DetachedCriteria add(Criterion criterion) {
+	public Criteria add(Criterion criterion) {
 		criterionList.add(criterion);
 		return this;
 	}
 
-	public DetachedCriteria and(Criterion... criterions) {
+	public Criteria and(Criterion... criterions) {
 		Conjunction conjunction = new Conjunction(criterions);
 		criterionList.add(conjunction);
 		return this;
 	}
 	
-	public DetachedCriteria or(Criterion... criterions) {
+	public Criteria or(Criterion... criterions) {
 		Disjunction disjunction = new Disjunction(criterions);
 		criterionList.add(disjunction);
 		return this;
 	}
 	
-	public DetachedCriteria orderBy(Order order) {
+	public Criteria orderBy(Order order) {
 		orderBy.add(order.getOrderBy());
 		return this;
 	}

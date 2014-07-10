@@ -256,4 +256,21 @@ public interface IGenericDao<T, ID extends Serializable> {
      */
     public T uniqueResult(T model);
     
+    /**
+     * 查询某一基本类型List
+     * @param field 要查询哪个属性值
+     * @param resultClass 结果类型
+     * @param params 参数条件
+     * @return 属性值List
+     */
+    //public <X> List<X> queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
+    
+    /**
+     * 对某一属性求和
+     * @param field 要求和的属性
+     * @param resultClass 返回的基本类型类
+     * @param params 条件参数
+     * @return
+     */
+    //public <X extends Number> List<X> sum(String field, Class<X> resultClass, Map<String, ?> params);
 }
