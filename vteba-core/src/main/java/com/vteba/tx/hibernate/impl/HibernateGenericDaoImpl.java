@@ -44,7 +44,6 @@ import com.vteba.tx.hibernate.transformer.FieldAliasedTransformer;
 import com.vteba.tx.hibernate.transformer.HqlAliasedResultTransformer;
 import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.tx.hibernate.transformer.SqlAliasedResultTransformer;
-import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.reflection.AsmUtils;
 import com.vteba.utils.reflection.BeanCopyUtils;
 
@@ -62,7 +61,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
 	/**问号*/
 	protected static final String QMARK = "?";
-	protected static final String SQL_KEY = "_sql_";
+	protected static final String HQL_KEY = "_sql_";
 	
 	public HibernateGenericDaoImpl() {
 		super();
@@ -1480,31 +1479,29 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return getQueryPlanCache().getHQLQueryPlan(hql, false, Collections.EMPTY_MAP);
 	}
 	
-	//sql
-	protected String buildSqlDelete(Map<String, ?> params) {
-        StringBuilder sb = new StringBuilder("delete from ").append(tableName);
+	protected String buildDelete(Map<String, ?> params) {
+        StringBuilder sb = new StringBuilder("delete from ").append(entityName);
         boolean b = true;
         for (String key : params.keySet()) {
             if (b) {
-                sb.append(" where ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" where ").append(key).append(" = :").append(key);
                 b = false;
             } else {
-                sb.append(" and ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" and ").append(key).append(" = :").append(key);
             }
         }
         return sb.toString();
     }
 	
-	//sql
-	protected String buildSqlWhere(Map<String, ?> params) {
+	protected String buildWhere(Map<String, ?> params) {
         StringBuilder sb = new StringBuilder();
         boolean b = true;
         for (String key : params.keySet()) {
             if (b) {
-                sb.append(" where ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" where ").append(key).append(" = :").append(key);
                 b = false;
             } else {
-                sb.append(" and ").append(CaseUtils.underCase(key)).append(" = :").append(key);
+                sb.append(" and ").append(key).append(" = :").append(key);
             }
         }
         return sb.toString();
@@ -1524,8 +1521,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params 参数
      */
     public int deleteBatch(Map<String, ?> params) {
-        String sql = buildSqlDelete(params);
-        return executeSqlUpdate(sql, params);
+        String hql = buildDelete(params);
+        return executeHqlUpdate(hql, false, params);
     }
     
     /**
@@ -1534,13 +1531,13 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, T params) {
-        Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.remove(SQL_KEY).toString();// 没有where条件的update sql
+        Map<String, Object> setMap = toMap(setValue, 2, entityName);
+        String hql = setMap.remove(HQL_KEY).toString();// 没有where条件的update sql
         Map<String, Object> paramMap = toMap(params, 1, null);        
         
-        sql = sql + paramMap.remove(SQL_KEY).toString();// 加上where条件
+        hql = hql + paramMap.remove(HQL_KEY).toString();// 加上where条件
         setMap.putAll(paramMap);// 参数放在一起
-        return executeSqlUpdate(sql, setMap);
+        return executeHqlUpdate(hql, false, setMap);
     }
     
     /**
@@ -1549,12 +1546,12 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @param params where参数
      */
     public int updateBatch(T setValue, Map<String, ?> params) {
-        Map<String, Object> setMap = toMap(setValue, 2, tableName);
-        String sql = setMap.remove(SQL_KEY).toString();
-        sql = sql + buildSqlWhere(params);
+        Map<String, Object> setMap = toMap(setValue, 2, entityName);
+        String hql = setMap.remove(HQL_KEY).toString();
+        hql = hql + buildWhere(params);
         setMap.putAll(params);
         
-        return executeSqlUpdate(sql, setMap);
+        return executeHqlUpdate(hql, false, setMap);
     }
     
     /**
@@ -1579,46 +1576,44 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                        	column = CaseUtils.underCase(methodName.substring(3));
+                        	column = StringUtils.uncapitalize(methodName.substring(3));
                             if (append) {
-                                columns.append(" where ").append(column).append(" = :").append(column);
+                                columns.append(" where ").append(column).append(" = :").append(methodName);
                                 append = false;
                             } else {
-                                columns.append(" and ").append(column).append(" = :").append(column);
+                                columns.append(" and ").append(column).append(" = :").append(methodName);
                             }
-                            resultMap.put(column, value);
+                            resultMap.put(methodName, value);
                         }
                     } 
                 }
-                resultMap.put(SQL_KEY, columns.toString());
+                resultMap.put(HQL_KEY, columns.toString());
                 break;
             case 2: // update set
             	columns.append("update ").append(table);
-                String subKey = null;
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                        	column = CaseUtils.toUnderCase(methodName.substring(3));
-                            subKey = column.substring(1);
+                        	column = StringUtils.uncapitalize(methodName.substring(3));
                             if (append) {
-                            	columns.append(" set ").append(subKey).append(" = :").append(column);
+                            	columns.append(" set ").append(column).append(" = :").append(methodName);
                                 append = false;
                             } else {
-                            	columns.append(", ").append(subKey).append(" = :").append(column);
+                            	columns.append(", ").append(column).append(" = :").append(methodName);
                             }
-                            resultMap.put(column, value);
+                            resultMap.put(methodName, value);
                         }
                     } 
                 }
-                resultMap.put(SQL_KEY, columns.toString());
+                resultMap.put(HQL_KEY, columns.toString());
                 break;
             default:
                 for (String methodName : methodNames) {
                     if (methodName.startsWith("get")) {
                         Object value = methodAccess.invoke(fromBean, methodName, (Object[])null);
                         if (value != null) {
-                            resultMap.put(CaseUtils.underCase(methodName.substring(3)), value);
+                            resultMap.put(StringUtils.uncapitalize(methodName.substring(3)), value);
                         }
                     } 
                 }
