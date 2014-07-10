@@ -199,7 +199,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      * @see com.vteba.service.generic.impl.IBaseService#uniqueResult(java.util.Map)
      */
     @Override
-    public T uniqueResult(Map<String, Object> params) {
+    public T uniqueResult(Map<String, ?> params) {
         return hibernateGenericDaoImpl.uniqueResult(params);
     }
 

@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vteba.common.exception.BasicException;
+import com.vteba.common.exception.NonUniqueException;
 import com.vteba.common.model.AstModel;
 import com.vteba.lang.bytecode.MethodAccess;
 import com.vteba.tx.generic.Page;
@@ -957,6 +958,12 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return (T) createCriteria(entityClass, criterion).uniqueResult();
 	}
 	
+	public T uniqueResult(String propName1, Object value1, String propName2, Object value2) {
+		Criterion c1 = Restrictions.eq(propName1, value1);
+		Criterion c2 = Restrictions.eq(propName2, value2);
+		return (T) createCriteria(entityClass, c1, c2).uniqueResult();
+	}
+	
 	//self
 	public <X> X uniqueResult(Class<X> entityClass, String proName, Object value) {
 		Criterion criterion = Restrictions.eq(proName, value);
@@ -1525,6 +1532,24 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return executeHqlUpdate(hql, false, params);
     }
     
+    public int deleteBatch(String propName, Object value) {
+    	StringBuilder sb = new StringBuilder("delete from ").append(entityName);
+    	sb.append(" where ").append(propName).append(" = :").append(propName);
+    	Query query = getSession().createQuery(sb.toString());
+    	query.setParameter(propName, value);
+    	return query.executeUpdate();
+    }
+    
+    public int deleteBatch(String propName1, Object value1, String propName2, Object value2) {
+    	StringBuilder sb = new StringBuilder("delete from ").append(entityName);
+    	sb.append(" where ").append(propName1).append(" = :").append(propName1);
+    	sb.append(" and ").append(propName2).append(" = :").append(propName2);
+    	Query query = getSession().createQuery(sb.toString());
+    	query.setParameter(propName1, value1);
+    	query.setParameter(propName2, value2);
+    	return query.executeUpdate();
+    }
+    
     /**
      * 批量更新实体entity，使用命名参数
      * @param setValue set参数
@@ -1622,4 +1647,24 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return resultMap;
     }
 
+    public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params) {
+    	StringBuilder sb = new StringBuilder("select ");
+    	sb.append(field).append(" from ").append(entityName);
+    	sb.append(buildWhere(params));
+    	Query query = createQuery(sb.toString(), params);
+		query.setResultTransformer(new PrimitiveResultTransformer(resultClass));
+		List<X> list = query.list();
+		if (list == null) {
+			return Collections.emptyList();
+		}
+		return list;
+    }
+    
+    public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params) {
+    	List<X> list = queryPrimitiveList(field, resultClass, params);
+    	if (list.size() == 0 || list.size() >= 2) {
+    		throw new NonUniqueException("查询结果不唯一。");
+    	}
+    	return list.get(0);
+    }
 }

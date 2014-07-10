@@ -438,5 +438,5 @@ public interface IHibernateGenericDao<T, ID extends Serializable> extends IGener
 	 * @author yinlei
 	 * date 2012-7-3 下午3:33:12
 	 */
-	//public Long getSequenceLongValue(String sequenceName);
+	public Long getSequenceLongValue(String sequenceName);
 }

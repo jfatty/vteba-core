@@ -188,7 +188,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @return
      * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResult(java.util.Map)
      */
-    public abstract T uniqueResult(Map<String, Object> params);
+    public abstract T uniqueResult(Map<String, ?> params);
 
     /**
      * @param model

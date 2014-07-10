@@ -168,16 +168,36 @@ public interface IGenericDao<T, ID extends Serializable> {
 	
     
 	/**
-     * 根据entity携带的条件删除实体，命名参数
+     * 根据entity携带的条件删除实体
      * @param entity 条件
+     * @return 删除的实体数
      */
     public int deleteBatch(T entity);
     
     /**
-     * 根据条件删除实体，使用命名参数
-     * @param params where条件参数，key为属性名
+     * 根据条件删除实体
+     * @param params 条件参数，key为属性名，value为属性值
+     * @return 删除的实体数
      */
     public int deleteBatch(Map<String, ?> params);
+    
+    /**
+     * 重载的便捷方法，根据条件删除实体
+     * @param propName 参数属性名
+     * @param value 参数属性值
+     * @return 删除的实体数
+     */
+    public int deleteBatch(String propName, Object value);
+    
+    /**
+     * 重载的便捷方法，根据条件删除实体
+     * @param propName1 参数属性名1
+     * @param value1 参数属性值1
+     * @param propName2 参数属性名2
+     * @param value2 参数属性值2
+     * @return 删除的实体数
+     */
+    public int deleteBatch(String propName1, Object value1, String propName2, Object value2);
 	
     /**
      * 分页查询，使用查询语句实现
@@ -235,12 +255,22 @@ public interface IGenericDao<T, ID extends Serializable> {
     public List<T> getListByLike(T model, Map<String, String> orderMaps);
     
     /**
-     * QBC条件查询获得唯一实体，请确保属性具有唯一性
-     * @param propertyName 属性名
+     * 重载的便捷方法，条件查询获得唯一实体，请确保属性具有唯一性
+     * @param propName 属性名
      * @param value 属性值
      * @return 实体&lt;T&gt;
      */
-    public T uniqueResult(String propertyName, Object value);
+    public T uniqueResult(String propName, Object value);
+    
+    /**
+     * 重载的便捷方法，条件查询获得唯一实体，请确保属性具有唯一性
+     * @param propName1 属性名1
+     * @param value1 属性值1
+     * @param propName2 属性名2
+     * @param value2 属性值2
+     * @return 实体&lt;T&gt;
+     */
+    public T uniqueResult(String propName1, Object value1, String propName2, Object value2);
     
     /**
      * QBC条件查询获得唯一实体，请确保属性具有唯一性
@@ -263,7 +293,16 @@ public interface IGenericDao<T, ID extends Serializable> {
      * @param params 参数条件
      * @return 属性值List
      */
-    //public <X> List<X> queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
+    //public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params);
+    
+    /**
+     * 查询某一实体属性，该属性是基本类型
+     * @param field 属性名
+     * @param resultClass 基本类型类
+     * @param params 参数
+     * @return 基本类型
+     */
+    //public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
     
     /**
      * 对某一属性求和
