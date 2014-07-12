@@ -255,28 +255,28 @@ public abstract class BaseServiceImpl<T, ID extends Serializable> implements Bas
 	}
 
 	@Override
-	public <X extends Number> List<X> queryPrimitiveList(String field,
+	public <X> List<X> queryPrimitiveList(String field,
 			Class<X> resultClass, Map<String, ?> params) {
 		return baseGenericDaoImpl.queryPrimitiveList(field, resultClass, params);
 	}
 
 	@Override
-	public <X extends Number> X queryForPrimitive(String field,
+	public <X> X queryForPrimitive(String field,
 			Class<X> resultClass, Map<String, ?> params) {
 		return baseGenericDaoImpl.queryForPrimitive(field, resultClass, params);
 	}
 
-	@Override
-	public <X extends Number> List<X> statsForList(String statsField,
-			Class<X> resultClass, Map<String, ?> params) {
-		return baseGenericDaoImpl.statsForList(statsField, resultClass, params);
-	}
-
-	@Override
-	public <X extends Number> X statsPrimitive(String statsField,
-			Class<X> resultClass, Map<String, ?> params) {
-		return baseGenericDaoImpl.statsPrimitive(statsField, resultClass, params);
-	}
+//	@Override
+//	public <X extends Number> List<X> statsForList(String statsField,
+//			Class<X> resultClass, Map<String, ?> params) {
+//		return baseGenericDaoImpl.statsForList(statsField, resultClass, params);
+//	}
+//
+//	@Override
+//	public <X extends Number> X statsPrimitive(String statsField,
+//			Class<X> resultClass, Map<String, ?> params) {
+//		return baseGenericDaoImpl.statsPrimitive(statsField, resultClass, params);
+//	}
 
 	@Override
 	public List<T> getEntityList(Map<String, ?> params,
@@ -353,5 +353,21 @@ public abstract class BaseServiceImpl<T, ID extends Serializable> implements Bas
 	@Override
 	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
 		return baseGenericDaoImpl.queryForPageByHql(page, hql, values);
+	}
+
+	@Override
+	public List<Object[]> queryForObject(String hql, Object... values) {
+		return baseGenericDaoImpl.queryForObject(hql, values);
+	}
+
+	@Override
+	public <X> X queryForObject(String hql, Class<X> clazz, Object... values) {
+		return baseGenericDaoImpl.queryForObject(hql, clazz, values);
+	}
+
+	@Override
+	public <X> List<X> queryForList(String hql, Class<X> clazz,
+			Object... values) {
+		return baseGenericDaoImpl.queryForList(hql, clazz, values);
 	}
 }

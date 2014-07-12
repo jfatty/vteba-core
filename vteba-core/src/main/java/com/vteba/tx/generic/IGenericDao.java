@@ -215,6 +215,8 @@ public interface IGenericDao<T, ID extends Serializable> {
      */
     public Page<T> queryForPage(Page<T> page, T entity);
     
+    //还有两个重载的在BaseGenericDao中
+    
     /**
      * 分页查询但是不返回总记录数。
      * @param page 分页参数，以及排序参数
