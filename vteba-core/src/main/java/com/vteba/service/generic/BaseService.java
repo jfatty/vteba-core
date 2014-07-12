@@ -349,7 +349,7 @@ public interface BaseService<T, ID extends Serializable> {
     public List<T> getListByLike(T model, Map<String, String> orderMaps);
     
     /**
-     * 查询某一基本类型List
+     * 查询实体中某一属性的值，该属性是基本类型
      * @param field 要查询哪个属性值
      * @param resultClass 结果类型
      * @param params 参数条件
@@ -358,7 +358,7 @@ public interface BaseService<T, ID extends Serializable> {
     public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params);
     
     /**
-     * 查询某一实体属性，该属性是基本类型
+     * 查询实体中某一属性的值，该属性是基本类型
      * @param field 属性名
      * @param resultClass 基本类型类
      * @param params 参数
