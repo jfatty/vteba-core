@@ -4,19 +4,22 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import com.vteba.service.generic.BaseService;
 import com.vteba.tx.generic.Page;
-import com.vteba.tx.hibernate.IHibernateGenericDao;
+import com.vteba.tx.hibernate.BaseGenericDao;
 
 
-public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService<T, ID> {
-    private IHibernateGenericDao<T, ID> hibernateGenericDaoImpl;
+public abstract class BaseServiceImpl<T, ID extends Serializable> implements BaseService<T, ID> {
+    protected BaseGenericDao<T, ID> baseGenericDaoImpl;
 
-    /* (non-Javadoc)
+    public abstract void setBaseGenericDaoImpl(BaseGenericDao<T, ID> baseGenericDaoImpl);
+
+	/* (non-Javadoc)
      * @see com.vteba.service.generic.impl.IBaseService#save(T)
      */
     @Override
     public ID save(T entity) {
-        return hibernateGenericDaoImpl.save(entity);
+        return baseGenericDaoImpl.save(entity);
     }
 
     /* (non-Javadoc)
@@ -24,7 +27,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public void persist(T entity) {
-        hibernateGenericDaoImpl.persist(entity);
+        baseGenericDaoImpl.persist(entity);
     }
 
     /* (non-Javadoc)
@@ -32,7 +35,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getEntityList(Map<String, ?> params) {
-        return hibernateGenericDaoImpl.getEntityList(params);
+        return baseGenericDaoImpl.getEntityList(params);
     }
 
     /* (non-Javadoc)
@@ -40,7 +43,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getEntityList(T params) {
-        return hibernateGenericDaoImpl.getEntityList(params);
+        return baseGenericDaoImpl.getEntityList(params);
     }
 
     /* (non-Javadoc)
@@ -48,7 +51,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getEntityList(T params, Map<String, String> orderMaps) {
-        return hibernateGenericDaoImpl.getEntityList(params, orderMaps);
+        return baseGenericDaoImpl.getEntityList(params, orderMaps);
     }
 
     /* (non-Javadoc)
@@ -56,7 +59,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getEntityList(String propName, Object value) {
-        return hibernateGenericDaoImpl.getEntityList(propName, value);
+        return baseGenericDaoImpl.getEntityList(propName, value);
     }
 
     /* (non-Javadoc)
@@ -64,7 +67,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public void update(T entity) {
-        hibernateGenericDaoImpl.update(entity);
+        baseGenericDaoImpl.update(entity);
     }
 
     /* (non-Javadoc)
@@ -72,15 +75,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2) {
-        return hibernateGenericDaoImpl.getEntityList(propName1, value1, propName2, value2);
-    }
-
-    /* (non-Javadoc)
-     * @see com.vteba.service.generic.impl.IBaseService#merge(T)
-     */
-    @Override
-    public T merge(T entity) {
-        return hibernateGenericDaoImpl.merge(entity);
+        return baseGenericDaoImpl.getEntityList(propName1, value1, propName2, value2);
     }
 
     /* (non-Javadoc)
@@ -88,7 +83,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getAll() {
-        return hibernateGenericDaoImpl.getAll();
+        return baseGenericDaoImpl.getAll();
     }
 
     /* (non-Javadoc)
@@ -96,7 +91,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
-        return hibernateGenericDaoImpl.queryForPage(page, params);
+        return baseGenericDaoImpl.queryForPage(page, params);
     }
 
     /* (non-Javadoc)
@@ -104,7 +99,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public T load(Class<T> entity, ID id) {
-        return hibernateGenericDaoImpl.load(entity, id);
+        return baseGenericDaoImpl.load(entity, id);
     }
 
     /* (non-Javadoc)
@@ -112,7 +107,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public T load(ID id) {
-        return hibernateGenericDaoImpl.load(id);
+        return baseGenericDaoImpl.load(id);
     }
 
     /* (non-Javadoc)
@@ -120,7 +115,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public T get(ID id) {
-        return hibernateGenericDaoImpl.get(id);
+        return baseGenericDaoImpl.get(id);
     }
 
     /* (non-Javadoc)
@@ -128,7 +123,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public void delete(ID id) {
-        hibernateGenericDaoImpl.delete(id);
+        baseGenericDaoImpl.delete(id);
     }
 
     /* (non-Javadoc)
@@ -136,7 +131,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public void delete(T entity) {
-        hibernateGenericDaoImpl.delete(entity);
+        baseGenericDaoImpl.delete(entity);
     }
 
     /* (non-Javadoc)
@@ -144,7 +139,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getListByLike(String propertyName, String propertyValue) {
-        return hibernateGenericDaoImpl.getListByLike(propertyName, propertyValue);
+        return baseGenericDaoImpl.getListByLike(propertyName, propertyValue);
     }
 
     /* (non-Javadoc)
@@ -152,7 +147,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getListByLike(T model) {
-        return hibernateGenericDaoImpl.getListByLike(model);
+        return baseGenericDaoImpl.getListByLike(model);
     }
 
     /* (non-Javadoc)
@@ -160,7 +155,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public List<T> getListByLike(T model, Map<String, String> orderMaps) {
-        return hibernateGenericDaoImpl.getListByLike(model, orderMaps);
+        return baseGenericDaoImpl.getListByLike(model, orderMaps);
     }
 
     /* (non-Javadoc)
@@ -168,15 +163,15 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public T uniqueResult(String propertyName, Object value) {
-        return hibernateGenericDaoImpl.uniqueResult(propertyName, value);
+        return baseGenericDaoImpl.uniqueResult(propertyName, value);
     }
 
     /* (non-Javadoc)
      * @see com.vteba.service.generic.impl.IBaseService#uniqueResult(java.util.Map)
      */
     @Override
-    public T uniqueResult(Map<String, Object> params) {
-        return hibernateGenericDaoImpl.uniqueResult(params);
+    public T uniqueResult(Map<String, ?> params) {
+        return baseGenericDaoImpl.uniqueResult(params);
     }
 
     /* (non-Javadoc)
@@ -184,7 +179,7 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public T uniqueResult(T model) {
-        return hibernateGenericDaoImpl.uniqueResult(model);
+        return baseGenericDaoImpl.uniqueResult(model);
     }
 
     /* (non-Javadoc)
@@ -192,7 +187,171 @@ public class BaseServiceImpl<T, ID extends Serializable> implements IBaseService
      */
     @Override
     public Page<T> queryForPage(Page<T> page, T entity) {
-        return hibernateGenericDaoImpl.queryForPage(page, entity);
+        return baseGenericDaoImpl.queryForPage(page, entity);
     }
+
+	@Override
+	public void saveOrUpdate(T entity) {
+		baseGenericDaoImpl.saveOrUpdate(entity);
+	}
+
+	@Override
+	public int updateBatch(T setValue, T params) {
+		return baseGenericDaoImpl.updateBatch(setValue, params);
+	}
+
+	@Override
+	public int updateBatch(T setValue, Map<String, ?> params) {
+		return baseGenericDaoImpl.updateBatch(setValue, params);
+	}
+
+	@Override
+	public int deleteBatch(T entity) {
+		return baseGenericDaoImpl.deleteBatch(entity);
+	}
+
+	@Override
+	public int deleteBatch(Map<String, ?> params) {
+		return baseGenericDaoImpl.deleteBatch(params);
+	}
+
+	@Override
+	public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
+		return baseGenericDaoImpl.pagedQueryList(page, params);
+	}
+
+	@Override
+	public List<T> pagedQueryList(Page<T> page, T params) {
+		return baseGenericDaoImpl.pagedQueryList(page, params);
+	}
+
+	@Override
+	public void saveEntityBatch(List<T> list, int batchSize) {
+		for (int i = 0; i< list.size(); i++) {
+			T entity = list.get(i);
+			persist(entity);
+			if (i != 0 && i % batchSize == 0) {
+				baseGenericDaoImpl.flush();
+			}
+		}		
+	}
+
+	@Override
+	public void deleteEntityBatch(List<ID> list) {
+		for (ID id : list) {
+			delete(id);
+		}
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, String propName, Object value) {
+		return baseGenericDaoImpl.queryForPage(page, propName, value);
+	}
+
+	@Override
+	public Page<T> queryForPage(Page<T> page, String propName1, Object value1,
+			String propName2, Object value2) {
+		return baseGenericDaoImpl.queryForPage(page, propName1, value1, propName2, value2);
+	}
+
+	@Override
+	public <X extends Number> List<X> queryPrimitiveList(String field,
+			Class<X> resultClass, Map<String, ?> params) {
+		return baseGenericDaoImpl.queryPrimitiveList(field, resultClass, params);
+	}
+
+	@Override
+	public <X extends Number> X queryForPrimitive(String field,
+			Class<X> resultClass, Map<String, ?> params) {
+		return baseGenericDaoImpl.queryForPrimitive(field, resultClass, params);
+	}
+
+	@Override
+	public <X extends Number> List<X> statsForList(String statsField,
+			Class<X> resultClass, Map<String, ?> params) {
+		return baseGenericDaoImpl.statsForList(statsField, resultClass, params);
+	}
+
+	@Override
+	public <X extends Number> X statsPrimitive(String statsField,
+			Class<X> resultClass, Map<String, ?> params) {
+		return baseGenericDaoImpl.statsPrimitive(statsField, resultClass, params);
+	}
+
+	@Override
+	public List<T> getEntityList(Map<String, ?> params,
+			Map<String, String> orderMaps) {
+		return baseGenericDaoImpl.getEntityList(params, orderMaps);
+	}
+
+	@Override
+	public List<T> getEntityList(String propName, Object value,
+			Map<String, String> orderMaps) {
+		return baseGenericDaoImpl.getEntityList(propName, value, orderMaps);
+	}
+
+	@Override
+	public List<T> getEntityList(String propName1, Object value1,
+			String propName2, Object value2, Map<String, String> orderMaps) {
+		return baseGenericDaoImpl.getEntityList(propName1, value1, propName2, value2, orderMaps);
+	}
+
+	@Override
+	public <E> List<E> getListByHql(String hql, Object... values) {
+		return baseGenericDaoImpl.getListByHql(hql, values);
+	}
+
+	@Override
+	public int deleteBatch(String propName, Object value) {
+		return baseGenericDaoImpl.deleteBatch(propName, value);
+	}
+
+	@Override
+	public int deleteBatch(String propName1, Object value1, String propName2,
+			Object value2) {
+		return baseGenericDaoImpl.deleteBatch(propName1, value1, propName2, value2);
+	}
+
+	@Override
+	public T uniqueResult(String propName1, Object value1, String propName2,
+			Object value2) {
+		return baseGenericDaoImpl.uniqueResult(propName1, value1, propName2, value2);
+	}
+
+	@Override
+	public List<T> pagedQueryList(Page<T> page, String propName, Object value) {
+		return baseGenericDaoImpl.pagedQueryList(page, propName, value);
+	}
+
+	@Override
+	public List<T> pagedQueryList(Page<T> page, String propName1,
+			Object value1, String propName2, Object value2) {
+		return baseGenericDaoImpl.pagedQueryList(page, propName1, value1, propName2, value2);
+	}
+
+	@Override
+	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
+		return baseGenericDaoImpl.pagedQueryByHql(page, hql, values);
+	}
+
+	@Override
+	public <X> List<X> sqlQueryForList(String sql, Class<X> clazz,
+			Object... values) {
+		return baseGenericDaoImpl.sqlQueryForList(sql, clazz, values);
+	}
+
+	@Override
+	public <X> X sqlQueryForObject(String sql, Class<X> clazz, Object... values) {
+		return baseGenericDaoImpl.sqlQueryForObject(sql, clazz, values);
+	}
+	
+	@Override
+	public List<Object[]> sqlQueryForObject(String sql, Object... values) {
+		return baseGenericDaoImpl.sqlQueryForObject(sql, values);
+	}
     
+	@Override
+	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
+		return baseGenericDaoImpl.queryForPageByHql(page, hql, values);
+	}
 }

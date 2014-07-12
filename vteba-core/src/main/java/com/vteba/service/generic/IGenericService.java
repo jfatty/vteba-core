@@ -29,14 +29,14 @@ public interface IGenericService<T, ID extends Serializable> {
     /**
      * @param params
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityList(java.util.Map)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getEntityList(java.util.Map)
      */
     public abstract List<T> getEntityList(Map<String, ?> params);
 
     /**
      * @param params
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityList(java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getEntityList(java.lang.Object)
      */
     public abstract List<T> getEntityList(T params);
 
@@ -44,7 +44,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param params
      * @param orderMaps
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityList(java.lang.Object, java.util.Map)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getEntityList(java.lang.Object, java.util.Map)
      */
     public abstract List<T> getEntityList(T params, Map<String, String> orderMaps);
 
@@ -52,7 +52,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param propName
      * @param value
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityList(java.lang.String, java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getEntityList(java.lang.String, java.lang.Object)
      */
     public abstract List<T> getEntityList(String propName, Object value);
 
@@ -88,13 +88,13 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param propName2
      * @param value2
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getEntityList(java.lang.String, java.lang.Object, java.lang.String, java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getEntityList(java.lang.String, java.lang.Object, java.lang.String, java.lang.Object)
      */
     public abstract List<T> getEntityList(String propName1, Object value1, String propName2, Object value2);
 
     /**
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getAll()
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getAll()
      */
     public abstract List<T> getAll();
 
@@ -102,7 +102,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param page
      * @param params
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPage(com.vteba.tx.generic.Page, java.util.Map)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#queryForPage(com.vteba.tx.generic.Page, java.util.Map)
      */
     public abstract Page<T> queryForPage(Page<T> page, Map<String, ?> params);
 
@@ -156,14 +156,14 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param propertyName
      * @param propertyValue
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByLike(java.lang.String, java.lang.String)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getListByLike(java.lang.String, java.lang.String)
      */
     public abstract List<T> getListByLike(String propertyName, String propertyValue);
 
     /**
      * @param model
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByLike(java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getListByLike(java.lang.Object)
      */
     public abstract List<T> getListByLike(T model);
 
@@ -171,7 +171,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param model
      * @param orderMaps
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#getListByLike(java.lang.Object, java.util.Map)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#getListByLike(java.lang.Object, java.util.Map)
      */
     public abstract List<T> getListByLike(T model, Map<String, String> orderMaps);
 
@@ -179,21 +179,21 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param propertyName
      * @param value
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResult(java.lang.String, java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#uniqueResult(java.lang.String, java.lang.Object)
      */
     public abstract T uniqueResult(String propertyName, Object value);
 
     /**
      * @param params
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResult(java.util.Map)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#uniqueResult(java.util.Map)
      */
     public abstract T uniqueResult(Map<String, ?> params);
 
     /**
      * @param model
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#uniqueResult(java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#uniqueResult(java.lang.Object)
      */
     public abstract T uniqueResult(T model);
 
@@ -201,7 +201,7 @@ public interface IGenericService<T, ID extends Serializable> {
      * @param page
      * @param entity
      * @return
-     * @see com.vteba.tx.hibernate.IHibernateGenericDao#queryForPage(com.vteba.tx.generic.Page, java.lang.Object)
+     * @see com.vteba.tx.hibernate.BaseGenericDao#queryForPage(com.vteba.tx.generic.Page, java.lang.Object)
      */
     public abstract Page<T> queryForPage(Page<T> page, T entity);
     

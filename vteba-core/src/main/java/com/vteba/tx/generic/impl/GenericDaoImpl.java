@@ -24,19 +24,19 @@ public abstract class GenericDaoImpl<T, ID extends Serializable> implements IGen
 	protected Class<T> entityClass;
 	protected SessionFactory sessionFactory;
 	protected SpringJdbcTemplate springJdbcTemplate;
-	protected static String SELECT_ALL = "select e from ${entity} e";
+	protected String selectAll = "select e from ${entity} e";
 	protected String entityName;
 	
 	public GenericDaoImpl(){
 		this.entityClass = ReflectUtils.getClassGenericType(this.getClass());
 		this.entityName = entityClass.getSimpleName();
-		SELECT_ALL = SELECT_ALL.replace("${entity}", entityName);
+		selectAll = selectAll.replace("${entity}", entityName);
 	}
 	
 	public GenericDaoImpl(Class<T> entityClass){
 		this.entityClass = entityClass;
 		this.entityName = entityClass.getSimpleName();
-		SELECT_ALL = SELECT_ALL.replace("${entity}", entityName);
+		selectAll = selectAll.replace("${entity}", entityName);
 	}
 
 	public SpringJdbcTemplate getSpringJdbcTemplate() {

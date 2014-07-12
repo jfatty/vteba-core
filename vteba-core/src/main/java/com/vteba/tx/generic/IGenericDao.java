@@ -232,6 +232,26 @@ public interface IGenericDao<T, ID extends Serializable> {
     public List<T> pagedQueryList(Page<T> page, T params);
     
     /**
+     * 重载的便捷方法。分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param propName 查询条件，属性名
+     * @param value 查询条件属性值
+     * @return 结果List
+     */
+    public List<T> pagedQueryList(Page<T> page, String propName, Object value);
+    
+    /**
+     * 重载的便捷方法。分页查询但是不返回总记录数。
+     * @param page 分页参数，以及排序参数
+     * @param propName1 查询条件，属性名1
+     * @param value1 查询条件，属性值1
+     * @param propName2 查询条件，属性名2
+     * @param value2 查询条件，属性值2
+     * @return 结果List
+     */
+    public List<T> pagedQueryList(Page<T> page, String propName1, Object value1, String propName2, Object value2);
+    
+    /**
      * String属性like查询，使用QBE实现
      * @param propertyName 属性名
      * @param propertyValue 属性值
@@ -286,30 +306,4 @@ public interface IGenericDao<T, ID extends Serializable> {
      */
     public T uniqueResult(T model);
     
-    /**
-     * 查询某一基本类型List
-     * @param field 要查询哪个属性值
-     * @param resultClass 结果类型
-     * @param params 参数条件
-     * @return 属性值List
-     */
-    //public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params);
-    
-    /**
-     * 查询某一实体属性，该属性是基本类型
-     * @param field 属性名
-     * @param resultClass 基本类型类
-     * @param params 参数
-     * @return 基本类型
-     */
-    //public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
-    
-    /**
-     * 对某一属性求和
-     * @param field 要求和的属性
-     * @param resultClass 返回的基本类型类
-     * @param params 条件参数
-     * @return
-     */
-    //public <X extends Number> List<X> sum(String field, Class<X> resultClass, Map<String, ?> params);
 }

@@ -33,11 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vteba.common.exception.BasicException;
-import com.vteba.common.exception.NonUniqueException;
 import com.vteba.common.model.AstModel;
 import com.vteba.lang.bytecode.MethodAccess;
 import com.vteba.tx.generic.Page;
 import com.vteba.tx.generic.impl.GenericDaoImpl;
+import com.vteba.tx.hibernate.BaseGenericDao;
 import com.vteba.tx.hibernate.IHibernateGenericDao;
 import com.vteba.tx.hibernate.MatchType;
 import com.vteba.tx.hibernate.transformer.ColumnAliasParser;
@@ -59,7 +59,7 @@ import com.vteba.utils.reflection.BeanCopyUtils;
 public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		extends GenericDaoImpl<T, ID> implements IHibernateGenericDao<T, ID> {
 
-	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(BaseGenericDaoImpl.class);
 	/**问号*/
 	protected static final String QMARK = "?";
 	protected static final String HQL_KEY = "_sql_";
@@ -131,7 +131,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	//spi
 	@Override
 	public List<T> getEntityList(String propName, Object value) {
-        StringBuilder hql = new StringBuilder(SELECT_ALL);
+        StringBuilder hql = new StringBuilder(selectAll);
         hql.append(" where ").append(propName).append(" = :").append(propName);
         Query query = getSession().createQuery(hql.toString());
         query.setParameter(propName, value);
@@ -145,9 +145,9 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	@Override
 	public List<T> getEntityList(String propName, Object value,
 			Map<String, String> orderMaps) {
-		StringBuilder hql = new StringBuilder(SELECT_ALL);
+		StringBuilder hql = new StringBuilder(selectAll);
         hql.append(" where ").append(propName).append(" = :").append(propName);
-        hql.append(buildHql(null, orderMaps));
+        hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
         query.setParameter(propName, value);
         List<T> list = query.list();
@@ -159,7 +159,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 
 	//spi
     public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2) {
-        StringBuilder hql = new StringBuilder(SELECT_ALL);
+        StringBuilder hql = new StringBuilder(selectAll);
         hql.append(" where ").append(propName1).append(" = :").append(propName1);
         hql.append(" and ").append(propName2).append(" = :").append(propName2);
         Query query = getSession().createQuery(hql.toString());
@@ -175,7 +175,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
     @Override
 	public List<T> getEntityList(String propName1, Object value1,
 			String propName2, Object value2, Map<String, String> orderMaps) {
-    	StringBuilder hql = new StringBuilder(SELECT_ALL);
+    	StringBuilder hql = new StringBuilder(selectAll);
         hql.append(" where ").append(propName1).append(" = :").append(propName1);
         hql.append(" and ").append(propName2).append(" = :").append(propName2);
         hql.append(buildOrderBy(orderMaps));
@@ -200,7 +200,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
     }
 	
 	protected String buildHql(Map<String, ?> params, Map<String, String> orderMaps) {
-        StringBuilder sb = new StringBuilder(SELECT_ALL);
+        StringBuilder sb = new StringBuilder(selectAll);
         boolean b = true;
         if (params != null) {
         	for (String key : params.keySet()) {
@@ -316,7 +316,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @author yinlei
      * date 2012-12-17 下午10:35:09
      */
-	public <E> List<E> getListByHql(String hql, Object... values){
+	public <E> List<E> getListByHql(String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL query, 建议使用 select new 语法 , hql = [{}], parameter = {}.",
 					hql, Arrays.toString(values));
@@ -343,7 +343,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * @author yinlei
      * date 2012-12-17 下午10:35:09
      */
-	public <E> List<E> getListByHql(String hql, Class<E> resultClass, Object... values){
+	public <E> List<E> getListByHql(String hql, Class<E> resultClass, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL query, 使用HqlAliasedResultTransformer转换结果集, hql = [{}], parameter = {}.",
 					hql, Arrays.toString(values));
@@ -485,7 +485,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
      * 1、命名sql中配置了resultClass或resultSetMapping，按规则转换。<br>
      * 2、如果命名sql中没有配置resultClass或resultSetMapping，返回List&lt;Object[]&gt;。
      *    可能出现转型错误。不建议(deprecated)这么用。<br>
-     * 3、如果没有配置resultClass或resultSetMapping，建议指定sql栏位别名使用{@link IHibernateGenericDao#getListByNamedSql}
+     * 3、如果没有配置resultClass或resultSetMapping，建议指定sql栏位别名使用{@link BaseGenericDao#getListByNamedSql}
      * @param namedSql 命名sql名
      * @param values 命名sql参数
      * @author yinlei
@@ -651,7 +651,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 				}
 			} else {
 				logger.info("SQL Query, use position parameter binding.");
-				sqlQuery.setParameter(i + 1, values[i]);
+				sqlQuery.setParameter(i, values[i]);
 			}
 		}
 		setResultTransformer(sqlQuery, resultClass, sql);
@@ -798,7 +798,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	
 	//spi
 	public List<T> getAll() {
-	    Query query = getSession().createQuery(SELECT_ALL);
+	    Query query = getSession().createQuery(selectAll);
         return query.list();
     }
 	
@@ -1051,7 +1051,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		return query;
 	}
 	//self
-	public List<Object[]> sqlQueryForObject(String sql, Object... values){
+	public List<Object[]> sqlQueryForObject(String sql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("sqlQueryForObject, sql = [{}], parameter = {}.", sql, Arrays.toString(values));
 		}
@@ -1245,6 +1245,37 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         List<T> result = query.list();
         return result;
     }
+	
+	@Override
+	public List<T> pagedQueryList(Page<T> page, String propName, Object value) {
+		StringBuilder sb = new StringBuilder(selectAll);
+        sb.append(" where ").append(propName).append(" = :").append(propName);
+        sb.append(buildOrderBy(page.getOrders()));
+        
+        Query query = getSession().createQuery(sb.toString());
+        query.setParameter(propName, value);
+        
+        setParameterToQuery(page, query);
+		List<T> result = query.list();
+		return result;
+	}
+
+	@Override
+	public List<T> pagedQueryList(Page<T> page, String propName1,
+			Object value1, String propName2, Object value2) {
+		StringBuilder sb = new StringBuilder(selectAll);
+        sb.append(" where ").append(propName1).append(" = :").append(propName1);
+        sb.append(" and ").append(propName2).append(" = :").append(propName2);
+        sb.append(buildOrderBy(page.getOrders()));
+        
+        Query query = getSession().createQuery(sb.toString());
+        query.setParameter(propName1, value1);
+        query.setParameter(propName2, value2);
+        
+        setParameterToQuery(page, query);
+        List<T> result = query.list();
+	    return result;
+	}
 	
 	//self
 	public Page<T> queryForPage(Page<T> page, DetachedCriteria detachedCriteria) {
@@ -1647,24 +1678,4 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         return resultMap;
     }
 
-    public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params) {
-    	StringBuilder sb = new StringBuilder("select ");
-    	sb.append(field).append(" from ").append(entityName);
-    	sb.append(buildWhere(params));
-    	Query query = createQuery(sb.toString(), params);
-		query.setResultTransformer(new PrimitiveResultTransformer(resultClass));
-		List<X> list = query.list();
-		if (list == null) {
-			return Collections.emptyList();
-		}
-		return list;
-    }
-    
-    public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params) {
-    	List<X> list = queryPrimitiveList(field, resultClass, params);
-    	if (list.size() == 0 || list.size() >= 2) {
-    		throw new NonUniqueException("查询结果不唯一。");
-    	}
-    	return list.get(0);
-    }
 }
