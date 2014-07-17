@@ -16,7 +16,7 @@ import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
  */
 public abstract class GenericServiceImpl<T, ID extends Serializable> implements IGenericService<T, ID> {
 
-	protected IHibernateGenericDao<T, ID> baseGenericDaoImpl;
+	protected IHibernateGenericDao<T, ID> hibernateGenericDaoImpl;
 	protected SpringJdbcTemplate springJdbcTemplate;
 	
 	/**
@@ -32,18 +32,18 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	
 	/**
 	 * 延迟到子类中注入具体dao实例
-	 * @param baseGenericDaoImpl 实现baseGenericDaoImpl具体的dao实例
+	 * @param hibernateGenericDaoImpl 实现hibernateGenericDaoImpl具体的dao实例
 	 * @author yinlei
 	 * date 2012-6-5 下午4:04:41
 	 */
-	public abstract void setbaseGenericDaoImpl(IHibernateGenericDao<T, ID> baseGenericDaoImpl);
+	public abstract void setHibernateGenericDaoImpl(IHibernateGenericDao<T, ID> hibernateGenericDaoImpl);
 	
 	/* (non-Javadoc)
      * @see com.vteba.service.generic.impl.IBaseService#save(T)
      */
     @Override
     public ID save(T entity) {
-        return baseGenericDaoImpl.save(entity);
+        return hibernateGenericDaoImpl.save(entity);
     }
 
     /* (non-Javadoc)
@@ -51,7 +51,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public void persist(T entity) {
-        baseGenericDaoImpl.persist(entity);
+        hibernateGenericDaoImpl.persist(entity);
     }
 
     /* (non-Javadoc)
@@ -59,7 +59,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getEntityList(Map<String, ?> params) {
-        return baseGenericDaoImpl.getEntityList(params);
+        return hibernateGenericDaoImpl.getEntityList(params);
     }
 
     /* (non-Javadoc)
@@ -67,7 +67,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getEntityList(T params) {
-        return baseGenericDaoImpl.getEntityList(params);
+        return hibernateGenericDaoImpl.getEntityList(params);
     }
 
     /* (non-Javadoc)
@@ -75,7 +75,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getEntityList(T params, Map<String, String> orderMaps) {
-        return baseGenericDaoImpl.getEntityList(params, orderMaps);
+        return hibernateGenericDaoImpl.getEntityList(params, orderMaps);
     }
 
     /* (non-Javadoc)
@@ -83,7 +83,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getEntityList(String propName, Object value) {
-        return baseGenericDaoImpl.getEntityList(propName, value);
+        return hibernateGenericDaoImpl.getEntityList(propName, value);
     }
 
     /* (non-Javadoc)
@@ -91,12 +91,12 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public void update(T entity) {
-        baseGenericDaoImpl.update(entity);
+        hibernateGenericDaoImpl.update(entity);
     }
 
     @Override
     public void saveOrUpdate(T entity) {
-    	baseGenericDaoImpl.saveOrUpdate(entity);
+    	hibernateGenericDaoImpl.saveOrUpdate(entity);
     }
     
     /* (non-Javadoc)
@@ -104,7 +104,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2) {
-        return baseGenericDaoImpl.getEntityList(propName1, value1, propName2, value2);
+        return hibernateGenericDaoImpl.getEntityList(propName1, value1, propName2, value2);
     }
 
     /* (non-Javadoc)
@@ -112,7 +112,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getAll() {
-        return baseGenericDaoImpl.getAll();
+        return hibernateGenericDaoImpl.getAll();
     }
 
     /* (non-Javadoc)
@@ -120,7 +120,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public Page<T> queryForPage(Page<T> page, Map<String, ?> params) {
-        return baseGenericDaoImpl.queryForPage(page, params);
+        return hibernateGenericDaoImpl.queryForPage(page, params);
     }
 
     /* (non-Javadoc)
@@ -128,7 +128,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T load(Class<T> entity, ID id) {
-        return baseGenericDaoImpl.load(entity, id);
+        return hibernateGenericDaoImpl.load(entity, id);
     }
 
     /* (non-Javadoc)
@@ -136,7 +136,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T load(ID id) {
-        return baseGenericDaoImpl.load(id);
+        return hibernateGenericDaoImpl.load(id);
     }
 
     /* (non-Javadoc)
@@ -144,7 +144,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T get(ID id) {
-        return baseGenericDaoImpl.get(id);
+        return hibernateGenericDaoImpl.get(id);
     }
 
     /* (non-Javadoc)
@@ -152,7 +152,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public void delete(ID id) {
-        baseGenericDaoImpl.delete(id);
+        hibernateGenericDaoImpl.delete(id);
     }
 
     /* (non-Javadoc)
@@ -160,7 +160,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public void delete(T entity) {
-        baseGenericDaoImpl.delete(entity);
+        hibernateGenericDaoImpl.delete(entity);
     }
 
     /* (non-Javadoc)
@@ -168,7 +168,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getListByLike(String propertyName, String propertyValue) {
-        return baseGenericDaoImpl.getListByLike(propertyName, propertyValue);
+        return hibernateGenericDaoImpl.getListByLike(propertyName, propertyValue);
     }
 
     /* (non-Javadoc)
@@ -176,7 +176,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getListByLike(T model) {
-        return baseGenericDaoImpl.getListByLike(model);
+        return hibernateGenericDaoImpl.getListByLike(model);
     }
 
     /* (non-Javadoc)
@@ -184,7 +184,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public List<T> getListByLike(T model, Map<String, String> orderMaps) {
-        return baseGenericDaoImpl.getListByLike(model, orderMaps);
+        return hibernateGenericDaoImpl.getListByLike(model, orderMaps);
     }
 
     /* (non-Javadoc)
@@ -192,7 +192,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T uniqueResult(String propertyName, Object value) {
-        return baseGenericDaoImpl.uniqueResult(propertyName, value);
+        return hibernateGenericDaoImpl.uniqueResult(propertyName, value);
     }
 
     /* (non-Javadoc)
@@ -200,7 +200,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T uniqueResult(Map<String, ?> params) {
-        return baseGenericDaoImpl.uniqueResult(params);
+        return hibernateGenericDaoImpl.uniqueResult(params);
     }
 
     /* (non-Javadoc)
@@ -208,7 +208,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public T uniqueResult(T model) {
-        return baseGenericDaoImpl.uniqueResult(model);
+        return hibernateGenericDaoImpl.uniqueResult(model);
     }
 
     /* (non-Javadoc)
@@ -216,16 +216,16 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
      */
     @Override
     public Page<T> queryForPage(Page<T> page, T entity) {
-        return baseGenericDaoImpl.queryForPage(page, entity);
+        return hibernateGenericDaoImpl.queryForPage(page, entity);
     }
 	
 	@Override
 	public void saveEntityBatch(List<T> list, int batchSize) {
 		for (int i = 0; i< list.size(); i++) {
 			T entity = list.get(i);
-			persist(entity);
+			save(entity);
 			if (i != 0 && i % batchSize == 0) {
-				baseGenericDaoImpl.flush();
+				hibernateGenericDaoImpl.flush();
 			}
 		}
 	}
@@ -239,32 +239,32 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 
 	@Override
 	public int updateBatch(T setValue, T params) {
-		return baseGenericDaoImpl.updateBatch(setValue, params);
+		return hibernateGenericDaoImpl.updateBatch(setValue, params);
 	}
 
 	@Override
 	public int updateBatch(T setValue, Map<String, ?> params) {
-		return baseGenericDaoImpl.updateBatch(setValue, params);
+		return hibernateGenericDaoImpl.updateBatch(setValue, params);
 	}
 
 	@Override
 	public int deleteBatch(T entity) {
-		return baseGenericDaoImpl.deleteBatch(entity);
+		return hibernateGenericDaoImpl.deleteBatch(entity);
 	}
 
 	@Override
 	public int deleteBatch(Map<String, ?> params) {
-		return baseGenericDaoImpl.deleteBatch(params);
+		return hibernateGenericDaoImpl.deleteBatch(params);
 	}
 
     @Override
     public List<T> pagedQueryList(Page<T> page, Map<String, ?> params) {
-        return pagedQueryList(page, params);
+        return hibernateGenericDaoImpl.pagedQueryList(page, params);
     }
 
     @Override
     public List<T> pagedQueryList(Page<T> page, T params) {
-        return baseGenericDaoImpl.pagedQueryList(page, params);
+        return hibernateGenericDaoImpl.pagedQueryList(page, params);
     }
 	
 }
