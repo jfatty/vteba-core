@@ -32,7 +32,7 @@ public abstract class GenericServiceImpl<T, ID extends Serializable> implements 
 	
 	/**
 	 * 延迟到子类中注入具体dao实例
-	 * @param hibernateGenericDaoImpl 实现hibernateGenericDaoImpl具体的dao实例
+	 * @param hibernateGenericDaoImpl 实现IHibernateGenericDao具体的dao实例
 	 * @author yinlei
 	 * date 2012-6-5 下午4:04:41
 	 */

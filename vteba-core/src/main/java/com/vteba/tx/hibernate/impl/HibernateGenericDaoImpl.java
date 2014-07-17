@@ -59,7 +59,7 @@ import com.vteba.utils.reflection.BeanCopyUtils;
 public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		extends GenericDaoImpl<T, ID> implements IHibernateGenericDao<T, ID> {
 
-	private static final Logger logger = LoggerFactory.getLogger(BaseGenericDaoImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(HibernateGenericDaoImpl.class);
 	/**问号*/
 	protected static final String QMARK = "?";
 	protected static final String HQL_KEY = "_sql_";
