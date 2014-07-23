@@ -132,9 +132,9 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	@Override
 	public List<T> getEntityList(String propName, Object value) {
         StringBuilder hql = new StringBuilder(selectAll);
-        hql.append(" where ").append(propName).append(" = :").append(propName);
+        hql.append(" where ").append(propName).append(" = ?1");
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(propName, value);
+        query.setParameter(Integer.toString(1), value);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -146,10 +146,10 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	public List<T> getEntityList(String propName, Object value,
 			Map<String, String> orderMaps) {
 		StringBuilder hql = new StringBuilder(selectAll);
-        hql.append(" where ").append(propName).append(" = :").append(propName);
+        hql.append(" where ").append(propName).append(" = ?1");
         hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(propName, value);
+        query.setParameter(Integer.toString(1), value);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -160,11 +160,11 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	//spi
     public List<T> getEntityList(String propName1, Object value1, String propName2, Object value2) {
         StringBuilder hql = new StringBuilder(selectAll);
-        hql.append(" where ").append(propName1).append(" = :").append(propName1);
-        hql.append(" and ").append(propName2).append(" = :").append(propName2);
+        hql.append(" where ").append(propName1).append(" = ?1");
+        hql.append(" and ").append(propName2).append(" = ?2");
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(propName1, value1);
-        query.setParameter(propName2, value2);
+        query.setParameter(Integer.toString(1), value1);
+        query.setParameter(Integer.toString(2), value2);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -176,12 +176,12 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	public List<T> getEntityList(String propName1, Object value1,
 			String propName2, Object value2, Map<String, String> orderMaps) {
     	StringBuilder hql = new StringBuilder(selectAll);
-        hql.append(" where ").append(propName1).append(" = :").append(propName1);
-        hql.append(" and ").append(propName2).append(" = :").append(propName2);
+        hql.append(" where ").append(propName1).append(" = ?1");
+        hql.append(" and ").append(propName2).append(" = ?2");
         hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(propName1, value1);
-        query.setParameter(propName2, value2);
+        query.setParameter(Integer.toString(1), value1);
+        query.setParameter(Integer.toString(2), value2);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
