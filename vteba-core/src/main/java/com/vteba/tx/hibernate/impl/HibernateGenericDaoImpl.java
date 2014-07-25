@@ -999,18 +999,37 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	//self
-	public T uniqueResultByHql(String hql, Object... values) {
+	/**
+     * hql查询唯一对象，hql语句要查询整个对象。否则返回List&ltObject[]&gt。
+     * @param hql hql语句
+     * @param values hql参数
+     * @return 对象结果
+     */
+	public <X> X uniqueResultByHql(String hql, Object... values) {
 		Query query = createQuery(hql, values);
-		return (T) query.uniqueResult();
+		return (X) query.uniqueResult();
 	}
 	
 	//self
-	public T uniqueResultByNamedHql(String hql, Object... values) {
+	/**
+	 * 命名hql查询唯一对象，hql语句要查询整个对象。否则返回List&ltObject[]&gt。
+	 * @param hql hql语句
+	 * @param values hql参数
+	 * @return 对象结果
+	 */
+	public <X> X uniqueResultByNamedHql(String hql, Object... values) {
 		Query query = createNamedQuery(hql, values);
-		return (T) query.uniqueResult();
+		return (X) query.uniqueResult();
 	}
 	
 	//self
+	/**
+	 * hql查询唯一对象，根据别名进行转换。如果插叙整个对象，请使用{@link #uniqueResultByHql(String, Object...)}
+	 * @param hql hql语句
+	 * @param resultClass 结果类
+	 * @param values hql参数
+	 * @return 唯一对象
+	 */
 	public <X> X uniqueResultByHql(String hql, Class<X> resultClass, Object... values) {
 		return uniqueResultByHql(hql, resultClass, false, values);
 	}
