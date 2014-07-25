@@ -2,9 +2,8 @@ package com.vteba.service.scheduling.quartz;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -12,6 +11,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -22,6 +23,11 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.support.ArgumentConvertingMethodInvoker;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.quartz.JobMethodInvocationFailedException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.Assert;
@@ -72,8 +78,9 @@ import org.springframework.util.ReflectionUtils;
 public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethodInvoker
         implements FactoryBean<JobDetail>, BeanNameAware, BeanClassLoaderAware, BeanFactoryAware, InitializingBean {
 
+    private static RedisTemplate<String, Long> redisTemplate;
+    
     private static Class<?> jobDetailImplClass;
-
     private static Method setResultMethod;
 
     static {
@@ -135,7 +142,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
     /**
      * Specify whether or not multiple jobs should be run in a concurrent
      * fashion. The behavior when one does not want concurrent jobs to be
-     * executed is realized through adding the {@link StatefulJob} interface.
+     * executed is realized through adding the {StatefulJob} interface.
      * More information on stateful versus stateless jobs can be found
      * <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/tutorial-lesson-03">here</a>.
      * <p>The default setting is to run jobs concurrently.
@@ -191,6 +198,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public void afterPropertiesSet() throws ClassNotFoundException, NoSuchMethodException {
         prepare();
@@ -232,7 +240,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
 //                this.jobDetail.addJobListener(jobListenerName);
 //            }
 //        }
-
+        redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
         postProcessJobDetail(this.jobDetail);
     }
 
@@ -294,7 +302,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
      */
     public static class MethodInvokingJob extends QuartzJobBean {
 
-        protected static final Log logger = LogFactory.getLog(MethodInvokingJob.class);
+        protected static final Logger logger = LoggerFactory.getLogger(MethodInvokingJob.class);
 
         private MethodInvoker methodInvoker;
 
@@ -305,13 +313,81 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
             this.methodInvoker = methodInvoker;
         }
 
+        public HashOperations<String, String, Long> hashOps() {
+            return redisTemplate.opsForHash();
+        }
+        
+        public Long redisTime() {
+            return redisTemplate.execute(new RedisCallback<Long>() {
+
+                @Override
+                public Long doInRedis(RedisConnection connection) throws DataAccessException {
+                    return connection.time();
+                }
+            });
+        }
+        
         /**
          * Invoke the method via the MethodInvoker.
          */
         @Override
         protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
             try {
-                ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
+                JobDetail jobDetail = context.getJobDetail();
+                String name = jobDetail.getKey().getName();
+                String jobKey = State.TASK + name;
+                String table = State.HASH + name;
+                
+                Date currentDate = context.getScheduledFireTime();
+                Date nextFireDate = context.getNextFireTime();
+                
+                long scheduledDate = currentDate.getTime();
+                long nextDate = nextFireDate.getTime();
+                
+                String currentJobName = jobKey + scheduledDate;
+                String nextJobName = jobKey + nextDate;
+                
+                // 抓取任务，同时将任务标示为执行中
+                Long status = redisTemplate.opsForValue().getAndSet(currentJobName, State.RUN);
+                
+                if (status == null || status == State.UN) {// 未执行，将执行
+                    if (logger.isInfoEnabled()) {
+                        logger.info("计划在[{}]执行的任务，正在执行中，下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                    ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
+                    if (logger.isInfoEnabled()) {
+                        logger.info("计划在[{}]执行的任务，执行成功，下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                    // 执行成功，将下一次任务表示为未执行
+                    redisTemplate.opsForValue().set(nextJobName, State.UN);
+                    // 将本次任务标示为执行成功
+                    hashOps().put(table , currentJobName, State.OK);
+                } else if (status == State.RUN) {// 正在执行，日志记录一下，跳过
+                    if (logger.isInfoEnabled()) {
+                        logger.info("计划在[{}]执行的任务，正在执行中，跳过。下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                } else if (status == State.OK) {// 成功，逃过（理论上，这个其实是不会发生的）
+                    if (logger.isInfoEnabled()) {
+                        logger.info("计划在[{}]执行的任务，已被其他节点成功执行，跳过。下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                } else if (status == State.ERR) {// 任务异常，尝试执行
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行一次。下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                    ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
+                    redisTemplate.opsForValue().set(nextJobName, State.UN);
+                    hashOps().put(table, currentJobName, State.OK);
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行成功。下次执行时间是[{}]。", currentDate, nextFireDate);
+                    }
+                    
+                } else {// 未知任务状态，记录日志，跳过
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("未知任务状态[{}]，跳过。", status);
+                    }
+                }
+                
+                
             }
             catch (InvocationTargetException ex) {
                 if (ex.getTargetException() instanceof JobExecutionException) {
@@ -332,9 +408,10 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
 
 
     /**
-     * 扩展MethodInvokingJob，使用 PersistJobDataAfterExecution and/or DisallowConcurrentExecution
+     * <p>扩展MethodInvokingJob，使用 PersistJobDataAfterExecution and/or DisallowConcurrentExecution
      * 这两个注解标注的类，Quartz会减产jobs是否是有状态的，如果有，Quartz不会让他们互相干扰。
-     * Quartz checks whether or not jobs are stateful and if so,
+     * 
+     * <p>Quartz checks whether or not jobs are stateful and if so,
      * won't let jobs interfere with each other.
      */
     @PersistJobDataAfterExecution
