@@ -249,12 +249,13 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         
         // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
         Long redisTime = redisTemplate.opsForValue().get(group + name);
-        if (redisTime == null || redisTime == 0L || redisTime == 1L) {// 还没有设置启动时间
+        Long redisDate = redisTime();
+        if (redisTime == null || redisTime < redisDate) {// 还没有设置启动时间，或者是过去的时间
             redisTime = redisTime() + this.startDelay;
+            redisTemplate.opsForValue().set(group + name, redisTime);// 重新设置启动时间
             if (logger.isInfoEnabled()) {
                 logger.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
             }
-            redisTemplate.opsForValue().set(group + name, redisTime);// 重新设置启动时间
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info("集群中已有其他节点将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
