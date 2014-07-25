@@ -35,6 +35,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.MethodInvoker;
 import org.springframework.util.ReflectionUtils;
 
+import com.vteba.utils.date.DateUtils;
+
 /**
  * {@link org.springframework.beans.factory.FactoryBean} that exposes a
  * {@link org.quartz.JobDetail} object which delegates job execution to a
@@ -352,11 +354,11 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                 
                 if (status == null || status == State.UN) {// 未执行，将执行
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，正在执行中，下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.info("计划在[{}]执行的任务，正在执行中，下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，执行成功，下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.info("计划在[{}]执行的任务，执行成功，下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     // 执行成功，将下一次任务表示为未执行
                     redisTemplate.opsForValue().set(nextJobName, State.UN);
@@ -364,21 +366,21 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                     hashOps().put(table , currentJobName, State.OK);
                 } else if (status == State.RUN) {// 正在执行，日志记录一下，跳过
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，正在执行中，跳过。下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.info("计划在[{}]执行的任务，正在执行中，跳过。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.OK) {// 成功，逃过（理论上，这个其实是不会发生的）
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，已被其他节点成功执行，跳过。下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.info("计划在[{}]执行的任务，已被其他节点成功执行，跳过。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.ERR) {// 任务异常，尝试执行
                     if (logger.isWarnEnabled()) {
-                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行一次。下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行一次。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
                     redisTemplate.opsForValue().set(nextJobName, State.UN);
                     hashOps().put(table, currentJobName, State.OK);
                     if (logger.isWarnEnabled()) {
-                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行成功。下次执行时间是[{}]。", currentDate, nextFireDate);
+                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行成功。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     
                 } else {// 未知任务状态，记录日志，跳过
