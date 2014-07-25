@@ -1364,7 +1364,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	}
 	
 	//self
-	public Page<T> queryForPageByHql(Page<T> page, String hql, Object... values) {
+	public <X> Page<X> queryForPageByHql(Page<X> page, String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL Paged Query, hql = [{}], parameter = {}, page from [{}] to [{}].", 
 					hql, Arrays.toString(values), page.getStartIndex(), page.getPageSize());
@@ -1373,20 +1373,20 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 		long totalRecordCount = countHqlResult(hql, values);
 		page.setTotalRecordCount(totalRecordCount);
 		setParameterToQuery(page, query);
-		List<T> result = query.list();
+		List<X> result = query.list();
 		page.setResult(result);
 		return page;
 	}
 	
 	//self
-	public List<T> pagedQueryByHql(Page<T> page, String hql, Object... values) {
+	public <X> List<X> pagedQueryByHql(Page<X> page, String hql, Object... values) {
 		if (logger.isInfoEnabled()) {
 			logger.info("HQL Paged Query, hql = [{}], parameter = {}, page from [{}] to [{}].", 
 					hql, Arrays.toString(values), page.getStartIndex(), page.getPageSize());
 		}
 		Query query = createQuery(hql, values);
 		setParameterToQuery(page, query);
-		List<T> result = query.list();
+		List<X> result = query.list();
 		return result;
 	}
 	
@@ -1410,7 +1410,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
 	 * @author yinlei
 	 * date 2012-5-14 下午11:43:13
 	 */
-	protected Query setParameterToQuery(Page<T> page, Query query){
+	protected <X> Query setParameterToQuery(Page<X> page, Query query){
 		if (page.getPageSize() < 0) {
 			throw new BasicException("Pagesize must be lager than 0.");
 		}

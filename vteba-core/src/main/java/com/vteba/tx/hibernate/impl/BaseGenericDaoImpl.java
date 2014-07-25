@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Query;
+import org.hibernate.SessionFactory;
 
 import com.vteba.common.exception.NonUniqueException;
 import com.vteba.tx.generic.Page;
@@ -14,7 +15,7 @@ import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.utils.ofbiz.LangUtils;
 
 @SuppressWarnings("unchecked")
-public abstract class BaseGenericDaoImpl<T, ID extends Serializable> extends
+public class BaseGenericDaoImpl<T, ID extends Serializable> extends
 		HibernateGenericDaoImpl<T, ID> implements BaseGenericDao<T, ID> {
 
 	public BaseGenericDaoImpl() {
@@ -25,9 +26,9 @@ public abstract class BaseGenericDaoImpl<T, ID extends Serializable> extends
 		super(entityClass);
 	}
 	
-//	public void setSessionFactory(SessionFactory sessionFactory) {
-//
-//	}
+	public void setSessionFactory(SessionFactory sessionFactory) {
+
+	}
 
 	@Override
 	public Page<T> queryForPage(Page<T> page, String propName, Object value) {
@@ -70,6 +71,10 @@ public abstract class BaseGenericDaoImpl<T, ID extends Serializable> extends
 	    return page;
 	}
 	
+	/**
+	 * {@link #queryForObject(String, Class, Object...)}
+	 */
+	@Deprecated
 	public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass,
 			Map<String, ?> params) {
 		StringBuilder sb = new StringBuilder("select distinct ");
@@ -84,6 +89,10 @@ public abstract class BaseGenericDaoImpl<T, ID extends Serializable> extends
 		return list;
 	}
 
+	/**
+	 * {@link #queryForList(String, Class, Object...)}
+	 */
+	@Deprecated
 	public <X> X queryForPrimitive(String field, Class<X> resultClass,
 			Map<String, ?> params) {
 		List<X> list = queryPrimitiveList(field, resultClass, params);
@@ -93,12 +102,14 @@ public abstract class BaseGenericDaoImpl<T, ID extends Serializable> extends
 		return list.get(0);
 	}
 
+	@Deprecated
 	@Override
 	public <X extends Number> List<X> statsForList(String statsField,
 			Class<X> resultClass, Map<String, ?> params) {
 		return queryPrimitiveList(statsField, resultClass, params);
 	}
 
+	@Deprecated
 	@Override
 	public <X extends Number> X statsPrimitive(String statsField,
 			Class<X> resultClass, Map<String, ?> params) {
