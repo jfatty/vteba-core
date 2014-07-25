@@ -9,6 +9,8 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.MutablePropertyValues;
@@ -26,6 +28,8 @@ import org.springframework.scheduling.quartz.JobDetailAwareTrigger;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
+
+import com.vteba.utils.date.DateUtils;
 
 /**
  * A Spring {@link FactoryBean} for creating a Quartz {@link org.quartz.CronTrigger}
@@ -58,7 +62,8 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
 
     /** Constants for the CronTrigger class */
     private static final Constants constants = new Constants(CronTrigger.class);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(CronTriggerFactoryBean.class);
+    
     @Autowired
     private RedisTemplate<String, Long> redisTemplate;
 
@@ -243,10 +248,18 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
             this.jobDataMap.put(JobDetailAwareTrigger.JOB_DETAIL_KEY, this.jobDetail);
         }
         // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
+        // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
         Long redisTime = redisTemplate.opsForValue().get(group + name);
-        if (redisTime == null || redisTime == 0L) {// 还没有设置启动时间
+        if (redisTime == null || redisTime == 0L || redisTime == 1L) {// 还没有设置启动时间
             redisTime = redisTime() + this.startDelay;
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
+            }
             redisTemplate.opsForValue().set(group + name, redisTime);// 重新设置启动时间
+        } else {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("集群中已有其他节点将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
+            }
         }
         this.startTime = new Date(redisTime);
         
