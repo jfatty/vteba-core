@@ -348,41 +348,43 @@ public interface BaseService<T, ID extends Serializable> {
      */
     public List<T> getListByLike(T model, Map<String, String> orderMaps);
     
-    /**
-     * 查询实体中某一属性的值，该属性是基本类型
-     * @param field 要查询哪个属性值
-     * @param resultClass 结果类型
-     * @param params 参数条件
-     * @return 属性值List
-     */
-    public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params);
+//    /**
+//     * 查询实体中某一属性的值，该属性是基本类型
+//     * @param field 要查询哪个属性值
+//     * @param resultClass 结果类型
+//     * @param params 参数条件
+//     * @return 属性值List
+//     */
+//    @Deprecated
+//    public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass, Map<String, ?> params);
+//    
+//    /**
+//     * 查询实体中某一属性的值，该属性是基本类型
+//     * @param field 属性名
+//     * @param resultClass 基本类型类
+//     * @param params 参数
+//     * @return 基本类型
+//     */
+//    @Deprecated
+//    public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
     
-    /**
-     * 查询实体中某一属性的值，该属性是基本类型
-     * @param field 属性名
-     * @param resultClass 基本类型类
-     * @param params 参数
-     * @return 基本类型
-     */
-    public <X> X queryForPrimitive(String field, Class<X> resultClass, Map<String, ?> params);
-    
-    /**
-     * 对某一属性执行统计函数
-     * @param statsField 要被统计的属性和函数，如：sum(salary)，avg(age)，count(userId)，max(salary)，min(age)
-     * @param resultClass 返回的基本类型类
-     * @param params 条件参数
-     * @return 统计结果list
-     */
+//    /**
+//     * 对某一属性执行统计函数
+//     * @param statsField 要被统计的属性和函数，如：sum(salary)，avg(age)，count(userId)，max(salary)，min(age)
+//     * @param resultClass 返回的基本类型类
+//     * @param params 条件参数
+//     * @return 统计结果list
+//     */
     //@Deprecated
     //public <X extends Number> List<X> statsForList(String statsField, Class<X> resultClass, Map<String, ?> params);
     
-    /**
-     * 对某一属性执行统计函数
-     * @param statsField 要被统计的属性和函数，如：sum(salary)，avg(age)，count(userId)，max(salary)，min(age)
-     * @param resultClass 返回的基本类型类
-     * @param params 条件参数
-     * @return 统计结果
-     */
+//    /**
+//     * 对某一属性执行统计函数
+//     * @param statsField 要被统计的属性和函数，如：sum(salary)，avg(age)，count(userId)，max(salary)，min(age)
+//     * @param resultClass 返回的基本类型类
+//     * @param params 条件参数
+//     * @return 统计结果
+//     */
     //@Deprecated
     //public <X extends Number> X statsPrimitive(String statsField, Class<X> resultClass, Map<String, ?> params);
     
