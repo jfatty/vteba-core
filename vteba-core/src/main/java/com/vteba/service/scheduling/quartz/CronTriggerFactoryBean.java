@@ -248,7 +248,6 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
             this.jobDataMap.put(JobDetailAwareTrigger.JOB_DETAIL_KEY, this.jobDetail);
         }
         // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
-        // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
         Long redisTime = redisTemplate.opsForValue().get(group + name);
         Long redisDate = redisTime();
         if (redisTime == null || redisTime < redisDate) {// 还没有设置启动时间，或者是过去的时间
