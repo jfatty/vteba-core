@@ -285,10 +285,7 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
             	
             	// 任务的名义执行时间（server时间）
             	redisTemplate.opsForValue().set(namingTimeKey, jobNamingTime);
-				if (logger.isInfoEnabled()) {
-					logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
-							.toDateString(new Date(jobNamingTime), "yyyy-MM-dd HH:mm:ss"));
-				}
+				log(key, jobNamingTime);
             } else {// server时间比redis时间快
                 if (logger.isInfoEnabled()) {
                     logger.info("应用服务器App Server时间比Redis Server时间快，将以App Server时间为准，启动定时任务[{}]。", key);
@@ -303,10 +300,7 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
             	
             	// 任务的名义执行时间（server时间）
             	redisTemplate.opsForValue().set(namingTimeKey, jobNamingTime);
-				if (logger.isInfoEnabled()) {
-					logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
-							.toDateString(new Date(jobNamingTime), "yyyy-MM-dd HH:mm:ss"));
-				}
+				log(key, jobNamingTime);
             }
         } else {// 集群中已经有节点启动了该定时任务
             if (logger.isInfoEnabled()) {
@@ -324,56 +318,14 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         		// 中间过程取整了，所以num+1
         	    long start = jobNamingTime + (count + 1) * this.repeatInterval;
         		this.startTime = new Date(start);
-        		if (logger.isInfoEnabled()) {
-                    logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
-                            .toDateString(new Date(start), "yyyy-MM-dd HH:mm:ss"));
-                }
+        		log(key, start);
         	} else {
         	    long start = jobNamingTime + (count) * this.repeatInterval;
         		this.startTime = new Date(start);
-        		if (logger.isInfoEnabled()) {
-                    logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
-                            .toDateString(new Date(start), "yyyy-MM-dd HH:mm:ss"));
-                }
+        		log(key, start);
         	}
         }
         
-        
-//        if (jobRedisTime == null || jobRedisTime < redisTime) {// 还没有设置启动时间，或者是过去的时间
-//        	jobRedisTime = redisTime() + this.startDelay;
-//            redisTemplate.opsForValue().set(group + name, jobRedisTime);// 重新设置启动时间
-//            if (logger.isInfoEnabled()) {
-//                logger.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(jobRedisTime), "yyyy-MM-dd HH:mm:ss"));
-//            }
-//        } else {
-//            if (logger.isInfoEnabled()) {
-//                logger.info("集群中已有其他节点将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(jobRedisTime), "yyyy-MM-dd HH:mm:ss"));
-//            }
-//        }
-//        this.startTime = new Date(jobRedisTime);
-        
-        // 忽略设置的开始时间
-//        if (this.startDelay > 0 || this.startTime == null) {
-//            // 以redis server的时间为开始，统一各应用server
-//            this.startTime = new Date(redisTime + this.startDelay);
-//            redisTemplate.opsForValue().set(name, redisTime);
-//        }
-
-        /*
-        SimpleTriggerImpl sti = new SimpleTriggerImpl();
-        sti.setName(this.name);
-        sti.setGroup(this.group);
-        sti.setJobKey(this.jobDetail.getKey());
-        sti.setJobDataMap(this.jobDataMap);
-        sti.setStartTime(this.startTime);
-        sti.setRepeatInterval(this.repeatInterval);
-        sti.setRepeatCount(this.repeatCount);
-        sti.setPriority(this.priority);
-        sti.setMisfireInstruction(this.misfireInstruction);
-        cti.setDescription(this.description);
-        this.simpleTrigger = sti;
-        */
-
         Class<?> simpleTriggerClass;
         Method jobKeyMethod;
         try {
@@ -394,11 +346,7 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         if (jobKeyMethod != null) {
             pvs.add("jobKey", ReflectionUtils.invokeMethod(jobKeyMethod, this.jobDetail));
         }
-        // 这个Quartz 1.x的
-//        else {
-//            pvs.add("jobName", this.jobDetail.getName());
-//            pvs.add("jobGroup", this.jobDetail.getGroup());
-//        }
+
         pvs.add("jobDataMap", this.jobDataMap);
         pvs.add("startTime", this.startTime);
         pvs.add("repeatInterval", this.repeatInterval);
@@ -408,6 +356,17 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         pvs.add("description", this.description);
         bw.setPropertyValues(pvs);
         this.simpleTrigger = (SimpleTrigger) bw.getWrappedInstance();
+    }
+
+    /**
+     * 记录日志
+     * @param key 定时任务key
+     * @param jobTime 定时任务时间
+     */
+    private void log(String key, Long jobTime) {
+        if (logger.isInfoEnabled()) {
+        	logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils.toDateString(jobTime));
+        }
     }
 
 

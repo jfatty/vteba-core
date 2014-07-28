@@ -97,7 +97,7 @@ public class MethodInvokingJob extends QuartzJobBean {
             Date currentDate = context.getScheduledFireTime();// 本次执行时间
             Date nextFireDate = context.getNextFireTime();// 下次执行时间
             
-            long scheduledDate = currentDate.getTime();
+            long curDate = currentDate.getTime();
             long nextDate = nextFireDate.getTime();
             
             String namingTimeKey = "naming_" + key;
@@ -109,14 +109,14 @@ public class MethodInvokingJob extends QuartzJobBean {
                 logger.info("定时任务实际（redis）时间key：[{}]。", actualTimeKey);
             }
             
-            Long actualTime = redisTemplate.opsForValue().get(actualTimeKey);
-            Long namingTime = redisTemplate.opsForValue().get(namingTimeKey);
+            Long actualTime = valueOps().get(actualTimeKey);
+            Long namingTime = valueOps().get(namingTimeKey);
             
             long redisTime = redisTime();
             
             long timeDiff = redisTime - actualTime;// 实际上过去了多长时间
             
-            long interval = nextDate - scheduledDate;// 时间间隔
+            long interval = nextDate - curDate;// 时间间隔
             
             long count = timeDiff / interval;// 任务从集群中第一台节点 开始执行，一共执行过多少次了
             if (logger.isInfoEnabled()) {
@@ -137,57 +137,26 @@ public class MethodInvokingJob extends QuartzJobBean {
                 logger.info("本次将去抓取任务[{}]", currentJobName);
             }
             // 抓取任务，同时将任务标示为执行中
-            Long status = redisTemplate.opsForValue().getAndSet(currentJobName, State.RUN);
+            Long status = valueOps().getAndSet(currentJobName, State.RUN);
             
             if (status == null || status == State.UN) {// 未执行，将执行
-                if (logger.isInfoEnabled()) {
-                    logger.info("计划在[{}]执行的任务[{}]，正在执行中，下次执行时间是[{}]。", 
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
+                log(1, key, curDate, nextDate);
                 ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
-                if (logger.isInfoEnabled()) {
-                    logger.info("计划在[{}]执行的任务[{}]，执行成功，下次执行时间是[{}]。", 
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
+                log(2, key, curDate, nextDate);
                 // 执行成功，将下一次任务表示为未执行
-                redisTemplate.opsForValue().set(nextJobName, State.UN);
+                valueOps().set(nextJobName, State.UN);
                 // 将本次任务标示为执行成功
                 hashOps().put(table , currentJobName, State.OK);
             } else if (status == State.RUN) {// 正在执行，日志记录一下，跳过
-                if (logger.isInfoEnabled()) {
-                    logger.info("计划在[{}]执行的任务[{}]，正在执行中，跳过。下次执行时间是[{}]。", 
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
+                log(3, key, curDate, nextDate);
             } else if (status == State.OK) {// 成功，逃过（理论上，这个其实是不会发生的）
-                if (logger.isInfoEnabled()) {
-                    logger.info("计划在[{}]执行的任务[{}]，已被其他节点成功执行，跳过。下次执行时间是[{}]。",
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
+                log(4, key, curDate, nextDate);
             } else if (status == State.ERR) {// 任务异常，尝试执行
-                if (logger.isWarnEnabled()) {
-                    logger.warn("计划在[{}]执行的任务[{}]，运行异常，尝试执行一次。下次执行时间是[{}]。", 
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
+                log(5, key, curDate, nextDate);
                 ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
-                redisTemplate.opsForValue().set(nextJobName, State.UN);
+                valueOps().set(nextJobName, State.UN);
                 hashOps().put(table, currentJobName, State.OK);
-                if (logger.isWarnEnabled()) {
-                    logger.warn("计划在[{}]执行的任务[{}]，运行异常，尝试执行成功。下次执行时间是[{}]。",
-                                DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                key,
-                                DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
-                }
-                
+                log(6, key, curDate, nextDate);
             } else {// 未知任务状态，记录日志，跳过
                 if (logger.isWarnEnabled()) {
                     logger.warn("未知任务状态[{}]，跳过。", status);
@@ -209,6 +178,38 @@ public class MethodInvokingJob extends QuartzJobBean {
         catch (Exception ex) {
             // -> "unhandled exception", to be logged at error level by Quartz
             throw new JobMethodInvocationFailedException(this.methodInvoker, ex);
+        }
+    }
+    
+    /**
+     * 打印日志
+     * @param type 1正在执行中、2执行成功、3正在执行中，跳过、4已被其他节点成功执行，跳过、5运行异常，尝试执行一次、
+     * 6运行异常，尝试执行成功
+     * @param key 任务id
+     * @param curDate 现在的时间戳
+     * @param nextDate 下一次时间戳
+     */
+    public void log(int type, String key, long curDate, long nextDate) {
+        if (logger.isInfoEnabled()) {
+            String info = null;
+            if (type == 1) {
+                info = "正在执行中";
+            } else if (type == 2) {
+                info = "执行成功";
+            } else if (type == 3) {
+                info = "正在执行中，跳过";
+            } else if (type == 4) {
+                info = "已被其他节点成功执行，跳过";
+            } else if (type == 5) {
+                info = "运行异常，尝试执行一次";
+            } else if (type == 6) {
+                info = "运行异常，尝试执行成功";
+            }
+            logger.info("计划在[{}]执行的任务[{}]，[{}]，下次执行时间是[{}]。", 
+                        DateUtils.toDateString(curDate),
+                        key,
+                        info,
+                        DateUtils.toDateString(nextDate));
         }
     }
 }
