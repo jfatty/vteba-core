@@ -24,7 +24,6 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.quartz.CronTriggerBean;
 import org.springframework.scheduling.quartz.JobDetailAwareTrigger;
-import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -43,11 +42,10 @@ import com.vteba.utils.date.DateUtils;
  * to automatically register a trigger for the corresponding JobDetail,
  * instead of registering the JobDetail separately.
  *
- * <p><b>NOTE:</b> This FactoryBean works against both Quartz 1.x and Quartz 2.x,
- * in contrast to the older {@link SimpleTriggerBean} class.
- * 
  * <p>主要的改进在于，如果集群中还没有启动该定时任务，那么启动时和Redis Server的时间进行同步，
- * 如果已经启动了，那么重用已经设置好的时间，并且协调改server的时间。
+ * 如果已经启动了，那么重用已经设置好的时间，并且协调改server的时间。以大的时间为准，主要的考量在于，时间间隔很小，如果
+ * 不协调时间，那么时间慢的server，在其它节点都正常的情况下，是不会得到执行任务的机会的。（其实得不到也是对的，集群中只要任务能
+ * 得到任一节点的执行即可。）（为简化期间可以把 协调时间去掉。）
  *
  * @author Juergen Hoeller
  * @author 尹雷
@@ -248,7 +246,7 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
             this.jobDataMap.put(JobDetailAwareTrigger.JOB_DETAIL_KEY, this.jobDetail);
         }
         
-        String key = group + "_" + name;
+        String key = group + "_" + name;// 定时任务key
         
         String namingTimeKey = State.NAMING + key;
         if (logger.isInfoEnabled()) {
@@ -275,8 +273,8 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
                 }
             	jobNamingTime = redisTime + this.startDelay;
             	this.startTime = new Date(jobNamingTime);// 定时任务的开始时间以redis为准，并且加上延迟时间
-            	Long time = redisTime - serverTime;// 时间差
-            	Long actualRedisTime = jobNamingTime + time;// 定时任务启动时，实际的redis时间
+            	Long timeDiff = redisTime - serverTime;// 时间差
+            	Long actualRedisTime = jobNamingTime + timeDiff;// 定时任务启动时，实际的redis时间
             	
             	//任务的实际执行时间（redis时间）
             	redisTemplate.opsForValue().set(actualTimeKey, actualRedisTime);
@@ -290,7 +288,6 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
                 }
             	jobNamingTime = serverTime + this.startDelay;
             	this.startTime = new Date(jobNamingTime);// 定时任务时间以server时间为准
-            	//Long time = serverTime - redisTime;// 时间差 用不到
             	Long actualRedisTime = redisTime + this.startDelay;
             	
             	//任务的实际执行时间（redis时间）
@@ -309,11 +306,8 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         	Long timeDiff = redisTime - actualRedisTime;// 从启动到现在过去了多长时间了
         	Long count = timeDiff / this.repeatInterval;// 从启动到现在，该定时任务执行了几次
         	long mod = timeDiff % this.repeatInterval;// 执行多次后，又过了多长时间
-        	// 当前server时间，可能会大于计算出的 第一次执行时间，为了保证设置的不是“过去”的时间，要做一下计算
-        	//long num = (serverTime - jobNamingTime) / this.repeatInterval - count - 1;
         	if (mod > 0) {
         		// 设置定时任务开始时间为最近的 下一次执行时间
-        		// 中间过程取整了，所以num+1
         	    long start = jobNamingTime + (count + 1) * this.repeatInterval;
         		this.startTime = new Date(start);
         		log(key, start);

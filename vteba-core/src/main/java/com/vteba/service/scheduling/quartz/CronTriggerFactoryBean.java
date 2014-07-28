@@ -23,7 +23,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.quartz.CronTriggerBean;
 import org.springframework.scheduling.quartz.JobDetailAwareTrigger;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.util.Assert;
@@ -44,9 +43,9 @@ import com.vteba.utils.date.DateUtils;
  * to automatically register a trigger for the corresponding JobDetail,
  * instead of registering the JobDetail separately.
  *
- * <p><b>NOTE:</b> This FactoryBean works against both Quartz 1.x and Quartz 2.x,
- * in contrast to the older {@link CronTriggerBean} class.
- *
+ * <p>Cron表达式的定时任务，启动时间就直接按照server时间来计算。redis服务会保存每个任务的执行结果状态2个小时。
+ * 这样即使有时间差 也不会导致重复执行。
+ * 
  * @author Juergen Hoeller
  * @author 尹雷
  * @since 3.1
@@ -248,44 +247,32 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
             this.jobDataMap.put(JobDetailAwareTrigger.JOB_DETAIL_KEY, this.jobDetail);
         }
         // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
-        Long redisTime = redisTemplate.opsForValue().get(group + name);
-        Long redisDate = redisTime();
-        if (redisTime == null || redisTime < redisDate) {// 还没有设置启动时间，或者是过去的时间
-            redisTime = redisTime() + this.startDelay;
-            redisTemplate.opsForValue().set(group + name, redisTime);// 重新设置启动时间
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
-            }
-        } else {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("集群中已有其他节点将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(new Date(redisTime), "yyyy-MM-dd HH:mm:ss"));
-            }
-        }
-        this.startTime = new Date(redisTime);
-        
-        // 忽略设置的开始时间
-//        if (this.startDelay > 0 || this.startTime == null) {
-//            this.startTime = new Date(System.currentTimeMillis() + this.startDelay);
+//        Long redisTime = redisTemplate.opsForValue().get(group + name);
+//        Long redisDate = redisTime();
+//        if (redisTime == null || redisTime < redisDate) {// 还没有设置启动时间，或者是过去的时间
+//            redisTime = redisTime() + this.startDelay;
+//            redisTemplate.opsForValue().set(group + name, redisTime);// 重新设置启动时间
+//            if (LOGGER.isInfoEnabled()) {
+//                LOGGER.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(redisTime));
+//            }
+//        } else {
+//            if (LOGGER.isInfoEnabled()) {
+//                LOGGER.info("集群中已有其他节点将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils.toDateString(redisTime));
+//            }
 //        }
+//        this.startTime = new Date(redisTime);
+        
+        if (this.startDelay > 0 || this.startTime == null) {
+            this.startTime = new Date(System.currentTimeMillis() + this.startDelay);
+        }
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("设置CronJobDetail的开始时间是[{}].", DateUtils.toDateString(startTime));
+        }
+        
         if (this.timeZone == null) {
             this.timeZone = TimeZone.getDefault();
         }
-
-        /*
-        CronTriggerImpl cti = new CronTriggerImpl();
-        cti.setName(this.name);
-        cti.setGroup(this.group);
-        cti.setJobKey(this.jobDetail.getKey());
-        cti.setJobDataMap(this.jobDataMap);
-        cti.setStartTime(this.startTime);
-        cti.setCronExpression(this.cronExpression);
-        cti.setTimeZone(this.timeZone);
-        cti.setCalendarName(this.calendarName);
-        cti.setPriority(this.priority);
-        cti.setMisfireInstruction(this.misfireInstruction);
-        cti.setDescription(this.description);
-        this.cronTrigger = cti;
-        */
 
         Class<?> cronTriggerClass;
         Method jobKeyMethod;
@@ -307,11 +294,7 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
         if (jobKeyMethod != null) {
             pvs.add("jobKey", ReflectionUtils.invokeMethod(jobKeyMethod, this.jobDetail));
         }
-        // 这个是 Quartz 1.x的
-//        else {
-//            pvs.add("jobName", this.jobDetail.getName());
-//            pvs.add("jobGroup", this.jobDetail.getGroup());
-//        }
+
         pvs.add("jobDataMap", this.jobDataMap);
         pvs.add("startTime", this.startTime);
         pvs.add("cronExpression", this.cronExpression);
@@ -339,6 +322,6 @@ public class CronTriggerFactoryBean implements FactoryBean<CronTrigger>, BeanNam
     public boolean isSingleton() {
         return true;
     }
-
+    
 }
 
