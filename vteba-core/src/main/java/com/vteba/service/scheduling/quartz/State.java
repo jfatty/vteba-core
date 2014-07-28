@@ -32,4 +32,14 @@ public class State {
      * 定时任务名前缀
      */
     public static final String TASK = "q_task_";
+    
+    /**
+     * 定时任务，名义时间key前缀
+     */
+    public static final String NAMING = "naming_";
+    
+    /**
+     * 定时任务，实际时间key前缀
+     */
+    public static final String ACTUAL = "actual_";
 }

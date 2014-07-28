@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -62,7 +60,7 @@ import com.vteba.utils.date.DateUtils;
  * @see SchedulerFactoryBean#setJobDetails
  * @see CronTriggerBean
  */
-public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, BeanNameAware, InitializingBean, BeanFactoryAware {
+public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, BeanNameAware, InitializingBean {
 
     /** Constants for the SimpleTrigger class */
     private static final Constants constants = new Constants(SimpleTrigger.class);
@@ -252,11 +250,11 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         
         String key = group + "_" + name;
         
-        String namingTimeKey = "naming_" + key;
+        String namingTimeKey = State.NAMING + key;
         if (logger.isInfoEnabled()) {
             logger.info("定时任务名义（server）时间key：[{}]。", namingTimeKey);
         }
-        String actualTimeKey = "actual_" + key;
+        String actualTimeKey = State.ACTUAL + key;
         if (logger.isInfoEnabled()) {
             logger.info("定时任务实际（redis）时间key：[{}]。", actualTimeKey);
         }
@@ -383,11 +381,6 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
     @Override
     public boolean isSingleton() {
         return true;
-    }
-
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) {
-        //this.beanFactory = beanFactory;
     }
 
 }

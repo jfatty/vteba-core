@@ -100,11 +100,11 @@ public class MethodInvokingJob extends QuartzJobBean {
             long curDate = currentDate.getTime();
             long nextDate = nextFireDate.getTime();
             
-            String namingTimeKey = "naming_" + key;
+            String namingTimeKey = State.NAMING + key;
             if (logger.isInfoEnabled()) {
                 logger.info("定时任务名义（server）时间key：[{}]。", namingTimeKey);
             }
-            String actualTimeKey = "actual_" + key;
+            String actualTimeKey = State.ACTUAL + key;
             if (logger.isInfoEnabled()) {
                 logger.info("定时任务实际（redis）时间key：[{}]。", actualTimeKey);
             }
