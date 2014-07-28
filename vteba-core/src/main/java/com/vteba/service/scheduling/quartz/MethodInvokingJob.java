@@ -122,17 +122,17 @@ public class MethodInvokingJob extends QuartzJobBean {
             if (logger.isInfoEnabled()) {
                 logger.info("距离集群中第一台节点开始执行此任务，一共执行过[{}]次了", count);
             }
-            long mod = timeDiff % interval;// 整数次后，又过去了多长时间（小于一次的时间间隔）
+            //long mod = timeDiff % interval;// 整数次后，又过去了多长时间（小于一次的时间间隔）
             
-            String currentJobName;// 用来在集群中查询本次定时任务的key
-            String nextJobName;// 设置下次定时任务的key
-            if (mod > 0) {
-                currentJobName = jobKey + (namingTime + count * interval);
-                nextJobName = jobKey + (namingTime + (count + 1) * interval);
-            } else {
-                currentJobName = jobKey + (namingTime + count * interval);
-                nextJobName = jobKey + (namingTime + (count + 1) * interval);
-            }
+            String currentJobName = jobKey + (namingTime + count * interval);// 用来在集群中查询本次定时任务的key
+            String nextJobName = jobKey + (namingTime + (count + 1) * interval);// 设置下次定时任务的key
+//            if (mod > 0) {
+//                currentJobName = jobKey + (namingTime + count * interval);
+//                nextJobName = jobKey + (namingTime + (count + 1) * interval);
+//            } else {
+//                currentJobName = jobKey + (namingTime + count * interval);
+//                nextJobName = jobKey + (namingTime + (count + 1) * interval);
+//            }
             if (logger.isInfoEnabled()) {
                 logger.info("本次将去抓取任务[{}]", currentJobName);
             }
