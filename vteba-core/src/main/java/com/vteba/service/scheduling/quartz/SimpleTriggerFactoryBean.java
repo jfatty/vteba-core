@@ -318,18 +318,18 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
         	Long count = timeDiff / this.repeatInterval;// 从启动到现在，该定时任务执行了几次
         	long mod = timeDiff % this.repeatInterval;// 执行多次后，又过了多长时间
         	// 当前server时间，可能会大于计算出的 第一次执行时间，为了保证设置的不是“过去”的时间，要做一下计算
-        	long num = (serverTime - jobNamingTime) / this.repeatInterval - count - 1;
+        	//long num = (serverTime - jobNamingTime) / this.repeatInterval - count - 1;
         	if (mod > 0) {
         		// 设置定时任务开始时间为最近的 下一次执行时间
         		// 中间过程取整了，所以num+1
-        	    long start = jobNamingTime + (count + 1 + (num + 1)) * this.repeatInterval;
+        	    long start = jobNamingTime + (count + 1) * this.repeatInterval;
         		this.startTime = new Date(start);
         		if (logger.isInfoEnabled()) {
                     logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
                             .toDateString(new Date(start), "yyyy-MM-dd HH:mm:ss"));
                 }
         	} else {
-        	    long start = jobNamingTime + (count + (num + 1)) * this.repeatInterval;
+        	    long start = jobNamingTime + (count) * this.repeatInterval;
         		this.startTime = new Date(start);
         		if (logger.isInfoEnabled()) {
                     logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils

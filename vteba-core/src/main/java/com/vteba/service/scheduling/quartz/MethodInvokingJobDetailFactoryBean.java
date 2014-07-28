@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 
+import javax.inject.Inject;
+
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -11,6 +13,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.Scheduler;
+import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -28,6 +31,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.quartz.JobMethodInvocationFailedException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.Assert;
@@ -80,7 +84,8 @@ import com.vteba.utils.date.DateUtils;
 public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethodInvoker
         implements FactoryBean<JobDetail>, BeanNameAware, BeanClassLoaderAware, BeanFactoryAware, InitializingBean {
 
-    private static RedisTemplate<String, Long> redisTemplate;
+    @Inject
+    private RedisTemplate<String, Long> redisTemplate;
     
     private static Class<?> jobDetailImplClass;
     private static Method setResultMethod;
@@ -165,20 +170,6 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
         this.targetBeanName = targetBeanName;
     }
 
-//    /**
-//     * Set a list of JobListener names for this job, referring to
-//     * non-global JobListeners registered with the Scheduler.
-//     * <p>A JobListener name always refers to the name returned
-//     * by the JobListener implementation.
-//     * @see SchedulerFactoryBean#setJobListeners
-//     * @see org.quartz.JobListener#getName
-//     * @deprecated as of Spring 4.0, since it only works on Quartz 1.x
-//     */
-//    @Deprecated
-//    public void setJobListenerNames(String... names) {
-//        this.jobListenerNames = names;
-//    }
-
     @Override
     public void setBeanName(String beanName) {
         this.beanName = beanName;
@@ -200,7 +191,6 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public void afterPropertiesSet() throws ClassNotFoundException, NoSuchMethodException {
         prepare();
@@ -221,6 +211,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
             bw.setPropertyValue("jobClass", jobClass);
             bw.setPropertyValue("durability", true);
             ((JobDataMap) bw.getPropertyValue("jobDataMap")).put("methodInvoker", this);
+            ((JobDataMap) bw.getPropertyValue("jobDataMap")).put("redisTemplate", redisTemplate);
         }
         else {
             throw new IllegalStateException("不支持Quartz 1， 请升级到Quartz 2.x。 ");
@@ -242,7 +233,7 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
 //                this.jobDetail.addJobListener(jobListenerName);
 //            }
 //        }
-        redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
+        //redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
         postProcessJobDetail(this.jobDetail);
     }
 
@@ -305,14 +296,22 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
     public static class MethodInvokingJob extends QuartzJobBean {
 
         protected static final Logger logger = LoggerFactory.getLogger(MethodInvokingJob.class);
-
+        private RedisTemplate<String, Long> redisTemplate;
         private MethodInvoker methodInvoker;
-
+        
         /**
          * Set the MethodInvoker to use.
          */
         public void setMethodInvoker(MethodInvoker methodInvoker) {
             this.methodInvoker = methodInvoker;
+        }
+
+        /**
+         * 将父类的redisTemplate注入进来
+         * @param redisTemplate the redisTemplate to set
+         */
+        public void setRedisTemplate(RedisTemplate<String, Long> redisTemplate) {
+            this.redisTemplate = redisTemplate;
         }
 
         public HashOperations<String, String, Long> hashOps() {
@@ -326,7 +325,11 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                 public Long doInRedis(RedisConnection connection) throws DataAccessException {
                     return connection.time();
                 }
-            });
+            }, true);
+        }
+        
+        public ValueOperations<String, Long> valueOps() {
+            return redisTemplate.opsForValue();
         }
         
         /**
@@ -335,9 +338,9 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
         @Override
         protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
             try {
-                JobDetail jobDetail = context.getJobDetail();// 任务详细信息
-                String name = jobDetail.getKey().getName();// 定时任务名
-                String group = jobDetail.getKey().getGroup();// 定时任务组
+                Trigger trigger = context.getTrigger();// trigger详细信息
+                String name = trigger.getKey().getName();// 定时任务名
+                String group = trigger.getKey().getGroup();// 定时任务组
                 
                 String key = group + "_" + name;
                 
@@ -393,14 +396,14 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                     if (logger.isInfoEnabled()) {
                         logger.info("计划在[{}]执行的任务[{}]，正在执行中，下次执行时间是[{}]。", 
                                     DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                    group + name,
+                                    key,
                                     DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
                     if (logger.isInfoEnabled()) {
                         logger.info("计划在[{}]执行的任务[{}]，执行成功，下次执行时间是[{}]。", 
                                     DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                    group + name,
+                                    key,
                                     DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     // 执行成功，将下一次任务表示为未执行
@@ -411,21 +414,21 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                     if (logger.isInfoEnabled()) {
                         logger.info("计划在[{}]执行的任务[{}]，正在执行中，跳过。下次执行时间是[{}]。", 
                                     DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                    group + name,
+                                    key,
                                     DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.OK) {// 成功，逃过（理论上，这个其实是不会发生的）
                     if (logger.isInfoEnabled()) {
                         logger.info("计划在[{}]执行的任务[{}]，已被其他节点成功执行，跳过。下次执行时间是[{}]。",
                                     DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                    group + name,
+                                    key,
                                     DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.ERR) {// 任务异常，尝试执行
                     if (logger.isWarnEnabled()) {
                         logger.warn("计划在[{}]执行的任务[{}]，运行异常，尝试执行一次。下次执行时间是[{}]。", 
                                     DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
-                                    group + name,
+                                    key,
                                     DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
