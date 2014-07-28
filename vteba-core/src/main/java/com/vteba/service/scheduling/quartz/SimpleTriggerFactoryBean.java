@@ -250,58 +250,91 @@ public class SimpleTriggerFactoryBean implements FactoryBean<SimpleTrigger>, Bea
             this.jobDataMap.put(JobDetailAwareTrigger.JOB_DETAIL_KEY, this.jobDetail);
         }
         
+        String key = group + "_" + name;
+        
+        String namingTimeKey = "naming_" + key;
+        if (logger.isInfoEnabled()) {
+            logger.info("定时任务名义（server）时间key：[{}]。", namingTimeKey);
+        }
+        String actualTimeKey = "actual_" + key;
+        if (logger.isInfoEnabled()) {
+            logger.info("定时任务实际（redis）时间key：[{}]。", actualTimeKey);
+        }
+        
+        Long redisTime = redisTime();// 现在的redis server时间
+        Long serverTime = System.currentTimeMillis();// 该server的时间
+        
         // 看集群中的其他节点是否已经启动，并设置该job的开始时间，如果有重用。否则获取redis server系统时间
-        Long jobNamingTime = redisTemplate.opsForValue().get("naming_" + group + name);// 任务在集群中第一次启动的名义时间（以server为准）
+        Long jobNamingTime = redisTemplate.opsForValue().get(namingTimeKey);// 任务在集群中第一次启动的名义时间（以server为准）
         if (jobNamingTime == null) {// 集群中改定时任务还没有启动
-        	Long redisTime = redisTime();// 现在的redis server时间
-            Long serverTime = System.currentTimeMillis();// 该server的时间
+            if (logger.isInfoEnabled()) {
+                logger.info("集群中还没有启动定时任务：[{}]，将启动它。", key);
+            }
+        	
             if (redisTime >= serverTime) {// server时间比redis时间慢
+                if (logger.isInfoEnabled()) {
+                    logger.info("应用服务器App Server时间比Redis Server时间慢，将以Redis时间为准，启动定时任务[{}]。", key);
+                }
             	jobNamingTime = redisTime + this.startDelay;
             	this.startTime = new Date(jobNamingTime);// 定时任务的开始时间以redis为准，并且加上延迟时间
             	Long time = redisTime - serverTime;// 时间差
             	Long actualRedisTime = jobNamingTime + time;// 定时任务启动时，实际的redis时间
             	
             	//任务的实际执行时间（redis时间）
-            	redisTemplate.opsForValue().set("actual_" + group + name, actualRedisTime);
+            	redisTemplate.opsForValue().set(actualTimeKey, actualRedisTime);
             	
             	// 任务的名义执行时间（server时间）
-            	redisTemplate.opsForValue().set("naming_" + group + name, jobNamingTime);
+            	redisTemplate.opsForValue().set(namingTimeKey, jobNamingTime);
 				if (logger.isInfoEnabled()) {
-					logger.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils
-							.toDateString(new Date(jobNamingTime),
-									"yyyy-MM-dd HH:mm:ss"));
+					logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
+							.toDateString(new Date(jobNamingTime), "yyyy-MM-dd HH:mm:ss"));
 				}
             } else {// server时间比redis时间快
+                if (logger.isInfoEnabled()) {
+                    logger.info("应用服务器App Server时间比Redis Server时间快，将以App Server时间为准，启动定时任务[{}]。", key);
+                }
             	jobNamingTime = serverTime + this.startDelay;
             	this.startTime = new Date(jobNamingTime);// 定时任务时间以server时间为准
             	//Long time = serverTime - redisTime;// 时间差 用不到
             	Long actualRedisTime = redisTime + this.startDelay;
             	
             	//任务的实际执行时间（redis时间）
-            	redisTemplate.opsForValue().set("actual_" + group + name, actualRedisTime);
+            	redisTemplate.opsForValue().set(actualTimeKey, actualRedisTime);
             	
             	// 任务的名义执行时间（server时间）
-            	redisTemplate.opsForValue().set("naming_" + group + name, jobNamingTime);
+            	redisTemplate.opsForValue().set(namingTimeKey, jobNamingTime);
 				if (logger.isInfoEnabled()) {
-					logger.info("将定时任务[{}]的开始时间设为：[{}]。", name, DateUtils
-							.toDateString(new Date(jobNamingTime),
-									"yyyy-MM-dd HH:mm:ss"));
+					logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
+							.toDateString(new Date(jobNamingTime), "yyyy-MM-dd HH:mm:ss"));
 				}
             }
         } else {// 集群中已经有节点启动了该定时任务
-        	Long actualRedisTime = redisTemplate.opsForValue().get("actual_" + group + name);// job实际第一开始的时间
-        	Long redisTime = redisTime();
+            if (logger.isInfoEnabled()) {
+                logger.info("集群中已有节点启动了定时任务[{}]，将以该节点的时间为准，启动定时任务。", key);
+            }
+        	Long actualRedisTime = redisTemplate.opsForValue().get(actualTimeKey);// job实际第一次开始的时间
+        	
         	Long timeDiff = redisTime - actualRedisTime;// 从启动到现在过去了多长时间了
         	Long count = timeDiff / this.repeatInterval;// 从启动到现在，该定时任务执行了几次
         	long mod = timeDiff % this.repeatInterval;// 执行多次后，又过了多长时间
         	// 当前server时间，可能会大于计算出的 第一次执行时间，为了保证设置的不是“过去”的时间，要做一下计算
-        	long num = (System.currentTimeMillis() - jobNamingTime) / this.repeatInterval - count - 1;
+        	long num = (serverTime - jobNamingTime) / this.repeatInterval - count - 1;
         	if (mod > 0) {
         		// 设置定时任务开始时间为最近的 下一次执行时间
-        		// 中间过程取整乐乐，所以num+1
-        		this.startTime = new Date(jobNamingTime + (count + 1 + (num + 1)) * this.repeatInterval);
+        		// 中间过程取整了，所以num+1
+        	    long start = jobNamingTime + (count + 1 + (num + 1)) * this.repeatInterval;
+        		this.startTime = new Date(start);
+        		if (logger.isInfoEnabled()) {
+                    logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
+                            .toDateString(new Date(start), "yyyy-MM-dd HH:mm:ss"));
+                }
         	} else {
-        		this.startTime = new Date(jobNamingTime + (count + (num + 1)) * this.repeatInterval);
+        	    long start = jobNamingTime + (count + (num + 1)) * this.repeatInterval;
+        		this.startTime = new Date(start);
+        		if (logger.isInfoEnabled()) {
+                    logger.info("将定时任务[{}]的开始时间设为：[{}]。", key, DateUtils
+                            .toDateString(new Date(start), "yyyy-MM-dd HH:mm:ss"));
+                }
         	}
         }
         

@@ -335,30 +335,73 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
         @Override
         protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
             try {
-                JobDetail jobDetail = context.getJobDetail();
-                String name = jobDetail.getKey().getName();
-                String jobKey = State.TASK + name;
-                String table = State.HASH + name;
+                JobDetail jobDetail = context.getJobDetail();// 任务详细信息
+                String name = jobDetail.getKey().getName();// 定时任务名
+                String group = jobDetail.getKey().getGroup();// 定时任务组
                 
-                Date currentDate = context.getScheduledFireTime();
-                Date nextFireDate = context.getNextFireTime();
+                String key = group + "_" + name;
+                
+                String jobKey = State.TASK + key;// 定时任务前缀
+                String table = State.HASH + key;// 定时任务历史记录表前缀
+                
+                Date currentDate = context.getScheduledFireTime();// 本次执行时间
+                Date nextFireDate = context.getNextFireTime();// 下次执行时间
                 
                 long scheduledDate = currentDate.getTime();
                 long nextDate = nextFireDate.getTime();
                 
-                String currentJobName = jobKey + scheduledDate;
-                String nextJobName = jobKey + nextDate;
+                String namingTimeKey = "naming_" + key;
+                if (logger.isInfoEnabled()) {
+                    logger.info("定时任务名义（server）时间key：[{}]。", namingTimeKey);
+                }
+                String actualTimeKey = "actual_" + key;
+                if (logger.isInfoEnabled()) {
+                    logger.info("定时任务实际（redis）时间key：[{}]。", actualTimeKey);
+                }
                 
+                Long actualTime = redisTemplate.opsForValue().get(actualTimeKey);
+                Long namingTime = redisTemplate.opsForValue().get(namingTimeKey);
+                
+                long redisTime = redisTime();
+                
+                long timeDiff = redisTime - actualTime;// 实际上过去了多长时间
+                
+                long interval = nextDate - scheduledDate;// 时间间隔
+                
+                long count = timeDiff / interval;// 任务从集群中第一台节点 开始执行，一共执行过多少次了
+                if (logger.isInfoEnabled()) {
+                    logger.info("距离集群中第一台节点开始执行此任务，一共执行过[{}]次了", count);
+                }
+                long mod = timeDiff % interval;// 整数次后，又过去了多长时间（小于一次的时间间隔）
+                
+                String currentJobName;// 用来在集群中查询本次定时任务的key
+                String nextJobName;// 设置下次定时任务的key
+                if (mod > 0) {
+                    currentJobName = jobKey + (namingTime + count * interval);
+                    nextJobName = jobKey + (namingTime + (count + 1) * interval);
+                } else {
+                    currentJobName = jobKey + (namingTime + count * interval);
+                    nextJobName = jobKey + (namingTime + (count + 1) * interval);
+                }
+                if (logger.isInfoEnabled()) {
+                    logger.info("本次将去抓取任务[{}]", currentJobName);
+                }
                 // 抓取任务，同时将任务标示为执行中
                 Long status = redisTemplate.opsForValue().getAndSet(currentJobName, State.RUN);
                 
                 if (status == null || status == State.UN) {// 未执行，将执行
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，正在执行中，下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.info("计划在[{}]执行的任务[{}]，正在执行中，下次执行时间是[{}]。", 
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，执行成功，下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.info("计划在[{}]执行的任务[{}]，执行成功，下次执行时间是[{}]。", 
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     // 执行成功，将下一次任务表示为未执行
                     redisTemplate.opsForValue().set(nextJobName, State.UN);
@@ -366,21 +409,33 @@ public class MethodInvokingJobDetailFactoryBean extends ArgumentConvertingMethod
                     hashOps().put(table , currentJobName, State.OK);
                 } else if (status == State.RUN) {// 正在执行，日志记录一下，跳过
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，正在执行中，跳过。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.info("计划在[{}]执行的任务[{}]，正在执行中，跳过。下次执行时间是[{}]。", 
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.OK) {// 成功，逃过（理论上，这个其实是不会发生的）
                     if (logger.isInfoEnabled()) {
-                        logger.info("计划在[{}]执行的任务，已被其他节点成功执行，跳过。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.info("计划在[{}]执行的任务[{}]，已被其他节点成功执行，跳过。下次执行时间是[{}]。",
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                 } else if (status == State.ERR) {// 任务异常，尝试执行
                     if (logger.isWarnEnabled()) {
-                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行一次。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.warn("计划在[{}]执行的任务[{}]，运行异常，尝试执行一次。下次执行时间是[{}]。", 
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     ReflectionUtils.invokeMethod(setResultMethod, context, this.methodInvoker.invoke());
                     redisTemplate.opsForValue().set(nextJobName, State.UN);
                     hashOps().put(table, currentJobName, State.OK);
                     if (logger.isWarnEnabled()) {
-                        logger.warn("计划在[{}]执行的任务，运行异常，尝试执行成功。下次执行时间是[{}]。", DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"), DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
+                        logger.warn("计划在[{}]执行的任务[{}]，运行异常，尝试执行成功。下次执行时间是[{}]。",
+                                    DateUtils.toDateString(currentDate, "yyyy-MM-dd HH:mm:ss"),
+                                    group + name,
+                                    DateUtils.toDateString(nextFireDate, "yyyy-MM-dd HH:mm:ss"));
                     }
                     
                 } else {// 未知任务状态，记录日志，跳过
