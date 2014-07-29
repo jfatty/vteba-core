@@ -38,7 +38,6 @@ import com.vteba.service.xml.XmlServiceImpl;
 @Provider
 @Consumes({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
-//@Named
 public class JibxXmlProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 	@Inject
 	private XmlServiceImpl xmlServiceImpl;

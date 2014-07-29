@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -39,7 +38,6 @@ import com.vteba.utils.common.MediaTypes;
 @Provider
 @Consumes(value = { MediaType.APPLICATION_JSON, MediaTypes.TEXT_JSON, FastJsonProvider.MIME_JAVASCRIPT, FastJsonProvider.MIME_JAVASCRIPT_MS, FastJsonProvider.JSON_EXT })
 @Produces(value = { MediaType.APPLICATION_JSON, MediaTypes.TEXT_JSON })
-@Named
 public class FastJsonProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 	//private static final Logger LOGGER = LoggerFactory.getLogger(FastJsonProvider.class);
 	public final static String MIME_JAVASCRIPT = "application/javascript";

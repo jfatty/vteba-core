@@ -25,7 +25,6 @@ import com.vteba.service.xml.jibx.JibxMarshallerFactory;
  * @author yinlei
  * date 2013-7-28 下午8:17:01
  */
-//@Named
 public class XmlServiceImpl {
 	private static Logger logger = LoggerFactory.getLogger(XmlServiceImpl.class);
 	
