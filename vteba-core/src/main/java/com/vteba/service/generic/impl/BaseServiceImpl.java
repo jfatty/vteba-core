@@ -229,7 +229,7 @@ public abstract class BaseServiceImpl<T, ID extends Serializable> implements Bas
 	public void saveEntityBatch(List<T> list, int batchSize) {
 		for (int i = 0; i< list.size(); i++) {
 			T entity = list.get(i);
-			persist(entity);
+			save(entity);
 			if (i != 0 && i % batchSize == 0) {
 				baseGenericDaoImpl.flush();
 			}
@@ -254,32 +254,6 @@ public abstract class BaseServiceImpl<T, ID extends Serializable> implements Bas
 		return baseGenericDaoImpl.queryForPage(page, propName1, value1, propName2, value2);
 	}
 
-//	@Override
-//	@Deprecated
-//	public <X> List<X> queryPrimitiveList(String field,
-//			Class<X> resultClass, Map<String, ?> params) {
-//		return baseGenericDaoImpl.queryPrimitiveList(field, resultClass, params);
-//	}
-//
-//	@Override
-//	@Deprecated
-//	public <X> X queryForPrimitive(String field,
-//			Class<X> resultClass, Map<String, ?> params) {
-//		return baseGenericDaoImpl.queryForPrimitive(field, resultClass, params);
-//	}
-
-//	@Override
-//	public <X extends Number> List<X> statsForList(String statsField,
-//			Class<X> resultClass, Map<String, ?> params) {
-//		return baseGenericDaoImpl.statsForList(statsField, resultClass, params);
-//	}
-//
-//	@Override
-//	public <X extends Number> X statsPrimitive(String statsField,
-//			Class<X> resultClass, Map<String, ?> params) {
-//		return baseGenericDaoImpl.statsPrimitive(statsField, resultClass, params);
-//	}
-
 	@Override
 	public List<T> getEntityList(Map<String, ?> params,
 			Map<String, String> orderMaps) {
@@ -303,6 +277,10 @@ public abstract class BaseServiceImpl<T, ID extends Serializable> implements Bas
 		return baseGenericDaoImpl.getListByHql(hql, values);
 	}
 
+	public <E> List<E> getListByNamedHql(String hql, Object... values) {
+        return baseGenericDaoImpl.getListByNamedHql(hql, values);
+    }
+	
 	@Override
 	public int deleteBatch(String propName, Object value) {
 		return baseGenericDaoImpl.deleteBatch(propName, value);

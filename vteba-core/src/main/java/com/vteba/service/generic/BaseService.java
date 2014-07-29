@@ -184,6 +184,22 @@ public interface BaseService<T, ID extends Serializable> {
      */
 	public <E> List<E> getListByHql(String hql, Object... values);
 	
+	/** 
+     * <p>命名hql查询VO Bean List，一般用于多实体连接查询部分栏位。主要基于别名进行结果集转换。<br>
+     * 是{@link #getListByHql(String, Object...)}的命名参数版。 <br> 
+     * 用法：<br>
+     * <p>1、使用select new查询VO Bean，select new com.vteba.model.AUser(i.sbillno,u) from Inventory i, User u 
+     *   where i.scustomerno = u.userAccount，VO中要有对应的构造函数，且要使用包名全路径。<br>
+     * <p>2、直接select i.sbillno,u from Inventory i, User u...，则返回List&lt;Object[]&gt;，其中Object[]是{"billno", User}<br>
+     *   ，不建议这么用，建议使用{@link #getListByHql(String, Class, Object...)}根据别名进行结果集转换 <br> 
+     * <p>3、直接查询PO也是可以的，但是建议使用{@link #getEntityListByHql(String, Object...)}代替<br> 
+     * @param hql 可用Jpa风格参数： ?1、?2，命名参数： :subjectName，Hibernate参数： ? (deprecated)
+     * @param values hql参数，可以使用单个参数，Map，List，AstModel实例，传参。
+     * @author yinlei
+     * date 2012-12-17 下午10:35:09
+     */
+    public <E> List<E> getListByNamedHql(String namedQuery, Object... values);
+	
 	/**
      * 查询实体list，<em>慎用</em>，确保不会返回很多对象。
      * @return 实体List
