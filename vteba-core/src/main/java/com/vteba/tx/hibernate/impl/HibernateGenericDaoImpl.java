@@ -134,7 +134,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         StringBuilder hql = new StringBuilder(selectAll);
         hql.append(" where ").append(propName).append(" = ?1");
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(Integer.toString(1), value);
+        query.setParameter("1", value);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -149,7 +149,7 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         hql.append(" where ").append(propName).append(" = ?1");
         hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(Integer.toString(1), value);
+        query.setParameter("1", value);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -163,8 +163,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         hql.append(" where ").append(propName1).append(" = ?1");
         hql.append(" and ").append(propName2).append(" = ?2");
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(Integer.toString(1), value1);
-        query.setParameter(Integer.toString(2), value2);
+        query.setParameter("1", value1);
+        query.setParameter("2", value2);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();
@@ -180,8 +180,8 @@ public abstract class HibernateGenericDaoImpl<T, ID extends Serializable>
         hql.append(" and ").append(propName2).append(" = ?2");
         hql.append(buildOrderBy(orderMaps));
         Query query = getSession().createQuery(hql.toString());
-        query.setParameter(Integer.toString(1), value1);
-        query.setParameter(Integer.toString(2), value2);
+        query.setParameter("1", value1);
+        query.setParameter("2", value2);
         List<T> list = query.list();
         if (list == null) {
             list = Collections.emptyList();

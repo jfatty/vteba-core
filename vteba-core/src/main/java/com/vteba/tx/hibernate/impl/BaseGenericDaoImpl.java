@@ -1,17 +1,13 @@
 package com.vteba.tx.hibernate.impl;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
-import com.vteba.common.exception.NonUniqueException;
 import com.vteba.tx.generic.Page;
 import com.vteba.tx.hibernate.BaseGenericDao;
-import com.vteba.tx.hibernate.transformer.PrimitiveResultTransformer;
 import com.vteba.utils.ofbiz.LangUtils;
 
 @SuppressWarnings("unchecked")
@@ -71,51 +67,6 @@ public class BaseGenericDaoImpl<T, ID extends Serializable> extends
 	    return page;
 	}
 	
-	/**
-	 * {@link #queryForObject(String, Class, Object...)}
-	 */
-	@Deprecated
-	public <X> List<X> queryPrimitiveList(String field, Class<X> resultClass,
-			Map<String, ?> params) {
-		StringBuilder sb = new StringBuilder("select distinct ");
-		sb.append(field).append(" from ").append(entityName);
-		sb.append(buildWhere(params));
-		Query query = createQuery(sb.toString(), params);
-		query.setResultTransformer(new PrimitiveResultTransformer(resultClass));
-		List<X> list = query.list();
-		if (list == null) {
-			return Collections.emptyList();
-		}
-		return list;
-	}
-
-	/**
-	 * {@link #queryForList(String, Class, Object...)}
-	 */
-	@Deprecated
-	public <X> X queryForPrimitive(String field, Class<X> resultClass,
-			Map<String, ?> params) {
-		List<X> list = queryPrimitiveList(field, resultClass, params);
-		if (list.size() == 0 || list.size() >= 2) {
-			throw new NonUniqueException("查询结果不唯一。");
-		}
-		return list.get(0);
-	}
-
-	@Deprecated
-	@Override
-	public <X extends Number> List<X> statsForList(String statsField,
-			Class<X> resultClass, Map<String, ?> params) {
-		return queryPrimitiveList(statsField, resultClass, params);
-	}
-
-	@Deprecated
-	@Override
-	public <X extends Number> X statsPrimitive(String statsField,
-			Class<X> resultClass, Map<String, ?> params) {
-		return queryForPrimitive(statsField, resultClass, params);
-	}
-
 	@Override
 	public List<Object[]> queryForObject(String hql, Object... values) {
 		return hqlQueryForObject(hql, false, values);
