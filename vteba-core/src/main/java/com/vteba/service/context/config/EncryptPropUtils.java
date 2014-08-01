@@ -21,7 +21,7 @@ public class EncryptPropUtils extends PropUtils {
     @Override
     protected String convertProperty(String propertyName, String propertyValue) {
         if (isEncryptProp(propertyName)) {
-            String decryptValue = DESUtils.getDecryptString(propertyValue);
+            String decryptValue = DESUtils.getDecrypt(propertyValue);
             if (exposeEncrypt) {
                 propertiesMap.put(propertyName, decryptValue);
             }
