@@ -55,11 +55,7 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	// sql字段list
     List<String> columnList = Lists.newArrayList();
 	
-	//private static String INSERT_ALL = "insert into ${tableName}(${columns}) values(${placeholder})";
 	private static String DELETE_BYID = "delete from ${tableName} where ${id} = ?";
-	//private static String DELETE_ALL = "delete from ${tableName} ";
-	//private static String UPDATE_BYID = "update ${tableName} set ${sets} where ${id} = :${id}";
-	//private static String UPDATE_SET = "update ${tableName} set ";
 	private static String SELECT_BYID = "select * from ${tableName} where ${id} = ?";
 	private static String SELECT_ALL = "select * from ${tableName} ";
 	
@@ -131,13 +127,9 @@ public abstract class AbstractGenericDao<T, ID extends Serializable> implements 
 	    metadata();
 	    
 	    // 生成一些sql语句
-	    //INSERT_ALL = INSERT_ALL.replace("${tableName}", tableName);
 		SELECT_BYID = SELECT_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());
 		SELECT_ALL = SELECT_ALL.replace("${tableName}", tableName);
-		//UPDATE_SET = UPDATE_SET.replace("${tableName}", tableName);
-		//UPDATE_BYID = UPDATE_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());
 		DELETE_BYID = DELETE_BYID.replace("${tableName}", tableName).replace("${id}", metadata.getIdName());;
-		//DELETE_ALL = DELETE_ALL.replace("${tableName}", tableName);
 		
 		if (LOGGER.isDebugEnabled()) {
 		    LOGGER.debug("实体类[{}] Dao，初始化成功。", entityClass.getName());
