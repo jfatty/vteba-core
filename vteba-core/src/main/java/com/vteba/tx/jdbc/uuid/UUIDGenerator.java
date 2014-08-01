@@ -1,4 +1,4 @@
-package com.vteba.tx.jdbc.id;
+package com.vteba.tx.jdbc.uuid;
 
 import java.io.Serializable;
 import java.util.Properties;

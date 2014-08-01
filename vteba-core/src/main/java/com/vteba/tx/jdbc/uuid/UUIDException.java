@@ -1,4 +1,4 @@
-package com.vteba.tx.jdbc.id;
+package com.vteba.tx.jdbc.uuid;
 
 
 public class UUIDException extends RuntimeException {
