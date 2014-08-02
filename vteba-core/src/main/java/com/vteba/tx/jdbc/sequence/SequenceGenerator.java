@@ -1,62 +1,35 @@
 package com.vteba.tx.jdbc.sequence;
 
-import java.math.BigInteger;
-import java.util.Random;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.support.incrementer.DB2SequenceMaxValueIncrementer;
 import org.springframework.jdbc.support.incrementer.OracleSequenceMaxValueIncrementer;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.support.incrementer.PostgreSQLSequenceMaxValueIncrementer;
 
 /**
- * oracle sequence产生器。
- * @author yinlei 
- * @since 2012-7-9
+ * sequence产生器。支持Oracle，PostgreSQL，DB2
+ * 
+ * @author yinlei
+ * @since 2013-12-1
  */
-@Component
-public class SequenceGenerator {
-    public static final String SEQ_JR197 = "SEQ_JR197";
-    
-    private static final Random RANDOM = new Random();
-    
-    @Autowired  
-    public OracleSequenceMaxValueIncrementer oracleSequenceMaxValueIncrementer;  
-   
-    /**
-     * 根据业务类型获取sequence，并组装代码
-     * @param bizProduct 业务
-     * @param txnType 
-     * @return
-     */
-    public String nextString(String bizProduct , String txnType){  
-        String currval = oracleSequenceMaxValueIncrementer.nextStringValue();
-        return bizProduct + txnType  + currval; 
+public class SequenceGenerator extends AbstractKeyGenerator implements InitializingBean {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        super.afterPropertiesSet();
+        databaseType = databaseType.toLowerCase();
+        if (databaseType.equals("oracle")) {
+            dataFieldIncrementer = new OracleSequenceMaxValueIncrementer(dataSource, incrementerName);
+            dataFieldIncrementer.setPaddingLength(getPaddingLength());
+        } else if (databaseType.equals("postgresql")) {
+            dataFieldIncrementer = new PostgreSQLSequenceMaxValueIncrementer(dataSource, incrementerName);
+            dataFieldIncrementer.setPaddingLength(getPaddingLength());
+        } else if (databaseType.equals("db2")) {
+            dataFieldIncrementer = new  DB2SequenceMaxValueIncrementer(dataSource, incrementerName);
+            dataFieldIncrementer.setPaddingLength(getPaddingLength());
+        } else {
+            throw new IllegalArgumentException("不支持的数据库类型。");
+        }
+        dataFieldIncrementer.afterPropertiesSet();
     }
     
-    /**
-     * 根据sequence name获取sequence long值
-     * @param seqName sequence名字
-     * @return sequence long 值
-     */
-    public long nextLong(String seqName){
-        oracleSequenceMaxValueIncrementer.setIncrementerName(seqName);
-        long currval = oracleSequenceMaxValueIncrementer.nextLongValue();
-        return currval; 
-    }
-    
-    /**
-     * 如果没有建sequence，可以使用这个来生成主键。
-     * @return sequence
-     */
-    public long nextSeqLong() {
-        return System.nanoTime() + RANDOM.nextInt();// 当前时间精确到毫秒加上一个随机数
-    }
-    
-    /**
-     * 产生全局唯一的ID。
-     * @author yinlei
-     * date 2012-7-5 下午9:35:37
-     */
-    public String generateGUID(){
-        return (new BigInteger(165, RANDOM)).toString(36).toUpperCase();
-    }
 }
