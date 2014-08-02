@@ -14,7 +14,7 @@ import com.vteba.utils.common.Assert;
  * @author 尹雷 
  * @since 2013-12-1
  */
-public class AbstractKeyGenerator implements KeyGenerator, InitializingBean {
+public class AbstractKeyGenerator implements KeyGenerator,NamedKeyGenerator, InitializingBean {
     private static final Random RANDOM = new Random();
     protected String databaseType;// 数据库类型
     protected DataSource dataSource;// 数据源
