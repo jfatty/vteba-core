@@ -7,11 +7,24 @@ import java.util.Map;
 import com.vteba.service.generic.BaseService;
 import com.vteba.tx.generic.Page;
 import com.vteba.tx.hibernate.BaseGenericDao;
+import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 
 
 public abstract class BaseServiceImpl<T, ID extends Serializable> implements BaseService<T, ID> {
     protected BaseGenericDao<T, ID> baseGenericDaoImpl;
-
+    protected SpringJdbcTemplate springJdbcTemplate;
+    
+    /**
+     * 子类如果要使用SpringJdbcTemplate，请重写该方法，注入相应的SpringJdbcTemplate。<br/>
+     * 并且只能用于查询，否则破坏hibernate一级和二级缓存。
+     * @param springJdbcTemplate 具体的SpringJdbcTemplate实例
+     * @author yinlei
+     * date 2013-6-5 下午9:19:15
+     */
+    public void setSpringJdbcTemplate(SpringJdbcTemplate springJdbcTemplate) {
+        this.springJdbcTemplate = springJdbcTemplate;
+    }
+    
     public abstract void setBaseGenericDaoImpl(BaseGenericDao<T, ID> baseGenericDaoImpl);
 
 	/* (non-Javadoc)
