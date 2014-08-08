@@ -31,15 +31,16 @@ public class UserAuthFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserAuthFilter.class);
     
     private Set<String> urlSets = new HashSet<String>();
-    private static final Pattern IMAGE = Pattern.compile("^/images/\\w+.(jpg|jpeg|gif|png|bmp|ico)$");
-    private static final Pattern CSS = Pattern.compile("^/css/\\w+.css$");
-    private static final Pattern JS = Pattern.compile("^/js/\\w+.js$");
+    private static final Pattern IMAGE = Pattern.compile("^/images/[a-zA-Z0-9_-.]+.(jpg|jpeg|gif|png|bmp)$");
+    private static final Pattern CSS = Pattern.compile("^/css/[a-zA-Z0-9_-.]+.css$");//\\w+
+    private static final Pattern JS = Pattern.compile("^/js/[a-zA-Z0-9_-.]+.js$");
     
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         urlSets.add("index.jsp");
         urlSets.add("index.html");
         urlSets.add("index.htm");
+        urlSets.add("favicon.ico");
         
         String filters = PropUtils.get("filter.url");
         if (filters != null) {
