@@ -14,7 +14,7 @@ public class HibernateEventRegister {
 	public HibernateEventRegister() {
 		
 	}
-	
+
 	@Inject
 	private SessionFactory sessionFactory;
 	

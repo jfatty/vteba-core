@@ -3,7 +3,6 @@ package com.vteba.tx.hibernate.listener;
 import java.util.Date;
 
 import org.hibernate.event.spi.PreUpdateEvent;
-import org.hibernate.event.spi.PreUpdateEventListener;
 
 import com.vteba.common.model.Ast;
 
@@ -12,7 +11,7 @@ import com.vteba.common.model.Ast;
  * @author yinlei 
  * @since 2013-8-18
  */
-public class UpdateListener implements PreUpdateEventListener {
+public class PreUpdateEventListener implements org.hibernate.event.spi.PreUpdateEventListener {
 
     private static final long serialVersionUID = 1L;
 
