@@ -24,6 +24,8 @@
       <jackson-version>2.2.3</jackson-version>
       <resteasy-version>3.0.4.Final</resteasy-version>
       <httpcomp-version>4.3.2</httpcomp-version>
+      <netty4>4.0.23.Final</netty4>
+      <netty3>3.9.3.Final</netty3>
   </properties>
   
   <profiles>
@@ -1469,10 +1471,16 @@
 	</dependency> -->
 	<!-- xml binging tools end -->
 	
+<!-- 	<dependency> -->
+<!-- 	  <groupId>io.netty</groupId> -->
+<!-- 	  <artifactId>netty</artifactId> -->
+<!-- 	  <version>${netty3}</version> -->
+<!-- 	</dependency> -->
+
 	<dependency>
 	  <groupId>io.netty</groupId>
-	  <artifactId>netty</artifactId>
-	  <version>3.6.6.Final</version>
+	  <artifactId>netty-all</artifactId>
+	  <version>${netty4}</version>
 	</dependency>
 
 <!-- 	<dependency> -->
