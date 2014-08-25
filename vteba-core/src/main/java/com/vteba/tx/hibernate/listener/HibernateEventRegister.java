@@ -10,6 +10,10 @@ import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.service.ServiceRegistry;
 
 public class HibernateEventRegister {
+	
+	public HibernateEventRegister() {
+		
+	}
 
 	@Inject
 	private SessionFactory sessionFactory;
