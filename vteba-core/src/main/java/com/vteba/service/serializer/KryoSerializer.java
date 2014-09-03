@@ -1,6 +1,6 @@
 package com.vteba.service.serializer;
 
-import org.hibernate.Hibernate;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 
@@ -32,25 +32,29 @@ public class KryoSerializer<T> extends Serializer<T> {
         if (object instanceof HibernateProxy) {
             HibernateProxy proxy = (HibernateProxy) object;
             LazyInitializer initializer = proxy.getHibernateLazyInitializer();
-            //取真实类型
-            realType = initializer.getPersistentClass();
-            //判断是否已加载，如果未加载，直接创建空对象，或者直接写空值
-            if (!Hibernate.isInitialized(object)) {
+            if (initializer.isUninitialized()) {
+                //取真实类型
+                realType = initializer.getPersistentClass();
                 try {
                     serialObject = initializer.getPersistentClass().newInstance();
                 } catch (Exception e) {
                     serialObject = null;
                 }
-            } else {
-                //否则直接取加载好的真实类型的对象
+            } else {// 已经初始化，直接取加载好的真实类型的对象
                 serialObject = initializer.getImplementation();
+            }
+            
+        } else if (object instanceof PersistentCollection) {
+            PersistentCollection collection = (PersistentCollection) object;
+            if (collection.wasInitialized()) {
+                serialObject = collection.getValue();
             }
         }
         new FieldSerializer<T>(kryo, realType).write(kryo, output, (T)serialObject);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     public T read(Kryo kryo, Input input, Class<T> type) {
         Class<T> realType = type;
         //取真实类型
