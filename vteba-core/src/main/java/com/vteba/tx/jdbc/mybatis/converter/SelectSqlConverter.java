@@ -103,16 +103,6 @@ public class SelectSqlConverter extends AbstractSqlConverter {
             }
         }
 
-        // public void visit(Union union)
-        // {
-        // Iterator iter = union.getPlainSelects().iterator();
-        // while (iter.hasNext())
-        // {
-        // PlainSelect plainSelect = (PlainSelect)iter.next();
-        // visit(plainSelect);
-        // }
-        // }
-
         public void visit(Table tableName) {
             String table = tableName.getName();
             table = SelectSqlConverter.this.convertTableName(table, this.params, this.mapperId);

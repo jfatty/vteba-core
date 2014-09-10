@@ -23,6 +23,11 @@ import com.vteba.tx.jdbc.mybatis.config.ShardConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 import com.vteba.utils.reflection.ReflectUtils;
 
+/**
+ * 基于Mybatis插件拦截器，实现的分表分片。
+ * @author yinlei 
+ * @since 2013-12-10
+ */
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { java.sql.Connection.class }) })
 public class ShardingPluginsInterceptpr implements Interceptor {
 
