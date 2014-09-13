@@ -546,16 +546,16 @@
 <!-- 	</dependency> -->
 	
 	<!-- jackson jaxrs start -->
-	<dependency>
-		<groupId>com.fasterxml</groupId>
-		<artifactId>classmate</artifactId>
-		<version>1.0.0</version>
-	</dependency>
-	<dependency>
-		<groupId>com.fasterxml.jackson.jaxrs</groupId>
-		<artifactId>jackson-jaxrs-json-provider</artifactId>
-		<version>${jackson-version}</version>
-	</dependency>
+<!-- 	<dependency> -->
+<!-- 		<groupId>com.fasterxml</groupId> -->
+<!-- 		<artifactId>classmate</artifactId> -->
+<!-- 		<version>1.0.0</version> -->
+<!-- 	</dependency> -->
+<!-- 	<dependency> -->
+<!-- 		<groupId>com.fasterxml.jackson.jaxrs</groupId> -->
+<!-- 		<artifactId>jackson-jaxrs-json-provider</artifactId> -->
+<!-- 		<version>${jackson-version}</version> -->
+<!-- 	</dependency> -->
 	
 <!-- 	<dependency> -->
 <!-- 		<groupId>com.fasterxml.jackson.jaxrs</groupId> -->
