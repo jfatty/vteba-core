@@ -19,7 +19,7 @@ public interface MyBatisService<T, BEAN, ID> {
      * @param bean 查询条件
      * @date 2014-02-27 17:59:34
      */
-    int countBy(BEAN bean);
+    int count(BEAN bean);
 
     /**
      * 根据bean所携带条件删除记录。
@@ -40,7 +40,7 @@ public interface MyBatisService<T, BEAN, ID> {
      * @param record 要被保存的数据
      * @date 2014-02-27 17:59:34
      */
-    int saveAll(T record);
+    //int saveAll(T record);
 
     /**
      * 插入记录，只有非空字段才会插入到数据库。
@@ -77,7 +77,7 @@ public interface MyBatisService<T, BEAN, ID> {
      * @param bean update的where条件
      * @date 2014-02-27 17:59:34
      */
-    //int updateAllByExample(@Param("record") T record, @Param("example") BEAN bean);
+    //int updateAllBatch(@Param("record") T record, @Param("example") BEAN bean);
 
     /**
      * 根据主键更新指定字段的数据。
