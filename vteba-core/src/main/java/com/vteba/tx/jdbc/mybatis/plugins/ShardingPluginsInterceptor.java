@@ -6,7 +6,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.ibatis.executor.statement.RoutingStatementHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.logging.Log;
@@ -21,7 +20,6 @@ import org.apache.ibatis.plugin.Signature;
 import com.vteba.tx.jdbc.mybatis.config.ShardConfigHolder;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
-import com.vteba.utils.reflection.ReflectUtils;
 
 /**
  * 基于Mybatis插件拦截器，实现的分表分片。
@@ -38,14 +36,14 @@ public class ShardingPluginsInterceptor implements Interceptor {
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
 
-        MappedStatement mappedStatement = null;
-        if ((statementHandler instanceof RoutingStatementHandler)) {
-            StatementHandler delegate = (StatementHandler) ReflectUtils.getFieldValue(statementHandler, "delegate");
-
-            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(delegate, "mappedStatement");
-        } else {
-            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(statementHandler, "mappedStatement");
-        }
+        MappedStatement mappedStatement = statementHandler.getMappedStatement();
+//        if ((statementHandler instanceof RoutingStatementHandler)) {
+//            StatementHandler delegate = (StatementHandler) ReflectUtils.getFieldValue(statementHandler, "delegate");
+//
+//            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(delegate, "mappedStatement");
+//        } else {
+//            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(statementHandler, "mappedStatement");
+//        }
         String mapperId = mappedStatement.getId();
         if (isShouldParse(mapperId)) {
             String sql = statementHandler.getBoundSql().getSql();
@@ -59,7 +57,8 @@ public class ShardingPluginsInterceptor implements Interceptor {
             if (log.isDebugEnabled()) {
                 log.debug("Converted Sql [" + mapperId + "]:" + sql);
             }
-            ReflectUtils.setFieldValue(statementHandler.getBoundSql(), "sql", sql);
+//            ReflectUtils.setFieldValue(statementHandler.getBoundSql(), "sql", sql);
+            statementHandler.getBoundSql().setSql(sql);
         }
         return invocation.proceed();
     }
