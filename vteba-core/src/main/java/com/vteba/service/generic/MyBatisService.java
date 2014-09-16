@@ -34,13 +34,6 @@ public interface MyBatisService<T, BEAN, ID> {
      * @date 2014-02-27 17:59:34
 	 */
 	public int deleteById(ID id);
-    
-    /**
-     * 插入记录，所有字段都不能为空。
-     * @param record 要被保存的数据
-     * @date 2014-02-27 17:59:34
-     */
-    //int saveAll(T record);
 
     /**
      * 插入记录，只有非空字段才会插入到数据库。
@@ -61,7 +54,7 @@ public interface MyBatisService<T, BEAN, ID> {
      * @param id 主键
      * @date 2014-02-27 17:59:34
      */
-    T queryById(ID id);
+    T get(ID id);
 
     /**
      * 根据Criteria所携带条件更新指定字段。
@@ -72,25 +65,10 @@ public interface MyBatisService<T, BEAN, ID> {
     int updateBatch(@Param("record") T record, @Param("example") BEAN bean);
 
     /**
-     * 根据Criteria所携带条件更新所有字段，不含BLOB字段。
-     * @param record 要更新的数据
-     * @param bean update的where条件
-     * @date 2014-02-27 17:59:34
-     */
-    //int updateAllBatch(@Param("record") T record, @Param("example") BEAN bean);
-
-    /**
      * 根据主键更新指定字段的数据。
      * @param record 要更新的数据，含有Id
      * @date 2014-02-27 17:59:34
      */
     int updateById(T record);
-
-    /**
-     * 根据主键更新所有字段的数据，不含BLOB字段。
-     * @param record 要更新的数据，含有Id
-     * @date 2014-02-27 17:59:34
-     */
-    //int updateAllById(T record);
 
 }
