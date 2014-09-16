@@ -50,7 +50,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
         if (isShouldParse(mapperId)) {
             String sql = statementHandler.getBoundSql().getSql();
             if (log.isDebugEnabled()) {
-                log.debug("Original Sql [" + mapperId + "]:" + sql);
+                log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
             Object params = statementHandler.getBoundSql().getParameterObject();
 
