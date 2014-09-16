@@ -29,9 +29,9 @@ import com.vteba.utils.reflection.ReflectUtils;
  * @since 2013-12-10
  */
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { java.sql.Connection.class }) })
-public class ShardingPluginsInterceptpr implements Interceptor {
+public class ShardingPluginsInterceptor implements Interceptor {
 
-    private static final Log                                log             = LogFactory.getLog(ShardingPluginsInterceptpr.class);
+    private static final Log                                log             = LogFactory.getLog(ShardingPluginsInterceptor.class);
     public static final String                              SHARDING_CONFIG = "shardingConfig";
     private static final ConcurrentMap<String, Boolean> cache           = new ConcurrentHashMap<String, Boolean>();
 
