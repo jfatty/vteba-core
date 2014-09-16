@@ -22,7 +22,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  * @author 尹雷
  */
-public abstract class BaseSatementHandler implements StatementHandler {
+public abstract class BaseStatementHandler implements StatementHandler {
 
     protected final Configuration       configuration;
     protected final ObjectFactory       objectFactory;
@@ -40,7 +40,7 @@ public abstract class BaseSatementHandler implements StatementHandler {
         return mappedStatement;
     }
 
-    protected BaseSatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject,
+    protected BaseStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject,
                                   RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
         this.configuration = mappedStatement.getConfiguration();
         this.executor = executor;
