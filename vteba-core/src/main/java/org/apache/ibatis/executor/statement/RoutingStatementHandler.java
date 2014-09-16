@@ -26,7 +26,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
- * 主要的改进在于，不需要反射，可以获取delegate（StatementHandler）。
+ * 主要的改进在于，不需要反射，可以获取delegate（StatementHandler）和MappedStatement。
  * 
  * @author Clinton Begin
  * @author 尹雷
