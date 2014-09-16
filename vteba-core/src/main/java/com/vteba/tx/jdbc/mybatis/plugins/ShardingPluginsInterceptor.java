@@ -19,7 +19,7 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 
 import com.vteba.tx.jdbc.mybatis.config.ShardConfigHolder;
-import com.vteba.tx.jdbc.mybatis.config.ShardConfigParser;
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 import com.vteba.utils.reflection.ReflectUtils;
 
@@ -73,11 +73,10 @@ public class ShardingPluginsInterceptor implements Interceptor {
         if ((config == null) || (config.trim().length() == 0)) {
             throw new IllegalArgumentException("property 'shardingConfig' is requested.");
         }
-        ShardConfigParser parser = new ShardConfigParser();
         InputStream input = null;
         try {
             input = Resources.getResourceAsStream(config);
-            parser.parse(input);
+            ShardingConfigParser.parse(input);
             return;
         } catch (IOException e) {
             log.error("Get sharding config file failed.", e);
