@@ -35,15 +35,8 @@ public class ShardingPluginsInterceptor implements Interceptor {
 
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-
         MappedStatement mappedStatement = statementHandler.getMappedStatement();
-//        if ((statementHandler instanceof RoutingStatementHandler)) {
-//            StatementHandler delegate = (StatementHandler) ReflectUtils.getFieldValue(statementHandler, "delegate");
-//
-//            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(delegate, "mappedStatement");
-//        } else {
-//            mappedStatement = (MappedStatement) ReflectUtils.getFieldValue(statementHandler, "mappedStatement");
-//        }
+
         String mapperId = mappedStatement.getId();
         if (isShouldParse(mapperId)) {
             String sql = statementHandler.getBoundSql().getSql();
@@ -52,12 +45,11 @@ public class ShardingPluginsInterceptor implements Interceptor {
             }
             Object params = statementHandler.getBoundSql().getParameterObject();
 
-            SqlConverterFactory cf = SqlConverterFactory.getInstance();
-            sql = cf.convert(sql, params, mapperId);
+            SqlConverterFactory factory = SqlConverterFactory.getInstance();
+            sql = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {
                 log.debug("Converted Sql [" + mapperId + "]:" + sql);
             }
-//            ReflectUtils.setFieldValue(statementHandler.getBoundSql(), "sql", sql);
             statementHandler.getBoundSql().setSql(sql);
         }
         return invocation.proceed();
