@@ -3,7 +3,7 @@ package com.vteba.tx.jdbc.mybatis.converter;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
-import com.vteba.tx.jdbc.mybatis.config.ShardConfigHolder;
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 
 public abstract class AbstractSqlConverter implements SqlConverter {
@@ -19,7 +19,7 @@ public abstract class AbstractSqlConverter implements SqlConverter {
     }
 
     protected String convertTableName(String tableName, Object params, String mapperId) {
-        ShardConfigHolder configFactory = ShardConfigHolder.getInstance();
+        ShardingConfigFactory configFactory = ShardingConfigFactory.getInstance();
         ShardingStrategy strategy = configFactory.getStrategy(tableName);
         if (strategy == null) {
             return tableName;

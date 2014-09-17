@@ -24,8 +24,8 @@ public class ShardingConfigParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardingConfigParser.class);
     
     @SuppressWarnings("unchecked")
-    public static ShardConfigHolder parse(InputStream input) throws Exception {
-        final ShardConfigHolder configHolder = ShardConfigHolder.getInstance();
+    public static ShardingConfigFactory parse(InputStream input) throws Exception {
+        final ShardingConfigFactory configHolder = ShardingConfigFactory.getInstance();
 
         SAXReader saxReader = new SAXReader();
         Document document = saxReader.read(input);

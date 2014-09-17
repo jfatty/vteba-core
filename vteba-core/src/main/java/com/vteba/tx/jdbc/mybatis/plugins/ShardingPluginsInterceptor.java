@@ -18,7 +18,7 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 
-import com.vteba.tx.jdbc.mybatis.config.ShardConfigHolder;
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 
@@ -94,7 +94,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
             return parse.booleanValue();
         }
         if (!mapperId.endsWith("!selectKey")) {
-            ShardConfigHolder configHolder = ShardConfigHolder.getInstance();
+            ShardingConfigFactory configHolder = ShardingConfigFactory.getInstance();
             if ((!configHolder.isIgnoreId(mapperId))
                 && ((!configHolder.isConfigParseId()) || (configHolder.isParseId(mapperId)))) {
                 parse = Boolean.valueOf(true);

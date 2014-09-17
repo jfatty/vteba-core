@@ -7,11 +7,16 @@ import java.util.Set;
 
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 
-public class ShardConfigHolder {
+/**
+ * 分片配置工厂，持有配置的信息。
+ * @author yinlei 
+ * @since 2013-12-17 12:45
+ */
+public class ShardingConfigFactory {
 
-    private static final ShardConfigHolder instance = new ShardConfigHolder();
+    private static final ShardingConfigFactory instance = new ShardingConfigFactory();
 
-    public static ShardConfigHolder getInstance() {
+    public static ShardingConfigFactory getInstance() {
         return instance;
     }
 
@@ -24,7 +29,7 @@ public class ShardConfigHolder {
     }
 
     public ShardingStrategy getStrategy(String table) {
-        return (ShardingStrategy) this.strategyRegister.get(table.toLowerCase());
+        return this.strategyRegister.get(table.toLowerCase());
     }
 
     public synchronized void addIgnoreId(String id) {
@@ -46,10 +51,10 @@ public class ShardConfigHolder {
     }
 
     public boolean isParseId(String id) {
-        return (this.parseSet != null) && (this.parseSet.contains(id));
+        return this.parseSet != null && this.parseSet.contains(id);
     }
 
     public boolean isIgnoreId(String id) {
-        return (this.ignoreSet != null) && (this.ignoreSet.contains(id));
+        return this.ignoreSet != null && this.ignoreSet.contains(id);
     }
 }

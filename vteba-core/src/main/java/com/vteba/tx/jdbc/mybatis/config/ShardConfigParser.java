@@ -32,8 +32,8 @@ public class ShardConfigParser {
         DOC_TYPE_MAP.put("-//shardbatis.googlecode.com//DTD Shardbatis 2.0//EN".toLowerCase(), SHARD_CONFIG_DTD);
     }
 
-    public ShardConfigHolder parse(InputStream input) throws Exception {
-        final ShardConfigHolder configHolder = ShardConfigHolder.getInstance();
+    public ShardingConfigFactory parse(InputStream input) throws Exception {
+        final ShardingConfigFactory configHolder = ShardingConfigFactory.getInstance();
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(true);
