@@ -21,9 +21,11 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 
 import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
+import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
+import com.vteba.tx.matrix.info.TableInfo;
 
 /**
  * 基于Mybatis插件拦截器，实现的分表分片。
@@ -98,6 +100,12 @@ public class ShardingPluginsInterceptor implements Interceptor {
                 }
             }
         }
+        
+        // 临时处理的，以后会将配置放到数据库中的
+        TableInfo tableInfo = new TableInfo();
+        tableInfo.setCurrentTable("user_201409m");
+        tableInfo.setTableName("user");
+        ShardingTableCache.put("user", tableInfo);
     }
 
     private boolean isNeedParse(String mapperId) {
