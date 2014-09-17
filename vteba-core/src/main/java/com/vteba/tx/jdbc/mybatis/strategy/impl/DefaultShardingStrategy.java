@@ -58,9 +58,9 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         String tableName = null;
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(GET)) {
-            String id = (String) params;
-            String tableSuffix = id.substring(id.lastIndexOf("_"));
-            tableName = baseTableName + tableSuffix;
+//            String id = params.toString();
+//            String tableSuffix = id.substring(id.lastIndexOf("_"));
+            tableName = getTargetTableName(baseTableName, params, mapperId);
         } else {
             tableName = baseTableName + "_" + DateUtils.toDateString("yyyyMM") + "m";
         }
