@@ -16,6 +16,10 @@ public class ShardingConfigFactory {
 
     private static final ShardingConfigFactory instance = new ShardingConfigFactory();
 
+    private ShardingConfigFactory() {
+        
+    }
+    
     public static ShardingConfigFactory getInstance() {
         return instance;
     }
