@@ -20,6 +20,7 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 
+import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
@@ -35,7 +36,6 @@ public class ShardingPluginsInterceptor implements Interceptor {
     public static final String SHARDING_CONFIG = "shardingConfig";
     private static final Log log = LogFactory.getLog(ShardingPluginsInterceptor.class);
     private static final ConcurrentMap<String, Boolean> NEED_PARSE_CACHE = new ConcurrentHashMap<String, Boolean>();
-    private static final ConcurrentMap<String, String> SQL_CACHE = new ConcurrentHashMap<String, String>();
 
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
@@ -46,7 +46,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
             BoundSql boundSql = statementHandler.getBoundSql();
             String sql = boundSql.getSql();
             String key = sql;
-            String alreadyParsedSQL = SQL_CACHE.get(key);
+            String alreadyParsedSQL = SQLCache.get(key);
             if (alreadyParsedSQL != null) {
                 boundSql.setSql(alreadyParsedSQL);
                 if (log.isDebugEnabled()) {
@@ -66,7 +66,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
             if (log.isDebugEnabled()) {
                 log.debug("Converted Sql [" + mapperId + "]:" + sql);
             }
-            SQL_CACHE.put(key, sql);
+            SQLCache.put(key, sql);
             boundSql.setSql(sql);
         }
         return invocation.proceed();
