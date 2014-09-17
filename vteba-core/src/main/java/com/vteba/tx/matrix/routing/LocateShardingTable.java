@@ -35,7 +35,7 @@ import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
  * @see
  * @since 2013-12-5 16:27
  */
-public class LocateTable {
+public class LocateShardingTable {
 
     public String selectTable(String sql) {
         

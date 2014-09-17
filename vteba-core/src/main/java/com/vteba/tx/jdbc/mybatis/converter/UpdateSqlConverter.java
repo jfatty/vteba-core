@@ -1,5 +1,8 @@
 package com.vteba.tx.jdbc.mybatis.converter;
 
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
+import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.update.Update;
 
@@ -19,5 +22,15 @@ public class UpdateSqlConverter extends AbstractSqlConverter {
         update.getTable().setName(convertTableName(name, params, mapperId));
 
         return update;
+    }
+    
+    protected String convertTableName(String tableName, Object params, String mapperId) {
+        ShardingConfigFactory configFactory = ShardingConfigFactory.getInstance();
+        ShardingStrategy strategy = configFactory.getStrategy(tableName);
+        if (strategy == null) {
+            return tableName;
+        } else {
+            return strategy.getUpdateTable(tableName, params, mapperId);
+        }
     }
 }

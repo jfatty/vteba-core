@@ -2,6 +2,9 @@ package com.vteba.tx.jdbc.mybatis.converter;
 
 import java.util.Iterator;
 
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
+import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
+
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -84,6 +87,16 @@ public class SelectSqlConverter extends AbstractSqlConverter {
         return statement;
     }
 
+    protected String convertTableName(String tableName, Object params, String mapperId) {
+        ShardingConfigFactory configFactory = ShardingConfigFactory.getInstance();
+        ShardingStrategy strategy = configFactory.getStrategy(tableName);
+        if (strategy == null) {
+            return tableName;
+        } else {
+            return strategy.getSelectTable(tableName, params, mapperId);
+        }
+    }
+    
     /**
      * 如果需要做sql某一方面的转换，实现对应的访问者模式的方法即可。
      * @author yinlei

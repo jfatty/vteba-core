@@ -1,5 +1,8 @@
 package com.vteba.tx.jdbc.mybatis.converter;
 
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
+import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 
@@ -20,5 +23,15 @@ public class DeleteSqlConverter extends AbstractSqlConverter {
         delete.getTable().setName(convertTableName(name, params, mapperId));
 
         return delete;
+    }
+    
+    protected String convertTableName(String tableName, Object params, String mapperId) {
+        ShardingConfigFactory configFactory = ShardingConfigFactory.getInstance();
+        ShardingStrategy strategy = configFactory.getStrategy(tableName);
+        if (strategy == null) {
+            return tableName;
+        } else {
+            return strategy.getDeleteTable(tableName, params, mapperId);
+        }
     }
 }

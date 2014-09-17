@@ -3,9 +3,6 @@ package com.vteba.tx.jdbc.mybatis.converter;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
-import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
-import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
-
 /**
  * sql转换接口的抽象实现。
  * @author yinlei 
@@ -26,15 +23,6 @@ public abstract class AbstractSqlConverter implements SqlConverter {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         statement.accept(deParser);
         return deParser.getBuffer().toString();
-    }
-
-    protected String convertTableName(String tableName, Object params, String mapperId) {
-        ShardingConfigFactory configFactory = ShardingConfigFactory.getInstance();
-        ShardingStrategy strategy = configFactory.getStrategy(tableName);
-        if (strategy == null) {
-            return tableName;
-        }
-        return strategy.getTargetTableName(tableName, params, mapperId);
     }
 
     /**
