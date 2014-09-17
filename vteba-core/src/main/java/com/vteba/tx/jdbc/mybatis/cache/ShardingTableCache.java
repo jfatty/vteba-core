@@ -12,6 +12,13 @@ import com.vteba.tx.matrix.info.TableInfo;
  */
 public class ShardingTableCache {
     private static final ConcurrentMap<String, TableInfo> shardingTableCache = new ConcurrentHashMap<String, TableInfo>();
+    private static ShardingTableCache instance = new ShardingTableCache();
+    
+    private ShardingTableCache() {}
+    
+    public static ShardingTableCache get() {
+        return instance;
+    }
     
     public ConcurrentMap<String, TableInfo> getCache() {
         return shardingTableCache;
