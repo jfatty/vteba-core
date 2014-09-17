@@ -49,7 +49,7 @@ public class SqlConverterFactory {
             log.error(e.getMessage(), e);
             throw new ShardingException(e);
         }
-        SqlConverter converter = (SqlConverter) this.converterMap.get(statement.getClass().getName());
+        SqlConverter converter = this.converterMap.get(statement.getClass().getName());
         if (converter != null) {
             return converter.convert(statement, params, mapperId);
         }
