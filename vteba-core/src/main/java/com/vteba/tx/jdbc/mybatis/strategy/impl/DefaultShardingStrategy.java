@@ -1,8 +1,12 @@
 package com.vteba.tx.jdbc.mybatis.strategy.impl;
 
+import java.util.UUID;
+
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
+import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
 import com.vteba.tx.matrix.info.TableInfo;
+import com.vteba.utils.common.UUIDUtils;
 import com.vteba.utils.date.DateUtils;
 
 /**
@@ -80,5 +84,23 @@ public class DefaultShardingStrategy implements ShardingStrategy {
     public static void main(String[] aa) {
         String a = "asdf.asa";
         System.out.println(a.substring(a.lastIndexOf(".") + 1));
+        
+        long d = System.currentTimeMillis();
+        //UUIDUtils.uuid();
+        System.out.println(System.currentTimeMillis() - d);
+        
+        d = System.currentTimeMillis();
+        UUID id = UUID.randomUUID();
+        id.toString();
+        System.out.println(System.currentTimeMillis() - d);
+        
+        d = System.currentTimeMillis();
+        StandardRandomStrategy strategy = StandardRandomStrategy.INSTANCE;
+        strategy.generateUUID(null).toString();
+        System.out.println(System.currentTimeMillis() - d);
+        
+        d = System.currentTimeMillis();
+        UUIDUtils.uuid();
+        System.out.println(System.currentTimeMillis() - d);
     }
 }
