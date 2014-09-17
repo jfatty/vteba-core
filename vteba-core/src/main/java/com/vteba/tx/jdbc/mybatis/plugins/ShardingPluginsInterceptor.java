@@ -10,6 +10,7 @@ import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
@@ -29,9 +30,9 @@ import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { java.sql.Connection.class }) })
 public class ShardingPluginsInterceptor implements Interceptor {
 
-    private static final Log                                log             = LogFactory.getLog(ShardingPluginsInterceptor.class);
-    public static final String                              SHARDING_CONFIG = "shardingConfig";
-    private static final ConcurrentMap<String, Boolean> cache           = new ConcurrentHashMap<String, Boolean>();
+    public static final String SHARDING_CONFIG = "shardingConfig";
+    private static final Log log = LogFactory.getLog(ShardingPluginsInterceptor.class);
+    private static final ConcurrentMap<String, Boolean> cache = new ConcurrentHashMap<String, Boolean>();
 
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
@@ -39,18 +40,19 @@ public class ShardingPluginsInterceptor implements Interceptor {
 
         String mapperId = mappedStatement.getId();
         if (isShouldParse(mapperId)) {
-            String sql = statementHandler.getBoundSql().getSql();
+            BoundSql boundSql = statementHandler.getBoundSql();
+            String sql = boundSql.getSql();
             if (log.isDebugEnabled()) {
                 log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
-            Object params = statementHandler.getBoundSql().getParameterObject();
+            Object params = boundSql.getParameterObject();
 
             SqlConverterFactory factory = SqlConverterFactory.getInstance();
             sql = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {
                 log.debug("Converted Sql [" + mapperId + "]:" + sql);
             }
-            statementHandler.getBoundSql().setSql(sql);
+            boundSql.setSql(sql);
         }
         return invocation.proceed();
     }
