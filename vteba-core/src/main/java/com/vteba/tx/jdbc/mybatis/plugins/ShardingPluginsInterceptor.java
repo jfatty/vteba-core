@@ -2,6 +2,8 @@ package com.vteba.tx.jdbc.mybatis.plugins;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -32,26 +34,39 @@ public class ShardingPluginsInterceptor implements Interceptor {
 
     public static final String SHARDING_CONFIG = "shardingConfig";
     private static final Log log = LogFactory.getLog(ShardingPluginsInterceptor.class);
-    private static final ConcurrentMap<String, Boolean> cache = new ConcurrentHashMap<String, Boolean>();
+    private static final ConcurrentMap<String, Boolean> NEED_PARSE_CACHE = new ConcurrentHashMap<String, Boolean>();
+    private static final ConcurrentMap<String, String> SQL_CACHE = new ConcurrentHashMap<String, String>();
 
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
         MappedStatement mappedStatement = statementHandler.getMappedStatement();
 
         String mapperId = mappedStatement.getId();
-        if (isShouldParse(mapperId)) {
+        if (isNeedParse(mapperId)) {
             BoundSql boundSql = statementHandler.getBoundSql();
             String sql = boundSql.getSql();
+            String key = sql;
+            String alreadyParsedSQL = SQL_CACHE.get(key);
+            if (alreadyParsedSQL != null) {
+                boundSql.setSql(alreadyParsedSQL);
+                if (log.isDebugEnabled()) {
+                    log.debug("MapperId=[" + mapperId + "]的sql已经被解析，从缓存中获取：sql=[" + alreadyParsedSQL + "]。");
+                }
+                return invocation.proceed();
+            }
+           
             if (log.isDebugEnabled()) {
                 log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
             Object params = boundSql.getParameterObject();
 
             SqlConverterFactory factory = SqlConverterFactory.getInstance();
+            
             sql = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {
                 log.debug("Converted Sql [" + mapperId + "]:" + sql);
             }
+            SQL_CACHE.put(key, sql);
             boundSql.setSql(sql);
         }
         return invocation.proceed();
@@ -62,7 +77,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
     }
 
     public void setProperties(Properties properties) {
-        String config = properties.getProperty(SHARDING_CONFIG, null);
+        String config = properties.getProperty(SHARDING_CONFIG);
         if (config == null || config.trim().length() == 0) {
             throw new IllegalArgumentException("property 'shardingConfig' is requested.");
         }
@@ -70,13 +85,10 @@ public class ShardingPluginsInterceptor implements Interceptor {
         try {
             input = Resources.getResourceAsStream(config);
             ShardingConfigParser.parse(input);
-            return;
         } catch (IOException e) {
-            log.error("Get sharding config file failed.", e);
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("读取mybatis分表配置文件[" + config + "]异常。", e);
         } catch (Exception e) {
-            log.error("Parse sharding config file failed.", e);
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("解析mybatis分表配置文件[" + config + "]异常。", e);
         } finally {
             if (input != null) {
                 try {
@@ -88,8 +100,8 @@ public class ShardingPluginsInterceptor implements Interceptor {
         }
     }
 
-    private boolean isShouldParse(String mapperId) {
-        Boolean parse = cache.get(mapperId);
+    private boolean isNeedParse(String mapperId) {
+        Boolean parse = NEED_PARSE_CACHE.get(mapperId);
         if (parse != null) {
             return parse;
         }
@@ -103,7 +115,25 @@ public class ShardingPluginsInterceptor implements Interceptor {
         if (parse == null) {
             parse = false;
         }
-        cache.put(mapperId, parse);
+        NEED_PARSE_CACHE.put(mapperId, parse);
         return parse;
+    }
+    
+    public static void main(String[] aa) {
+        Map<String, String> map = new HashMap<String, String>();
+        ConcurrentMap<String, String> curMap = new ConcurrentHashMap<String, String>();
+        long d = System.nanoTime();
+        map.put("1", "2");
+        for (Integer i = 0; i < 10; i++) {
+            map.get("1");
+        }
+        System.out.println(System.nanoTime() - d);
+        
+        d = System.nanoTime();
+        curMap.put("3", "4");
+        for (Integer i = 0; i < 10; i++) {
+            curMap.get("3");
+        }
+        System.out.println(System.nanoTime() -d);
     }
 }
