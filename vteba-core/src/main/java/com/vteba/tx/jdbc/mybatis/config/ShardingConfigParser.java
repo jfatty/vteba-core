@@ -23,6 +23,12 @@ public class ShardingConfigParser {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardingConfigParser.class);
     
+    /**
+     * 解析mybatis分片配置文件
+     * @param input 配置文件流
+     * @return 配置文件持有实例
+     * @throws Exception
+     */
     @SuppressWarnings("unchecked")
     public static ShardingConfigFactory parse(InputStream input) throws Exception {
         final ShardingConfigFactory configHolder = ShardingConfigFactory.getInstance();
@@ -33,21 +39,25 @@ public class ShardingConfigParser {
         
         List<Element> ignoreList = rootElement.elements("ignoreList");
         if (ignoreList != null) {
-            
+            for (Element ignore : ignoreList) {
+                configHolder.addIgnoreId(ignore.getStringValue().trim());
+            }
         }
         
         List<Element> parseList = rootElement.elements("parseList");
         if (parseList != null) {
-            
+            for (Element ignore : parseList) {
+                configHolder.addParseId(ignore.getStringValue().trim());
+            }
         }
         
         List<Element> strategyList = rootElement.elements("strategy");
         
         if (strategyList != null) {
             for (Element strategy : strategyList) {
-                String table = strategy.attributeValue("tableName");
+                String table = strategy.attributeValue("tableName").trim();
 
-                String className = strategy.attributeValue("strategyClass");
+                String className = strategy.attributeValue("strategyClass").trim();
                 try {
                     Class<?> clazz = Class.forName(className);
                     ShardingStrategy shardingStrategy = (ShardingStrategy) clazz.newInstance();

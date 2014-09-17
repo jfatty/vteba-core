@@ -3,6 +3,11 @@ package com.vteba.tx.jdbc.mybatis.converter;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.insert.Insert;
 
+/**
+ * insert语句转换
+ * @author yinlei
+ * @since 2013-12-17
+ */
 public class InsertSqlConverter extends AbstractSqlConverter {
 
     protected Statement doConvert(Statement statement, Object params, String mapperId) {

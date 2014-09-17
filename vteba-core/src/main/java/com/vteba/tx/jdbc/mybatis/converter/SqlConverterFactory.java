@@ -17,6 +17,11 @@ import org.apache.ibatis.logging.LogFactory;
 
 import com.vteba.tx.jdbc.mybatis.ShardingException;
 
+/**
+ * sql转换工厂
+ * @author yinlei 
+ * @since 2013-12-17 12:51
+ */
 public class SqlConverterFactory {
 
     private static final Log           log     = LogFactory.getLog(SqlConverterFactory.class);

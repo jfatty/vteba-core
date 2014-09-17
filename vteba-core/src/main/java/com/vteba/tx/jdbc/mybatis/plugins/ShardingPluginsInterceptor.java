@@ -63,7 +63,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
 
     public void setProperties(Properties properties) {
         String config = properties.getProperty(SHARDING_CONFIG, null);
-        if ((config == null) || (config.trim().length() == 0)) {
+        if (config == null || config.trim().length() == 0) {
             throw new IllegalArgumentException("property 'shardingConfig' is requested.");
         }
         InputStream input = null;
@@ -89,21 +89,21 @@ public class ShardingPluginsInterceptor implements Interceptor {
     }
 
     private boolean isShouldParse(String mapperId) {
-        Boolean parse = (Boolean) cache.get(mapperId);
+        Boolean parse = cache.get(mapperId);
         if (parse != null) {
-            return parse.booleanValue();
+            return parse;
         }
         if (!mapperId.endsWith("!selectKey")) {
             ShardingConfigFactory configHolder = ShardingConfigFactory.getInstance();
             if ((!configHolder.isIgnoreId(mapperId))
                 && ((!configHolder.isConfigParseId()) || (configHolder.isParseId(mapperId)))) {
-                parse = Boolean.valueOf(true);
+                parse = true;
             }
         }
         if (parse == null) {
-            parse = Boolean.valueOf(false);
+            parse = false;
         }
         cache.put(mapperId, parse);
-        return parse.booleanValue();
+        return parse;
     }
 }

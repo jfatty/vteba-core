@@ -1,6 +1,10 @@
 package com.vteba.tx.jdbc.mybatis;
 
-
+/**
+ * 分表分片异常基类
+ * @author yinlei
+ * @since 2013-12-16
+ */
 public class ShardingException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

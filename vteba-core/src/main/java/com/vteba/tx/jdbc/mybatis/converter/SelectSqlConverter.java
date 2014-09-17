@@ -68,6 +68,11 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+/**
+ * select sql语句转换
+ * @author yinlei
+ * @since 2013-12-17
+ */
 public class SelectSqlConverter extends AbstractSqlConverter {
 
     protected Statement doConvert(Statement statement, Object params, String mapperId) {
@@ -79,6 +84,11 @@ public class SelectSqlConverter extends AbstractSqlConverter {
         return statement;
     }
 
+    /**
+     * 如果需要做sql某一方面的转换，实现对应的访问者模式的方法即可。
+     * @author yinlei
+     * @since 2013-12-17
+     */
     private class TableNameModifier implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
 
         private Object params;
