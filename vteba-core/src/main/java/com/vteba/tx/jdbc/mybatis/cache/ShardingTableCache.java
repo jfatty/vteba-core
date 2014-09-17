@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.vteba.tx.matrix.info.TableInfo;
 
 /**
- * 维护分区表缓存
+ * 维护分区表缓存。这个应该在系统启动的时候维护缓存中的信息。
  * @author yinlei 
  * @since 2013-12-17
  */
