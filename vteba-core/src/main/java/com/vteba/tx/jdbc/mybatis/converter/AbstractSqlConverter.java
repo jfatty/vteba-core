@@ -10,10 +10,6 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
  */
 public abstract class AbstractSqlConverter implements SqlConverter {
 
-    public String convert(Statement statement, Object params, String mapperId) {
-        return doDeParse(doConvert(statement, params, mapperId));
-    }
-
     /**
      * sql逆向转换，将转换后的sql语句，转换成字符串。
      * @param statement sql语句Statement
@@ -32,5 +28,5 @@ public abstract class AbstractSqlConverter implements SqlConverter {
      * @param mapperId mybatis sql映射id
      * @return
      */
-    protected abstract Statement doConvert(Statement statement, Object paramObject, String mapperId);
+    //protected abstract List<String> doConvert(Statement statement, Object paramObject, String mapperId);
 }

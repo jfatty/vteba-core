@@ -1,5 +1,7 @@
 package com.vteba.tx.jdbc.mybatis.converter;
 
+import java.util.List;
+
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 
@@ -34,4 +36,11 @@ public class InsertSqlConverter extends AbstractSqlConverter {
             return strategy.getInsertTable(tableName, params, mapperId);
         }
     }
+
+	@Override
+	public List<String> convert(Statement statement, Object params,
+			String mapperId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

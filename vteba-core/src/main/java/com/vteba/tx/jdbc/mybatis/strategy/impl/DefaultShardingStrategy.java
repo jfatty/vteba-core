@@ -1,12 +1,15 @@
 package com.vteba.tx.jdbc.mybatis.strategy.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import org.joda.time.DateTime;
 
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
 import com.vteba.tx.matrix.info.TableInfo;
-import com.vteba.utils.common.UUIDUtils;
 import com.vteba.utils.date.DateUtils;
 
 /**
@@ -19,8 +22,10 @@ public class DefaultShardingStrategy implements ShardingStrategy {
     private static final String UPDATE = "updateById";
     private static final String GET = "get";
     
+    //private TableRuler tableRuler;
+    
     @Override
-    public String getTargetTableName(String baseTableName, Object paramObject, String mapperId) {
+    public String getTableName(String baseTableName, Object params, String mapperId) {
         return baseTableName + "_" + DateUtils.toDateString("yyyyMM") + "m";
     }
     
@@ -38,37 +43,43 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         return tableName;
     }
     
-    public String getDeleteTable(String baseTableName, Object params, String mapperId) {
-        String tableName = null;
+    public List<String> getDeleteTable(String baseTableName, Object params, String mapperId) {
+        List<String> tables = new ArrayList<String>();
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(DELETE)) {
             String id = (String) params;
             String tableSuffix = id.substring(id.lastIndexOf("_"));
-            tableName = baseTableName + tableSuffix;
+            tables.add(baseTableName + tableSuffix);
+        } else {
+            tables.add(getTableName(baseTableName, params, mapperId));
         }
-        return tableName;
+        return tables;
     }
     
-    public String getUpdateTable(String baseTableName, Object params, String mapperId) {
-        String tableName = null;
+    public List<String> getUpdateTable(String baseTableName, Object params, String mapperId) {
+        List<String> tables = new ArrayList<String>();
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(UPDATE)) {
-            
+            String id = (String) params;
+            String tableSuffix = id.substring(id.lastIndexOf("_"));
+            tables.add(baseTableName + tableSuffix);
+        } else {
+            tables.add(getTableName(baseTableName, params, mapperId));
         }
-        return tableName;
+        return tables;
     }
     
-    public String getSelectTable(String baseTableName, Object params, String mapperId) {
-        String tableName = null;
+    public List<String> getSelectTable(String baseTableName, Object params, String mapperId) {
+        List<String> tables = new ArrayList<String>();
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(GET)) {
-//            String id = params.toString();
-//            String tableSuffix = id.substring(id.lastIndexOf("_"));
-            tableName = getTargetTableName(baseTableName, params, mapperId);
+            String id = params.toString();
+            String tableSuffix = id.substring(id.lastIndexOf("_"));
+            tables.add(baseTableName + tableSuffix);
         } else {
-            tableName = baseTableName + "_" + DateUtils.toDateString("yyyyMM") + "m";
+            tables.add(getTableName(baseTableName, params, mapperId));
         }
-        return tableName;
+        return tables;
     }
     // insert，直接insert当前表，这个最简单
     
@@ -100,7 +111,14 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         System.out.println(System.currentTimeMillis() - d);
         
         d = System.currentTimeMillis();
-        UUIDUtils.uuid();
+        DateUtils.toDateString("yyyyMM");
         System.out.println(System.currentTimeMillis() - d);
+        
+        d = System.currentTimeMillis();
+        DateTime dateTime = new DateTime();
+        dateTime.getYear();
+        dateTime.getMonthOfYear();
+        System.out.println(System.currentTimeMillis() - d);
+        
     }
 }

@@ -102,14 +102,22 @@ public class LocateShardingTable {
             ChangeSelectVisitor changeSelectVisitor = new ChangeSelectVisitor();
             select.getSelectBody().accept(changeSelectVisitor);
             
-            System.out.println(select.getSelectBody().toString());
+            System.out.println("返回的sql" + select.getSelectBody().toString());
             //System.out.println(changeSelectVisitor.toString());
             
-            select.getSelectBody();
+            //select.getSelectBody();
         } catch (JSQLParserException e) {
             
         }
         System.out.println("jsqlparser:" + (System.currentTimeMillis() - d));
+        
+        String sqla = "select * from user u where u.user_id = a.user_id and u.user_id = ?";
+        d = System.currentTimeMillis();
+        String sub = sqla.substring(sqla.indexOf("from") + 4, sqla.indexOf("where")).trim();
+        String[] aaa = sub.split(" ");
+        String tableName = aaa[0];
+        
+        System.out.println(tableName + (System.currentTimeMillis() -d));
     }
     
     static class ChangeSelectVisitor implements SelectVisitor, FromItemVisitor {

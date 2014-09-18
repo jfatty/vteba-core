@@ -1,5 +1,7 @@
 package com.vteba.tx.jdbc.mybatis.converter;
 
+import java.util.List;
+
 import net.sf.jsqlparser.statement.Statement;
 
 /**
@@ -16,5 +18,5 @@ public interface SqlConverter {
      * @param mapperId mybatis sql映射id
      * @return 转换后的sql
      */
-    public String convert(Statement statement, Object params, String mapperId);
+    public List<String> convert(Statement statement, Object params, String mapperId);
 }

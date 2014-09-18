@@ -1,10 +1,7 @@
 package com.vteba.tx.jdbc.mybatis.cache;
 
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 
 /**
  * 缓存mybatis分表解析后的语句。
@@ -55,20 +52,20 @@ public class SQLCache {
      * @param key sql键
      */
     public void reload(String key) {
-        String sql = CACHE.get(key);
-        SqlConverterFactory factory = SqlConverterFactory.getInstance();
-        String parsedSQL = factory.convert(sql, null, null);
-        CACHE.put(key, parsedSQL);
+//        String sql = CACHE.get(key);
+//        SqlConverterFactory factory = SqlConverterFactory.getInstance();
+//        String parsedSQL = null;//factory.convert(sql, null, null);
+//        CACHE.put(key, parsedSQL);
     }
     
     /**
      * 重新解析该缓存中对应的所有的sql
      */
     public void reloadAll() {
-        SqlConverterFactory factory = SqlConverterFactory.getInstance();
-        for (Entry<String, String> entry : CACHE.entrySet()) {
-            String parsedSQL = factory.convert(entry.getValue(), null, null);
-            CACHE.put(entry.getKey(), parsedSQL);
-        }
+//        SqlConverterFactory factory = SqlConverterFactory.getInstance();
+//        for (Entry<String, String> entry : CACHE.entrySet()) {
+//            String parsedSQL = null;//factory.convert(entry.getValue(), null, null);
+//            CACHE.put(entry.getKey(), parsedSQL);
+//        }
     }
 }

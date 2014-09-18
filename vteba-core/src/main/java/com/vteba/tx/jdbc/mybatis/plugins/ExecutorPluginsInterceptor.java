@@ -2,14 +2,12 @@ package com.vteba.tx.jdbc.mybatis.plugins;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -20,6 +18,8 @@ import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 
 import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
@@ -28,25 +28,27 @@ import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 import com.vteba.tx.matrix.info.TableInfo;
 
-/**
- * 基于Mybatis插件拦截器，实现的分表分片。
- * @author yinlei 
- * @since 2013-12-10
- */
-@Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { java.sql.Connection.class }) })
-public class ShardingPluginsInterceptor implements Interceptor {
+@Intercepts({ @Signature(type = Executor.class, method = "query", args = {
+		MappedStatement.class, Object.class, RowBounds.class,
+		ResultHandler.class }) })
+public class ExecutorPluginsInterceptor implements Interceptor {
 
-    public static final String SHARDING_CONFIG = "shardingConfig";
+	public static final String SHARDING_CONFIG = "shardingConfig";
     private static final Log log = LogFactory.getLog(ShardingPluginsInterceptor.class);
     private static final ConcurrentMap<String, Boolean> NEED_PARSE_CACHE = new ConcurrentHashMap<String, Boolean>();
+	
+	@Override
+	public Object intercept(Invocation invocation) throws Throwable {
+		//Executor target = (Executor) invocation.getTarget();
+		Object[] args = invocation.getArgs();
+		MappedStatement mappedStatement = (MappedStatement) args[0];
+		Object params = args[1];
+		//RowBounds rowBounds = (RowBounds) args[2];
+		//ResultHandler resultHandler = (ResultHandler) args[3];
+		BoundSql boundSql = mappedStatement.getBoundSql(params);
 
-    public Object intercept(Invocation invocation) throws Throwable {
-        StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-        MappedStatement mappedStatement = statementHandler.getMappedStatement();
-
-        String mapperId = mappedStatement.getId();
+		String mapperId = mappedStatement.getId();
         if (isNeedParse(mapperId)) {
-            BoundSql boundSql = statementHandler.getBoundSql();
             String sql = boundSql.getSql();
             String key = sql;
             SQLCache.reset(key);
@@ -62,7 +64,6 @@ public class ShardingPluginsInterceptor implements Interceptor {
             if (log.isDebugEnabled()) {
                 log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
-            Object params = boundSql.getParameterObject();
 
             SqlConverterFactory factory = SqlConverterFactory.getInstance();
             
@@ -72,16 +73,24 @@ public class ShardingPluginsInterceptor implements Interceptor {
             }
             SQLCache.put(key, sqlList.get(0));
             boundSql.setSql(sqlList.get(0));
+            boundSql.setSqlList(sqlList);
+            
+            mappedStatement.setSqlList(sqlList);
+            mappedStatement.setBoundSql(boundSql);
+            
         }
-        return invocation.proceed();
-    }
+		
+		return invocation.proceed();
+	}
 
-    public Object plugin(Object target) {
-        return Plugin.wrap(target, this);
-    }
+	@Override
+	public Object plugin(Object target) {
+		return Plugin.wrap(target, this);
+	}
 
-    public void setProperties(Properties properties) {
-        String config = properties.getProperty(SHARDING_CONFIG);
+	@Override
+	public void setProperties(Properties properties) {
+		String config = properties.getProperty(SHARDING_CONFIG);
         if (config == null || config.trim().length() == 0) {
             throw new IllegalArgumentException("property 'shardingConfig' is requested.");
         }
@@ -108,9 +117,10 @@ public class ShardingPluginsInterceptor implements Interceptor {
         tableInfo.setCurrentTable("user_201409m");
         tableInfo.setTableName("user");
         ShardingTableCache.put("user", tableInfo);
-    }
 
-    private boolean isNeedParse(String mapperId) {
+	}
+
+	private boolean isNeedParse(String mapperId) {
         Boolean parse = NEED_PARSE_CACHE.get(mapperId);
         if (parse != null) {
             return parse;
@@ -127,23 +137,5 @@ public class ShardingPluginsInterceptor implements Interceptor {
         }
         NEED_PARSE_CACHE.put(mapperId, parse);
         return parse;
-    }
-    
-    public static void main(String[] aa) {
-        Map<String, String> map = new HashMap<String, String>();
-        ConcurrentMap<String, String> curMap = new ConcurrentHashMap<String, String>();
-        long d = System.nanoTime();
-        map.put("1", "2");
-        for (Integer i = 0; i < 10; i++) {
-            map.get("1");
-        }
-        System.out.println(System.nanoTime() - d);
-        
-        d = System.nanoTime();
-        curMap.put("3", "4");
-        for (Integer i = 0; i < 10; i++) {
-            curMap.get("3");
-        }
-        System.out.println(System.nanoTime() -d);
     }
 }

@@ -2,6 +2,7 @@ package com.vteba.tx.jdbc.mybatis.converter;
 
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -15,6 +16,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
+import com.google.common.collect.Lists;
 import com.vteba.tx.jdbc.mybatis.ShardingException;
 
 /**
@@ -46,7 +48,7 @@ public class SqlConverterFactory {
         this.converterMap.put(Delete.class.getName(), new DeleteSqlConverter());
     }
 
-    public String convert(String sql, Object params, String mapperId) throws ShardingException {
+    public List<String> convert(String sql, Object params, String mapperId) throws ShardingException {
         Statement statement = null;
         try {
             statement = this.pm.parse(new StringReader(sql));
@@ -58,6 +60,6 @@ public class SqlConverterFactory {
         if (converter != null) {
             return converter.convert(statement, params, mapperId);
         }
-        return sql;
+        return Lists.newArrayList(sql);
     }
 }
