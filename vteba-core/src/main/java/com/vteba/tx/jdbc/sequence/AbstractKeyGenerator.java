@@ -32,8 +32,13 @@ public class AbstractKeyGenerator implements KeyGenerator,NamedKeyGenerator, Ini
     }
     
     @Override
-    public String nextString() {
+    public String next() {
         return dataFieldIncrementer.nextStringValue();
+    }
+    
+    @Override
+    public String nextKey(String suffix) {
+        return dataFieldIncrementer.nextStringValue() + suffix;
     }
     
     @Override

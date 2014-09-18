@@ -20,7 +20,13 @@ public interface KeyGenerator {
      * 获取当前所配置的sequence或table模拟的sequence的字符串值。
      * @return sequence string value
      */
-    public String nextString();
+    public String next();
+    
+    /**
+     * 根据业务类型获取sequence，并添加后缀suffix
+     * @return sequence + 后缀
+     */
+    public String nextKey(String suffix);
 
     /**
      * 获取当前所配置的sequence或table模拟的sequence的字符串值。
