@@ -36,10 +36,10 @@ public class UpdateSqlConverter extends AbstractSqlConverter {
         return sqlList;
     }
     
-    private String deParse(Update delete, String tableName) {
-		delete.getTable().setName(tableName);
+    private String deParse(Update update, String tableName) {
+		update.getTable().setName(tableName);
 		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		delete.accept(deParser);
+		update.accept(deParser);
 		return deParser.getBuffer().toString();
 	}
 }

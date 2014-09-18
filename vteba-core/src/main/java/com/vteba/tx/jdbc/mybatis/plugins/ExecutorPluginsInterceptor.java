@@ -29,8 +29,8 @@ import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
 import com.vteba.tx.matrix.info.TableInfo;
 
 @Intercepts({ @Signature(type = Executor.class, method = "query", args = {
-		MappedStatement.class, Object.class, RowBounds.class,
-		ResultHandler.class }) })
+		MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class }),
+		@Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class })})
 public class ExecutorPluginsInterceptor implements Interceptor {
 
 	public static final String SHARDING_CONFIG = "shardingConfig";
