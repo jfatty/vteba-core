@@ -1,4 +1,4 @@
-package com.vteba.tx.jdbc.mybatis.converter;
+package com.vteba.tx.jdbc.mybatis.converter.jsqlparser;
 
 import java.io.StringReader;
 import java.util.HashMap;
@@ -24,18 +24,18 @@ import com.vteba.tx.jdbc.mybatis.ShardingException;
  * @author yinlei 
  * @since 2013-12-17 12:51
  */
-public class SqlConverterFactory {
+public class JsqlParserConverterFactory {
 
-    private static final Log           log     = LogFactory.getLog(SqlConverterFactory.class);
-    private static SqlConverterFactory factory = new SqlConverterFactory();
+    private static final Log           log     = LogFactory.getLog(JsqlParserConverterFactory.class);
+    private static JsqlParserConverterFactory factory = new JsqlParserConverterFactory();
     private Map<String, SqlConverter>  converterMap;
     private CCJSqlParserManager        pm;
 
-    public static SqlConverterFactory getInstance() {
+    public static JsqlParserConverterFactory getInstance() {
         return factory;
     }
 
-    private SqlConverterFactory() {
+    private JsqlParserConverterFactory() {
         this.converterMap = new HashMap<String, SqlConverter>();
         this.pm = new CCJSqlParserManager();
         register();

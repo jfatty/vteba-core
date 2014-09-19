@@ -25,7 +25,7 @@ import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
-import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
+import com.vteba.tx.jdbc.mybatis.converter.jsqlparser.JsqlParserConverterFactory;
 import com.vteba.tx.matrix.info.TableInfo;
 
 @Intercepts({ @Signature(type = Executor.class, method = "query", args = {
@@ -65,7 +65,7 @@ public class ExecutorPluginsInterceptor implements Interceptor {
                 log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
 
-            SqlConverterFactory factory = SqlConverterFactory.getInstance();
+            JsqlParserConverterFactory factory = JsqlParserConverterFactory.getInstance();
             
             List<String> sqlList = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {

@@ -118,6 +118,13 @@ public class LocateShardingTable {
         String tableName = aaa[0];
         
         System.out.println(tableName + (System.currentTimeMillis() -d));
+        
+        d = System.nanoTime();
+        String tempSql = "select * from {{user}} u, address a where u.user_id = a.user_id and u.user_id = ?";
+        
+        String tempSub = tempSql.substring(tempSql.indexOf("{{") + 2, tempSql.indexOf("}}")).trim();
+        tempSql = tempSql.replace("{{" + tempSub + "}}", "user201409m");
+        System.out.println(tempSub + (System.nanoTime() - d));
     }
     
     static class ChangeSelectVisitor implements SelectVisitor, FromItemVisitor {

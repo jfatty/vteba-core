@@ -25,7 +25,7 @@ import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
-import com.vteba.tx.jdbc.mybatis.converter.SqlConverterFactory;
+import com.vteba.tx.jdbc.mybatis.converter.jsqlparser.JsqlParserConverterFactory;
 import com.vteba.tx.matrix.info.TableInfo;
 
 /**
@@ -64,7 +64,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
             }
             Object params = boundSql.getParameterObject();
 
-            SqlConverterFactory factory = SqlConverterFactory.getInstance();
+            JsqlParserConverterFactory factory = JsqlParserConverterFactory.getInstance();
             
             List<String> sqlList = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {

@@ -1,49 +1,45 @@
-package com.vteba.tx.jdbc.mybatis.converter;
+package com.vteba.tx.jdbc.mybatis.converter.jsqlparser;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 
 /**
- * delete sql语句转换
+ * update sql语句转换
  * @author yinlei
  * @since 2013-12-17
  */
-public class DeleteSqlConverter extends AbstractSqlConverter {
+public class UpdateSqlConverter extends AbstractSqlConverter {
 
-	@Override
     public List<String> convert(Statement statement, Object params, String mapperId) {
-        if (!(statement instanceof Delete)) {
-            throw new IllegalArgumentException("The argument statement must is instance of Delete.");
+        if (!(statement instanceof Update)) {
+            throw new IllegalArgumentException("The argument statement must is instance of Update.");
         }
-        
+        Update update = (Update) statement;
         List<String> sqlList = new ArrayList<String>();
-        
-        Delete delete = (Delete) statement;
-
-        String name = delete.getTable().getName();
+        String name = update.getTable().getName();
         ShardingStrategy strategy = ShardingConfigFactory.getInstance().getStrategy(name);
         if (strategy != null) {
-            List<String> tableList = strategy.getDeleteTable(name, params, mapperId);
+            List<String> tableList = strategy.getUpdateTable(name, params, mapperId);
             for (String tableName : tableList) {
-        		String sql = deParse(delete, tableName);
+        		String sql = deParse(update, tableName);
         		sqlList.add(sql);
         	}
-        } 
+        }
+
         return sqlList;
     }
-
-	private String deParse(Delete delete, String tableName) {
-		delete.getTable().setName(tableName);
+    
+    private String deParse(Update update, String tableName) {
+		update.getTable().setName(tableName);
 		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		delete.accept(deParser);
+		update.accept(deParser);
 		return deParser.getBuffer().toString();
 	}
-    
 }

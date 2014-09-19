@@ -1,4 +1,4 @@
-package com.vteba.tx.jdbc.mybatis.converter;
+package com.vteba.tx.jdbc.mybatis.converter.jsqlparser;
 
 import java.util.List;
 
