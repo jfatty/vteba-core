@@ -10,6 +10,11 @@ public interface SqlConvertFactory {
 	/**sql中插值结束标记*/
 	public static final String END = "}}";
 	
+	/**sql中from*/
+	public static final String FROM = "from";
+	/**sql中where*/
+	public static final String WHERE = "where";
+	
 	/**
 	 * 转换sql，替换其中的插值，返回sql list
 	 * @param sql 原始sql语句
