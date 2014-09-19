@@ -34,7 +34,7 @@ import com.vteba.tx.matrix.info.TableInfo;
 public class ExecutorPluginsInterceptor implements Interceptor {
 
 	public static final String SHARDING_CONFIG = "shardingConfig";
-    private static final Log log = LogFactory.getLog(ShardingPluginsInterceptor.class);
+    private static final Log log = LogFactory.getLog(ExecutorPluginsInterceptor.class);
     private static final ConcurrentMap<String, Boolean> NEED_PARSE_CACHE = new ConcurrentHashMap<String, Boolean>();
 	
 	@Override
@@ -51,7 +51,7 @@ public class ExecutorPluginsInterceptor implements Interceptor {
         if (isNeedParse(mapperId)) {
             String sql = boundSql.getSql();
             String key = sql;
-            SQLCache.reset(key);
+            //SQLCache.reset(key);
             String alreadyParsedSQL = SQLCache.get(key);
             if (alreadyParsedSQL != null) {
                 boundSql.setSql(alreadyParsedSQL);
