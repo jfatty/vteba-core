@@ -64,7 +64,7 @@ public class ShardingPluginsInterceptor implements Interceptor {
             }
             Object params = boundSql.getParameterObject();
 
-            JsqlParserConverterFactory factory = JsqlParserConverterFactory.getInstance();
+            JsqlParserConverterFactory factory = JsqlParserConverterFactory.INSTANCE;
             
             List<String> sqlList = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {

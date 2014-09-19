@@ -14,14 +14,10 @@ import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
  * @author yinlei
  * @since 2013-12-19
  */
-public class TemplateSqlConvertFactory implements SqlConvertFactory {
-	private static final TemplateSqlConvertFactory instance = new TemplateSqlConvertFactory();
+public enum TemplateSqlConvertFactory implements SqlConvertFactory {
+	INSTANCE;
 	
 	private TemplateSqlConvertFactory() {
-	}
-	
-	public static TemplateSqlConvertFactory get() {
-		return instance;
 	}
 	
 	@Override

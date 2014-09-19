@@ -24,16 +24,12 @@ import com.vteba.tx.jdbc.mybatis.ShardingException;
  * @author yinlei 
  * @since 2013-12-17 12:51
  */
-public class JsqlParserConverterFactory {
-
+public enum JsqlParserConverterFactory {
+	INSTANCE;
+	
     private static final Log           log     = LogFactory.getLog(JsqlParserConverterFactory.class);
-    private static JsqlParserConverterFactory factory = new JsqlParserConverterFactory();
     private Map<String, SqlConverter>  converterMap;
     private CCJSqlParserManager        pm;
-
-    public static JsqlParserConverterFactory getInstance() {
-        return factory;
-    }
 
     private JsqlParserConverterFactory() {
         this.converterMap = new HashMap<String, SqlConverter>();

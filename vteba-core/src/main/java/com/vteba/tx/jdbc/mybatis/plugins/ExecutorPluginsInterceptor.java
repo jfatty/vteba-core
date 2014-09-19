@@ -25,7 +25,8 @@ import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
-import com.vteba.tx.jdbc.mybatis.converter.jsqlparser.JsqlParserConverterFactory;
+import com.vteba.tx.jdbc.mybatis.converter.SqlConvertFactory;
+import com.vteba.tx.jdbc.mybatis.converter.internal.TemplateSqlConvertFactory;
 import com.vteba.tx.matrix.info.TableInfo;
 
 @Intercepts({ @Signature(type = Executor.class, method = "query", args = {
@@ -51,7 +52,7 @@ public class ExecutorPluginsInterceptor implements Interceptor {
         if (isNeedParse(mapperId)) {
             String sql = boundSql.getSql();
             String key = sql;
-            //SQLCache.reset(key);
+            SQLCache.reset(key);
             String alreadyParsedSQL = SQLCache.get(key);
             if (alreadyParsedSQL != null) {
                 boundSql.setSql(alreadyParsedSQL);
@@ -65,7 +66,8 @@ public class ExecutorPluginsInterceptor implements Interceptor {
                 log.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
             }
 
-            JsqlParserConverterFactory factory = JsqlParserConverterFactory.getInstance();
+            //JsqlParserConverterFactory factory = JsqlParserConverterFactory.getInstance();
+            SqlConvertFactory factory = TemplateSqlConvertFactory.INSTANCE;
             
             List<String> sqlList = factory.convert(sql, params, mapperId);
             if (log.isDebugEnabled()) {

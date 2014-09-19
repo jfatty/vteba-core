@@ -36,17 +36,22 @@ public enum ManualSqlConvertFactory implements SqlConvertFactory {
 			if (where > 0) {
 				temp = sql.substring(start, where);
 			} else {
-				temp = sql.substring(start);
+				int limit = sql.indexOf("limit");
+				if (limit > 0) {
+					temp = sql.substring(start, limit);
+				} else {
+					temp = sql.substring(start);
+				}
 			}
 			if (temp == null) {
 				throw new IllegalStateException("select语句错误，没有获取到要查询的表。");
 			}
 			
-			String[] tables = temp.split(",");// 处理多表连接的情况
+			String[] tables = temp.trim().split(",");// 处理多表连接的情况
 			if (tables == null) {
 				throw new IllegalStateException("select语句错误，多表连接，没有获取到要查询的表。");
 			}
-			tables = tables[0].split(" ");// 处理有别名的情况
+			tables = tables[0].trim().split(" ");// 处理有别名的情况
 			tableName = tables[0].trim();
 			if (tableName == null) {
 				throw new IllegalStateException("select语句错误，表别名，没有获取到要查询的表。");
@@ -95,11 +100,11 @@ public enum ManualSqlConvertFactory implements SqlConvertFactory {
 		List<String> sqlList = new ArrayList<String>();
 		if (tableList != null) {
 			for (String table : tableList) {
-				String convertSql = sql.replace(tableName, table);
+				String convertSql = sql.replaceFirst(tableName, table);
 				sqlList.add(convertSql);
 			}
 		} else {
-			String convertSql = sql.replace(tableName, tableName);
+			String convertSql = sql.replaceFirst(tableName, tableName);
 			sqlList = Lists.newArrayList(convertSql);
 		}
 		return sqlList;
