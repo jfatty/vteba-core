@@ -10,6 +10,9 @@ public class ParamBean {
 	private Integer endDate;// 结束时间
 	private Object params;// 其他查询参数
 	
+	/**
+	 * 构造参数Bean
+	 */
 	public ParamBean() {
 	}
 	

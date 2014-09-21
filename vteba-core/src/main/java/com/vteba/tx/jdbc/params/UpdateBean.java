@@ -15,11 +15,14 @@ public class UpdateBean extends ParamBean {
 	 */
 	private Object record;
 	
+	/**
+	 * 构造更新参数Bean
+	 */
 	public UpdateBean() {
 	}
 
 	/**
-	 * 构造参数Bean
+	 * 构造更新参数Bean
 	 * @param record where set参数
 	 * @param startDate 开始日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 * @param endDate 结束日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
@@ -31,7 +34,7 @@ public class UpdateBean extends ParamBean {
 	}
 
 	/**
-	 * 构造参数Bean
+	 * 构造更新参数Bean
 	 * @param record where set参数
 	 * @param startDate 开始日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 * @param endDate 结束日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
@@ -42,7 +45,7 @@ public class UpdateBean extends ParamBean {
 	}
 
 	/**
-	 * 构造参数Bean
+	 * 构造更新参数Bean
 	 * @param record where set参数
 	 * @param keyValue 主键值，用来定位分区表
 	 */
@@ -52,7 +55,7 @@ public class UpdateBean extends ParamBean {
 	}
 	
 	/**
-	 * 构造参数Bean
+	 * 构造更新参数Bean
 	 * @param record where set参数
 	 * @param params 更新参数值，where条件
 	 * @param keyValue 主键值，用来定位分区表

@@ -7,6 +7,9 @@ package com.vteba.tx.jdbc.params;
  */
 public class DeleteBean extends ParamBean {
 	
+	/**
+	 * 构造删除参数Bean
+	 */
 	public DeleteBean() {
 	}
 
