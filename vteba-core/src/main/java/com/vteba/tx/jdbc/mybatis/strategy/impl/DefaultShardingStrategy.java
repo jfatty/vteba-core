@@ -8,6 +8,9 @@ import org.joda.time.DateTime;
 
 import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
+import com.vteba.tx.jdbc.params.DeleteBean;
+import com.vteba.tx.jdbc.params.QueryBean;
+import com.vteba.tx.jdbc.params.UpdateBean;
 import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
 import com.vteba.tx.matrix.info.TableInfo;
 import com.vteba.utils.date.DateUtils;
@@ -48,10 +51,11 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(DELETE)) {
             String id = (String) params;
-            String tableSuffix = id.substring(id.lastIndexOf("_"));
+            String tableSuffix = tableSuffix(id);
             tables.add(baseTableName + tableSuffix);
         } else {
-            tables.add(getTableName(baseTableName, params, mapperId));
+        	DeleteBean deleteBean = (DeleteBean) params;
+            tables.add(getTableName(baseTableName, deleteBean, mapperId));
         }
         return tables;
     }
@@ -59,9 +63,10 @@ public class DefaultShardingStrategy implements ShardingStrategy {
     public List<String> getUpdateTable(String baseTableName, Object params, String mapperId) {
         List<String> tables = new ArrayList<String>();
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
+        UpdateBean updateBean = (UpdateBean) params;
         if (methodName.equals(UPDATE)) {
-            String id = (String) params;
-            String tableSuffix = id.substring(id.lastIndexOf("_"));
+            String id = updateBean.getKeyValue();
+            String tableSuffix = tableSuffix(id);
             tables.add(baseTableName + tableSuffix);
         } else {
             tables.add(getTableName(baseTableName, params, mapperId));
@@ -73,14 +78,67 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         List<String> tables = new ArrayList<String>();
         String methodName = mapperId.substring(mapperId.lastIndexOf(".") + 1);
         if (methodName.equals(GET)) {
-            String id = params.toString();
-            String tableSuffix = id.substring(id.lastIndexOf("_"));
-            tables.add(baseTableName + tableSuffix);
+            String id = (String) params;
+            String suffix = tableSuffix(id);
+            tables.add(baseTableName + suffix);
         } else {
-            tables.add(getTableName(baseTableName, params, mapperId));
+        	QueryBean queryBean = (QueryBean) params;
+        	Integer startDate = queryBean.getStartDate();
+        	Integer endDate = queryBean.getEndDate();
+        	String id = queryBean.getKeyValue();
+        	if (id != null) {// 主键不为空，直接从主键上就能获得分区表信息，其实就只查询一张表
+        		String suffix = tableSuffix(id);
+        		tables.add(baseTableName + suffix);
+        	} else if (startDate != null && endDate != null) {
+        		// 否则要根据，参数的开始时间和结束时间去获得分区表信息。时间跨度小于3个月，如果大于3个月，那么取最近的3个月
+        		// 时间跨度最好可以配置
+        		int startMonth = startDate;
+            	int endMonth = endDate;
+            	int diff = endMonth - startMonth;
+            	if (diff > 3) {
+            		startMonth = endMonth - 3;
+            	}
+            	for (; endMonth >= startMonth; endMonth--) {
+            		// 还要判断endMonth是TableInfo中已经存在的表
+            		tables.add(baseTableName + "_" + endMonth + "m");
+            	}
+        		       		
+        	} else if (startDate != null && endDate == null) {
+        		// 否则要根据，参数的开始时间和结束时间去获得分区表信息。时间跨度小于3个月，如果大于3个月，那么取最近的3个月
+        		int startMonth = startDate;
+            	int endMonth = Integer.parseInt(DateUtils.toDateString(DateUtils.SYM));
+            	int diff = endMonth - startMonth;
+            	if (diff > 3) {
+            		startMonth = endMonth - 3;
+            	}
+            	for (;endMonth >= startMonth; endMonth--) {
+            		// 还要判断endMonth是TableInfo中已经存在的表
+            		tables.add(baseTableName + "_" + endMonth + "m");
+            	}
+        		       		
+        	} else if (startDate == null && endDate != null) {
+        		// 只查询结束日期所在月
+            	Integer endMonth = endDate;
+            	tables.add(baseTableName + "_" + endMonth + "m");
+        	} else {
+        		// 只查询当前表
+        		TableInfo tableInfo = ShardingTableCache.get(baseTableName);
+                String tableName = tableInfo.getCurrentTable();
+                
+            	tables.add(tableName);
+        	}
         }
         return tables;
     }
+
+    /**
+     * 获取表后缀。时间分区表的后缀。
+     * @param id 记录主键
+     * @return 分区表后缀
+     */
+	private String tableSuffix(String id) {
+		return id.substring(id.lastIndexOf("_"));
+	}
     
     // insert，直接insert当前表，这个最简单
     

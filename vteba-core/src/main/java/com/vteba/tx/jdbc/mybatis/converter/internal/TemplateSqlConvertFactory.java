@@ -30,17 +30,17 @@ public enum TemplateSqlConvertFactory implements SqlConvertFactory {
 		
 		String sqlType = sql.substring(0, 6).toLowerCase();
 		switch (sqlType) {
-		case "select":
+		case SELECT:
 			tableList = strategy.getSelectTable(tableName, params, mapperId);
 			break;
-		case "insert":
+		case INSERT:
 			String insertTable = strategy.getInsertTable(tableName, params, mapperId);
 			tableList = Lists.newArrayList(insertTable);
 			break;
-		case "update":
+		case UPDATE:
 			tableList = strategy.getUpdateTable(tableName, params, mapperId);
 			break;
-		case "delete":
+		case DELETE:
 			tableList = strategy.getDeleteTable(tableName, params, mapperId);
 			break;
 		default:

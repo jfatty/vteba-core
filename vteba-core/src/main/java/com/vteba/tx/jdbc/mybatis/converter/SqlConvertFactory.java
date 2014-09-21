@@ -10,6 +10,14 @@ public interface SqlConvertFactory {
 	/**sql中插值结束标记*/
 	public static final String END = "}}";
 	
+	/**sql中select*/
+	public static final String SELECT = "select";
+	/**sql中update*/
+	public static final String UPDATE = "update";
+	/**sql中insert*/
+	public static final String INSERT = "insert";
+	/**sql中delete*/
+	public static final String DELETE = "delete";
 	/**sql中from*/
 	public static final String FROM = "from";
 	/**sql中where*/
