@@ -27,24 +27,25 @@ public enum TemplateSqlConvertFactory implements SqlConvertFactory {
 		String tableName = sql.substring(sql.indexOf(START) + 2, sql.indexOf(END));
 		ShardingStrategy strategy = ShardingConfigFactory.getInstance().getStrategy(tableName);
 		List<String> tableList = null;
-		
-		String sqlType = sql.substring(0, 6).toLowerCase();
-		switch (sqlType) {
-		case SELECT:
-			tableList = strategy.getSelectTable(tableName, params, mapperId);
-			break;
-		case INSERT:
-			String insertTable = strategy.getInsertTable(tableName, params, mapperId);
-			tableList = Lists.newArrayList(insertTable);
-			break;
-		case UPDATE:
-			tableList = strategy.getUpdateTable(tableName, params, mapperId);
-			break;
-		case DELETE:
-			tableList = strategy.getDeleteTable(tableName, params, mapperId);
-			break;
-		default:
-			break;
+		if (strategy != null) {// 如果没有配置，则不作分区表解析，直接替换表名就行了。
+			String sqlType = sql.substring(0, 6).toLowerCase();
+			switch (sqlType) {
+			case SELECT:
+				tableList = strategy.getSelectTable(tableName, params, mapperId);
+				break;
+			case INSERT:
+				String insertTable = strategy.getInsertTable(tableName, params, mapperId);
+				tableList = Lists.newArrayList(insertTable);
+				break;
+			case UPDATE:
+				tableList = strategy.getUpdateTable(tableName, params, mapperId);
+				break;
+			case DELETE:
+				tableList = strategy.getDeleteTable(tableName, params, mapperId);
+				break;
+			default:
+				break;
+			}
 		}
 		List<String> sqlList = new ArrayList<String>();
 		if (tableList != null) {
