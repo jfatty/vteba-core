@@ -1,6 +1,5 @@
 package com.vteba.tx.matrix.shards.spi;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -13,13 +12,13 @@ import com.vteba.tx.generic.Page;
  * @param <T> 泛型实体
  * @param <ID> 泛型实体ID
  */
-public interface ShardsGenericDao<T, ID extends Serializable> {
+public interface ShardsGenericDao<T> {
     /**
      * 保存实体entity，insert非空栏位，返回主键。
      * @param entity
      * @return 实体主键
      */
-    public ID save(T entity);
+    public String save(T entity);
     
     /**
      * 保存实体entity，insert非空栏位，返回插入成功条数。
@@ -74,7 +73,7 @@ public interface ShardsGenericDao<T, ID extends Serializable> {
      * @param id 主键
      * @return 实体
      */
-    public T get(ID id);
+    public T get(String id);
     
     /**
      * 根据T查询entity实体
@@ -94,7 +93,7 @@ public interface ShardsGenericDao<T, ID extends Serializable> {
      * 根据主键删除实体
      * @param id 主键
      */
-    public int delete(ID id);
+    public int delete(String id);
     
     /**
      * 根据entity携带的条件删除实体
