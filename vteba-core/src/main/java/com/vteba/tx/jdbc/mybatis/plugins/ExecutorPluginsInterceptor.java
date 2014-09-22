@@ -2,6 +2,7 @@ package com.vteba.tx.jdbc.mybatis.plugins;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -118,6 +119,10 @@ public class ExecutorPluginsInterceptor implements Interceptor {
         ShardsTable tableInfo = new ShardsTable();
         tableInfo.setCurrentTable("user_201409m");
         tableInfo.setTableName("user");
+        List<Long> tableIndex = new ArrayList<Long>();
+        tableIndex.add(201409L);
+        tableIndex.add(201410L);
+        tableInfo.setTableIndexList(tableIndex);
         ShardingTableCache.put("user", tableInfo);
 
 	}
