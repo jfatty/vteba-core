@@ -27,7 +27,7 @@ import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConvertFactory;
 import com.vteba.tx.jdbc.mybatis.converter.internal.TemplateSqlConvertFactory;
-import com.vteba.tx.matrix.info.TableInfo;
+import com.vteba.tx.matrix.info.ShardsTable;
 
 @Intercepts({ @Signature(type = Executor.class, method = "query", args = {
 		MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class }),
@@ -115,7 +115,7 @@ public class ExecutorPluginsInterceptor implements Interceptor {
         }
         
         // 临时处理的，以后会将配置放到数据库中的
-        TableInfo tableInfo = new TableInfo();
+        ShardsTable tableInfo = new ShardsTable();
         tableInfo.setCurrentTable("user_201409m");
         tableInfo.setTableName("user");
         ShardingTableCache.put("user", tableInfo);

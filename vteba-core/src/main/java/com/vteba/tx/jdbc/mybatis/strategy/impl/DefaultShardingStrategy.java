@@ -13,7 +13,7 @@ import com.vteba.tx.jdbc.params.ParamBean;
 import com.vteba.tx.jdbc.params.QueryBean;
 import com.vteba.tx.jdbc.params.UpdateBean;
 import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
-import com.vteba.tx.matrix.info.TableInfo;
+import com.vteba.tx.matrix.info.ShardsTable;
 import com.vteba.utils.date.DateUtils;
 
 /**
@@ -41,7 +41,7 @@ public class DefaultShardingStrategy implements ShardingStrategy {
      * @return 分区表名
      */
     public String getInsertTable(String baseTableName, Object params, String mapperId) {
-        TableInfo tableInfo = ShardingTableCache.get(baseTableName);
+        ShardsTable tableInfo = ShardingTableCache.get(baseTableName);
         String tableName = tableInfo.getCurrentTable();
         
         return tableName;
@@ -137,7 +137,7 @@ public class DefaultShardingStrategy implements ShardingStrategy {
 			tables.add(baseTableName + "_" + endMonth + "m");
 		} else {
 			// 只查询当前表
-			TableInfo tableInfo = ShardingTableCache.get(baseTableName);
+			ShardsTable tableInfo = ShardingTableCache.get(baseTableName);
 		    String tableName = tableInfo.getCurrentTable();
 		    
 			tables.add(tableName);
