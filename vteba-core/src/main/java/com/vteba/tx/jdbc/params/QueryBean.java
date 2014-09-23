@@ -33,6 +33,11 @@ public class QueryBean extends ParamBean {
      * 是否去重
      */
     private boolean distinct;
+    
+    /**
+     * 是否统计查询
+     */
+    private boolean stats;
 	
     /**
 	 * 构造查询参数Bean
@@ -148,6 +153,18 @@ public class QueryBean extends ParamBean {
 	 */
 	public void setDistinct(boolean distinct) {
 		this.distinct = distinct;
+	}
+
+	public boolean isStats() {
+		return stats;
+	}
+
+	/**
+	 * 设置为统计查询
+	 * @param stats true是
+	 */
+	public void setStats(boolean stats) {
+		this.stats = stats;
 	}
 	
 }
