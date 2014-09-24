@@ -25,6 +25,9 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.druid.filter.FilterAdapter;
 import com.alibaba.druid.filter.FilterChain;
 import com.alibaba.druid.pool.DruidDataSource;
@@ -39,8 +42,11 @@ import com.alibaba.druid.proxy.jdbc.ResultSetProxy;
 import com.alibaba.druid.proxy.jdbc.StatementProxy;
 
 public class DruidShardingFilter extends FilterAdapter {
+	private static final Logger LOGGER = LoggerFactory.getLogger(DruidShardingFilter.class);
+	
     @Override
     public void init(DataSourceProxy dataSource) {
+    	LOGGER.info("Druid分片过滤器，初始化。");
     }
 
     @Override
@@ -49,7 +55,7 @@ public class DruidShardingFilter extends FilterAdapter {
     }
 
     public void configFromProperties(Properties properties) {
-
+    	LOGGER.info("Druid分片过滤器，获取配置属性。");
     }
 
     @Override
@@ -1035,7 +1041,16 @@ public class DruidShardingFilter extends FilterAdapter {
 
     @Override
     public boolean preparedStatement_execute(FilterChain chain, PreparedStatementProxy statement) throws SQLException {
+    	String sql = statement.getSql();
+    	LOGGER.info("执行的sql语句是：[" + sql + "]");
+    	Map<String, Object> attrMap = statement.getAttributes();
+    	LOGGER.info(attrMap.toString());
+    	//ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+    	int parametersSize = statement.getParametersSize();
     	
+    	for (int i = 0; i < parametersSize; i++) {
+			LOGGER.info("参数位置[" + i + "]，参数值是：[" + statement.getParameter(i).getValue() + "]");
+		}
         return chain.preparedStatement_execute(statement);
     }
 
