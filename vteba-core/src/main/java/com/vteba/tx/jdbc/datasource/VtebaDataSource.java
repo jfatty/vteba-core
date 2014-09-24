@@ -52,8 +52,7 @@ public class VtebaDataSource implements DataSource, Referenceable, Closeable, Cl
 
 	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
+		return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	}
 
 	@Override
