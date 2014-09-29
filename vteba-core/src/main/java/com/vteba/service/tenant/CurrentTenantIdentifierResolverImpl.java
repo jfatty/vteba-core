@@ -1,4 +1,4 @@
-package com.vteba.service.multitenant;
+package com.vteba.service.tenant;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.security.core.Authentication;

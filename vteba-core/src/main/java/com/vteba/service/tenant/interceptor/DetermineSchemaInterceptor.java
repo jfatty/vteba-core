@@ -1,12 +1,12 @@
-package com.vteba.service.multitenant.interceptor;
+package com.vteba.service.tenant.interceptor;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vteba.service.multitenant.SchemaContextHolder;
-import com.vteba.service.multitenant.annotation.Schema;
+import com.vteba.service.tenant.SchemaContextHolder;
+import com.vteba.service.tenant.annotation.Schema;
 
 /**
  * Parse annotation schema, get the jta schema, and then put it into the current ThreadLocal.

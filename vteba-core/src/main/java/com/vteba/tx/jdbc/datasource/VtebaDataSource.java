@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 import javax.sql.PooledConnection;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.vteba.service.multitenant.SchemaContextHolder;
+import com.vteba.service.tenant.SchemaContextHolder;
 
 public class VtebaDataSource implements DataSource, Referenceable, Closeable, Cloneable, ConnectionPoolDataSource {
 

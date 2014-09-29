@@ -1,4 +1,4 @@
-package com.vteba.service.multitenant;
+package com.vteba.service.tenant;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

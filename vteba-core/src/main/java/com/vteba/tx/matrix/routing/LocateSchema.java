@@ -1,6 +1,6 @@
 package com.vteba.tx.matrix.routing;
 
-import com.vteba.service.multitenant.SchemaContextHolder;
+import com.vteba.service.tenant.SchemaContextHolder;
 
 /**
  * 获取查询所对应的schema

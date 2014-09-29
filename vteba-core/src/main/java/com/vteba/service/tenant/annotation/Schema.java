@@ -1,4 +1,4 @@
-package com.vteba.service.multitenant.annotation;
+package com.vteba.service.tenant.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
