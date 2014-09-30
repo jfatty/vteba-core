@@ -1,5 +1,8 @@
 package com.vteba.tx.jdbc.sequence;
 
+import java.math.BigInteger;
+import java.util.Random;
+
 import com.vteba.utils.common.UUIDUtils;
 import com.vteba.utils.date.DateUtils;
 
@@ -9,7 +12,8 @@ import com.vteba.utils.date.DateUtils;
  * @since 2013-12-17
  */
 public class UuidKeyGenerator implements KeyGenerator {
-
+	private static final Random RANDOM = new Random();
+	
     @Override
     public String next(String prefix) {
         return prefix + UUIDUtils.uuid();
@@ -22,20 +26,17 @@ public class UuidKeyGenerator implements KeyGenerator {
 
     @Override
     public int nextInt() {
-        // TODO Auto-generated method stub
-        return 0;
+        return new BigInteger(165, RANDOM).intValue();
     }
 
     @Override
     public long nextLong() {
-        // TODO Auto-generated method stub
-        return 0;
+        return System.nanoTime();
     }
 
     @Override
     public long nextValue() {
-        // TODO Auto-generated method stub
-        return 0;
+        return System.nanoTime();
     }
 
     @Override
