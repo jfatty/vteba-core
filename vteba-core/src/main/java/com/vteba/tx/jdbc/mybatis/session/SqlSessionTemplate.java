@@ -27,8 +27,6 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.MyBatisExceptionTranslator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 //import org.mybatis.spring.SqlSessionInterceptor;
 //import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -79,7 +77,7 @@ import com.vteba.tx.jdbc.mybatis.converter.internal.TemplateSqlConvertFactory;
  */
 public class SqlSessionTemplate implements SqlSession {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(SqlSessionTemplate.class);
+//	private static final Logger LOGGER = LoggerFactory.getLogger(SqlSessionTemplate.class);
 	private static final ConcurrentMap<String, Boolean> NEED_PARSE_CACHE = new ConcurrentHashMap<String, Boolean>();
 	
 	private Map<String, SqlSessionFactory> proxySqlSessionFactory;
@@ -460,16 +458,16 @@ public class SqlSessionTemplate implements SqlSession {
 		BoundSql boundSql = mappedStatement.getBoundSql(params);
 		String sql = boundSql.getSql();
        
-        if (LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
-        }
+//        if (LOGGER.isDebugEnabled()) {
+//        	LOGGER.debug("Original Sql [" + mapperId + "]:" + sql.replaceAll(" +", " ").replaceAll("\n", ""));
+//        }
 
         SqlConvertFactory factory = TemplateSqlConvertFactory.INSTANCE;
         
         List<String> sqlList = factory.convert(sql, params, mapperId);
-        if (LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("Converted Sql [" + mapperId + "]:" + sql);
-        }
+//        if (LOGGER.isDebugEnabled()) {
+//        	LOGGER.debug("Converted Sql [" + mapperId + "]:" + sql);
+//        }
         boundSql.setSql(sqlList.get(0));
         boundSql.setSqlList(sqlList);
         
