@@ -67,9 +67,11 @@ public class ChainedTransactionManager implements PlatformTransactionManager, In
 			mts.setNewSynchonization();
 		}
 
+		// 这里将所有的数据源事务都开启
 		for (PlatformTransactionManager transactionManager : transactionManagers) {
 			mts.registerTransactionManager(definition, transactionManager);
 		}
+//		mts.registerTransactionManager(definition, txm);
 
 		return mts;
 	}
