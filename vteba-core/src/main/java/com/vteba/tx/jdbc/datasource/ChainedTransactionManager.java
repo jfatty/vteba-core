@@ -1,91 +1,210 @@
 package com.vteba.tx.jdbc.datasource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.HeuristicCompletionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.AbstractPlatformTransactionManager;
-import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.UnexpectedRollbackException;
+
+import com.vteba.service.tenant.SchemaContextHolder;
 
 /**
- * spring实现的一阶段提交，链式事务管理器。
- * 
+ * 多数据源下，spring实现的一阶段提交，链式事务管理器。
  * @author yinlei
- * @since 2013-12-8
+ * @since 2014-1-9
  */
-public class ChainedTransactionManager extends
-		AbstractPlatformTransactionManager {
+public class ChainedTransactionManager implements PlatformTransactionManager, InitializingBean {
 
-	private static final long serialVersionUID = 5806177265950745203L;
-	private List<PlatformTransactionManager> transactionManagers = new ArrayList<PlatformTransactionManager>();
-	private ArrayList<PlatformTransactionManager> reversed;
+	private final static Logger logger = LoggerFactory.getLogger(ChainedTransactionManager.class);
 
-	public void setTransactionManagers(
+	private List<PlatformTransactionManager> transactionManagers;
+	private List<PlatformTransactionManager> reversedTransactionManagers;
+	private SynchronizationManager synchronizationManager;
+	private ConcurrentMap<String, PlatformTransactionManager> transactionManagerMap = new ConcurrentHashMap<String, PlatformTransactionManager>();
+
+	public ChainedTransactionManager() {
+		super();
+//		transactionManagers = new ArrayList<PlatformTransactionManager>();
+//		reversedTransactionManagers = new ArrayList<PlatformTransactionManager>();
+		synchronizationManager = new DefaultSynchronizationManager();
+	}
+
+	public ChainedTransactionManager(
 			List<PlatformTransactionManager> transactionManagers) {
+		this(new DefaultSynchronizationManager(), transactionManagers);
+	}
+
+	public ChainedTransactionManager(
+			SynchronizationManager synchronizationManager,
+			List<PlatformTransactionManager> transactionManagers) {
+		this.synchronizationManager = synchronizationManager;
 		this.transactionManagers = transactionManagers;
-		reversed = new ArrayList<PlatformTransactionManager>(transactionManagers);
-		Collections.reverse(reversed);
+		this.reversedTransactionManagers = reverse(transactionManagers);
 	}
 
 	@Override
-	protected void doBegin(Object transaction, TransactionDefinition definition)
-			throws TransactionException {
-		@SuppressWarnings("unchecked")
-		List<DefaultTransactionStatus> list = (List<DefaultTransactionStatus>) transaction;
+	public MultiTransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+		
+		// 获取当前线程绑定的事务管理器
+		PlatformTransactionManager txm = transactionManagerMap.get(SchemaContextHolder.getSchema());
+		
+		MultiTransactionStatus mts = new MultiTransactionStatus(txm);
+
+		if (!synchronizationManager.isSynchronizationActive()) {
+			synchronizationManager.initSynchronization();
+			mts.setNewSynchonization();
+		}
+
 		for (PlatformTransactionManager transactionManager : transactionManagers) {
-			DefaultTransactionStatus element = (DefaultTransactionStatus) transactionManager
-					.getTransaction(definition);
-			list.add(0, element);
+			mts.registerTransactionManager(definition, transactionManager);
 		}
+
+		return mts;
 	}
 
 	@Override
-	protected void doCommit(DefaultTransactionStatus status)
-			throws TransactionException {
-		@SuppressWarnings("unchecked")
-		List<DefaultTransactionStatus> list = (List<DefaultTransactionStatus>) status.getTransaction();
-		int i = 0;
-		for (PlatformTransactionManager transactionManager : reversed) {
-			TransactionStatus local = list.get(i++);
-			try {
-				transactionManager.commit(local);
-			} catch (TransactionException e) {
-				logger.error("Error in commit", e);
-				// Rollback will ensue as long as rollbackOnCommitFailure=true
-				throw e;
+	public void commit(TransactionStatus status) throws TransactionException {
+
+		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
+
+		boolean commit = true;
+		Exception commitException = null;
+//		PlatformTransactionManager commitExceptionTransactionManager = null;
+
+		for (PlatformTransactionManager transactionManager : reversedTransactionManagers) {
+			if (commit) {
+				try {
+					multiTransactionStatus.commit(transactionManager);
+				} catch (Exception ex) {
+					commit = false;
+					commitException = ex;
+//					commitExceptionTransactionManager = transactionManager;
+				}
+			} else {
+				// after unsucessfull commit we must try to rollback remaining
+				// transaction managers
+				try {
+					multiTransactionStatus.rollback(transactionManager);
+				} catch (Exception ex) {
+					logger.warn("Rollback exception (after commit) ("
+							+ transactionManager + ") " + ex.getMessage(), ex);
+				}
 			}
 		}
+
+		if (multiTransactionStatus.isNewSynchonization()) {
+			synchronizationManager.clearSynchronization();
+		}
+
+		if (commitException != null) {
+//			boolean firstTransactionManagerFailed = commitExceptionTransactionManager == getLastTransactionManager();
+//			int transactionState = firstTransactionManagerFailed ? HeuristicCompletionException.STATE_ROLLED_BACK
+//					: HeuristicCompletionException.STATE_MIXED;
+//			throw new HeuristicCompletionException(transactionState, commitException);
+			throw new HeuristicCompletionException(HeuristicCompletionException.STATE_ROLLED_BACK, commitException);
+		}
+
 	}
 
 	@Override
-	protected Object doGetTransaction() throws TransactionException {
-		return new ArrayList<DefaultTransactionStatus>();
-	}
+	public void rollback(TransactionStatus status) throws TransactionException {
 
-	@Override
-	protected void doRollback(DefaultTransactionStatus status)
-			throws TransactionException {
-		@SuppressWarnings("unchecked")
-		List<DefaultTransactionStatus> list = (List<DefaultTransactionStatus>) status.getTransaction();
-		int i = 0;
-		TransactionException lastException = null;
-		for (PlatformTransactionManager transactionManager : reversed) {
-			TransactionStatus local = list.get(i++);
+		Exception rollbackException = null;
+		PlatformTransactionManager rollbackExceptionTransactionManager = null;
+
+		MultiTransactionStatus multiTransactionStatus = (MultiTransactionStatus) status;
+
+		for (PlatformTransactionManager transactionManager : reversedTransactionManagers) {
 			try {
-				transactionManager.rollback(local);
-			} catch (TransactionException e) {
-				// Log exception and try to complete rollback
-				lastException = e;
-				logger.error("Error in rollback", e);
+				multiTransactionStatus.rollback(transactionManager);
+			} catch (Exception ex) {
+				if (rollbackException == null) {
+					rollbackException = ex;
+					rollbackExceptionTransactionManager = transactionManager;
+				} else {
+					logger.warn("Rollback exception (" + transactionManager
+							+ ") " + ex.getMessage(), ex);
+				}
 			}
 		}
-		if (lastException != null) {
-			throw lastException;
+
+		if (multiTransactionStatus.isNewSynchonization()) {
+			synchronizationManager.clearSynchronization();
+		}
+
+		if (rollbackException != null) {
+			throw new UnexpectedRollbackException(
+					"Rollback exception, originated at ("
+							+ rollbackExceptionTransactionManager + ") "
+							+ rollbackException.getMessage(), rollbackException);
 		}
 	}
 
+//	private PlatformTransactionManager getLastTransactionManager() {
+//		return transactionManagers.get(lastTransactionManagerIndex());
+//	}
+//
+//	private int lastTransactionManagerIndex() {
+//		return transactionManagers.size() - 1;
+//	}
+
+//	public List<PlatformTransactionManager> getTransactionManagers() {
+//		return transactionManagers;
+//	}
+//
+//	public void setTransactionManagers(
+//			List<PlatformTransactionManager> transactionManagers) {
+//		this.transactionManagers = transactionManagers;
+//	}
+
+	public SynchronizationManager getSynchronizationManager() {
+		return synchronizationManager;
+	}
+
+	public void setSynchronizationManager(
+			SynchronizationManager synchronizationManager) {
+		this.synchronizationManager = synchronizationManager;
+	}
+
+	public ConcurrentMap<String, PlatformTransactionManager> getTransactionManagerMap() {
+		return transactionManagerMap;
+	}
+
+	public void setTransactionManagerMap(
+			ConcurrentMap<String, PlatformTransactionManager> transactionManagerMap) {
+		this.transactionManagerMap = transactionManagerMap;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (transactionManagerMap == null) {
+			throw new IllegalArgumentException("属性[transactionManagerMap]是必须的。");
+		}
+		if (synchronizationManager == null) {
+			throw new IllegalArgumentException("属性[synchronizationManager]是必须的。");
+		}
+		transactionManagers = new ArrayList<PlatformTransactionManager>();
+		for (Entry<String, PlatformTransactionManager> entry : transactionManagerMap.entrySet()) {
+			transactionManagers.add(entry.getValue());
+		}
+		reversedTransactionManagers = reverse(transactionManagers);
+	}
+
+	private <T> List<T> reverse(Collection<T> collection) {
+		List<T> list = new ArrayList<T>(collection);
+		Collections.reverse(list);
+		return list;
+	}
 }
