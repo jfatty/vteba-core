@@ -3,10 +3,10 @@ package com.vteba.tx.jdbc.datasource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager, In
 	private List<PlatformTransactionManager> transactionManagers;
 	private List<PlatformTransactionManager> reversedTransactionManagers;
 	private SynchronizationManager synchronizationManager;
-	private ConcurrentMap<String, PlatformTransactionManager> transactionManagerMap = new ConcurrentHashMap<String, PlatformTransactionManager>();
+	private Map<String, PlatformTransactionManager> transactionManagerMap = new LinkedHashMap<String, PlatformTransactionManager>();
 
 	public ChainedTransactionManager() {
 		super();
@@ -178,12 +178,12 @@ public class ChainedTransactionManager implements PlatformTransactionManager, In
 		this.synchronizationManager = synchronizationManager;
 	}
 
-	public ConcurrentMap<String, PlatformTransactionManager> getTransactionManagerMap() {
+	public Map<String, PlatformTransactionManager> getTransactionManagerMap() {
 		return transactionManagerMap;
 	}
 
 	public void setTransactionManagerMap(
-			ConcurrentMap<String, PlatformTransactionManager> transactionManagerMap) {
+			Map<String, PlatformTransactionManager> transactionManagerMap) {
 		this.transactionManagerMap = transactionManagerMap;
 	}
 
