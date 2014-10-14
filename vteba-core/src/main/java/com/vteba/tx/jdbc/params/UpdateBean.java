@@ -11,7 +11,7 @@ public class UpdateBean extends ParamBean {
 	 */
 	private String keyValue;
 	/**
-	 * update的set语句，参数值
+	 * update的set语句参数值，是一个实体类
 	 */
 	private Object record;
 	
@@ -23,7 +23,7 @@ public class UpdateBean extends ParamBean {
 
 	/**
 	 * 构造更新参数Bean
-	 * @param record where set参数
+	 * @param record where set参数，是一个实体类
 	 * @param startDate 开始日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 * @param endDate 结束日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 * @param params 查询参数，一般是实体Bean和mybatis查询bean（自动生成的）
@@ -35,7 +35,7 @@ public class UpdateBean extends ParamBean {
 
 	/**
 	 * 构造更新参数Bean
-	 * @param record where set参数
+	 * @param record where set参数，是一个实体类
 	 * @param startDate 开始日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 * @param endDate 结束日期，数字型，例如： 201409（2014年9月），20140902（2014年9月2号）
 	 */
@@ -46,7 +46,7 @@ public class UpdateBean extends ParamBean {
 
 	/**
 	 * 构造更新参数Bean
-	 * @param record where set参数
+	 * @param record where set参数，是一个实体类
 	 * @param keyValue 主键值，用来定位分区表
 	 */
 	public UpdateBean(Object record, String keyValue) {
@@ -56,7 +56,7 @@ public class UpdateBean extends ParamBean {
 	
 	/**
 	 * 构造更新参数Bean
-	 * @param record where set参数
+	 * @param record where set参数，是一个实体类
 	 * @param params 更新参数值，where条件
 	 * @param keyValue 主键值，用来定位分区表
 	 */
@@ -83,7 +83,7 @@ public class UpdateBean extends ParamBean {
 	}
 
 	/**
-	 * 设置update的set语句，参数值
+	 * 设置update的set语句参数值，是一个实体类
 	 * @param record set参数值
 	 */
 	public void setRecord(Object record) {
