@@ -40,7 +40,7 @@ import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.pool.ExceptionSorter;
 import com.alibaba.druid.pool.ValidConnectionChecker;
 import com.alibaba.druid.util.Histogram;
-import com.vteba.service.tenant.SchemaContextHolder;
+import com.vteba.service.tenant.SchemaHolder;
 
 public class VtebaDataSource implements DataSource, Referenceable, Closeable,
 		Cloneable, ConnectionPoolDataSource, Serializable {
@@ -285,7 +285,7 @@ public class VtebaDataSource implements DataSource, Referenceable, Closeable,
 	}
 
 	private DruidDataSource getCurrentDataSource() {
-		String schema = SchemaContextHolder.getSchema();
+		String schema = SchemaHolder.getSchema();
 		DruidDataSource ds = delegateDataSourceMap.get(schema);
 		return ds;
 	}

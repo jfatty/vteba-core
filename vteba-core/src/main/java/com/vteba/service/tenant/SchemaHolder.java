@@ -1,14 +1,13 @@
 package com.vteba.service.tenant;
 
 /**
- * Schema Context Holder。
+ * Schema Context Holder。持有当前线程绑定的数据库schema。
  * @author yinlei
- * date 2012-08-15
+ * @date 2012-08-15
  */
-public class SchemaContextHolder {
+public class SchemaHolder {
 	
 	private static ThreadLocal<String> schemaLocal = new ThreadLocal<String>();
-	//private static VicariousThreadLocal<String> schemaLocal = new VicariousThreadLocal<String>();
 	
 	public static void putSchema(String schema) {
 		schemaLocal.set(schema);

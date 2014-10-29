@@ -18,7 +18,7 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.UnexpectedRollbackException;
 
-import com.vteba.service.tenant.SchemaContextHolder;
+import com.vteba.service.tenant.SchemaHolder;
 
 /**
  * 多数据源下，spring实现的一阶段提交，链式事务管理器。
@@ -58,7 +58,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager, In
 	public MultiTransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
 		
 		// 获取当前线程绑定的事务管理器
-		PlatformTransactionManager txm = transactionManagerMap.get(SchemaContextHolder.getSchema());
+		PlatformTransactionManager txm = transactionManagerMap.get(SchemaHolder.getSchema());
 		
 		MultiTransactionStatus mts = new MultiTransactionStatus(txm);
 

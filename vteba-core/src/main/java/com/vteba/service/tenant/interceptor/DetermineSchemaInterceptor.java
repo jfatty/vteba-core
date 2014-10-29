@@ -5,7 +5,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vteba.service.tenant.SchemaContextHolder;
+import com.vteba.service.tenant.SchemaHolder;
 import com.vteba.service.tenant.annotation.Schema;
 
 /**
@@ -32,7 +32,7 @@ public class DetermineSchemaInterceptor implements MethodInterceptor{
 				if (LOGGER.isInfoEnabled()) {
 					LOGGER.info("Schema拦截器打印的，Schema是：[{}]，线程name是：[{}]。", schemaName, Thread.currentThread().getName());
 				}
-				SchemaContextHolder.putSchema(schemaName);
+				SchemaHolder.putSchema(schemaName);
 			}
 		}
 		return invocation.proceed();
