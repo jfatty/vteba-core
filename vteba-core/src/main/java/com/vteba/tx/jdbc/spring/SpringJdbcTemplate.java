@@ -1,5 +1,11 @@
 package com.vteba.tx.jdbc.spring;
 
+import java.sql.Array;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +23,7 @@ import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.KeyHolder;
 
 /**
@@ -501,4 +508,43 @@ public class SpringJdbcTemplate {
 		return namedJdbcTemplate.update(sql, paramSource, keyHolder);
 	}
 	
+	/**
+	 * 调用存储过程的例子，参数含有数组
+	 */
+	@SuppressWarnings("unused")
+	private void call() {
+		Connection conn = null;
+		try {
+			conn = jdbcTemplate.getDataSource().getConnection();
+			conn.setAutoCommit(false);// 不能自动提交
+			// 第三个是输出参数，这两种方式都是可以的，注意参数的位置
+			//CallableStatement call = conn.prepareCall("{? = call skmbw.test(?,?)}");
+			CallableStatement call = conn.prepareCall("{call skmbw.test(?,?,?)}");
+			String bb = "bb";
+			String[] aa = {"aa", "cc"};
+			Array array = conn.createArrayOf("varchar", aa);//int类型是int4，boolean是boolean
+			
+			call.setString(1, bb);
+			call.setArray(2, array);
+			call.registerOutParameter(3, Types.OTHER);// 返回游标就是OTHER
+			call.execute();
+			
+			ResultSet rs = (ResultSet) call.getObject(1);
+			
+			try {
+				int i = 1;
+				for (;rs.next();) {
+					Object object = rs.getObject(i);
+					System.out.println(object);
+				}
+			} finally {
+				JdbcUtils.closeStatement(call);
+				JdbcUtils.closeResultSet(rs);
+			}
+		} catch (SQLException e) {
+			// logger
+		} finally {
+			JdbcUtils.closeConnection(conn);
+		}
+	}
 }
