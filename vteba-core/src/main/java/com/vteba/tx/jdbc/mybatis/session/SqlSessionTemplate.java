@@ -31,7 +31,7 @@ import org.mybatis.spring.MyBatisExceptionTranslator;
 //import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 
-import com.vteba.service.tenant.SchemaHolder;
+import com.vteba.service.tenant.SchemaWeightHolder;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConvertFactory;
 import com.vteba.tx.jdbc.mybatis.converter.internal.TemplateSqlConvertFactory;
@@ -145,7 +145,7 @@ public class SqlSessionTemplate implements SqlSession {
 	}
 
 	public SqlSessionFactory getSqlSessionFactory() {
-		String schema = SchemaHolder.getSchema();
+		String schema = SchemaWeightHolder.getSchema();
 		if (schema == null) {// 如果没有，返回默认的SqlSessionFactory
 			return this.sqlSessionFactory;
 		} else {

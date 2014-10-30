@@ -1,18 +1,20 @@
 package com.vteba.service.tenant;
 
 /**
- * Schema权重持有者，根据配置的权重，获取某一应用本次db操作对应的数据库schema
+ * Schema Context Holder。持有当前线程绑定的数据库schema。
+ * Schema权重持有者，根据配置的权重，获取某一应用本次db操作对应的数据库schema.
  * @author yinlei
- * @date 2013-10-29
+ * @date 2012-08-15
  */
 public class SchemaWeightHolder {
-	private static ThreadLocal<String> weighThreadLocal = new ThreadLocal<String>();
+	
+	private static ThreadLocal<String> schemaLocal = new ThreadLocal<String>();
 	
 	public static void putSchema(String schema) {
-		weighThreadLocal.set(schema);
+		schemaLocal.set(schema);
 	}
 	
 	public static String getSchema() {
-		return weighThreadLocal.get();
+		return schemaLocal.get();
 	}
 }

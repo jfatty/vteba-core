@@ -1,6 +1,6 @@
 package com.vteba.tx.matrix.routing;
 
-import com.vteba.service.tenant.SchemaHolder;
+import com.vteba.service.tenant.SchemaWeightHolder;
 
 /**
  * 获取查询所对应的schema
@@ -16,6 +16,6 @@ public class LocateSchema {
      * @return 数据源schema
      */
     public String getSchema(String sql) {
-        return SchemaHolder.getSchema();
+        return SchemaWeightHolder.getSchema();
     }
 }
