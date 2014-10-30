@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationContextAware;
 public class ApplicationContextHolder implements ApplicationContextAware {
 
 	private static ApplicationContext context;
+	private static final String REF = "&";
 	
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
@@ -42,5 +43,26 @@ public class ApplicationContextHolder implements ApplicationContextAware {
 	
 	public static <T> T getBean(Class<T> requiredType) {
 		return context.getBean(requiredType);
+	}
+	
+	/**
+	 * 获取工厂Bean
+	 * @param beanName 工厂bean名字
+	 * @param requiredType 类型
+	 * @return 工厂bean
+	 */
+	public static <T> T getFactoryBean(String beanName, Class<T> requiredType) {
+		return context.getBean(REF + beanName, requiredType);
+	}
+	
+	/**
+	 * 获取工厂Bean
+	 * @param beanName 工厂bean名字
+	 * @return 工厂bean
+	 */
+	public static <T> T getFactoryBean(String beanName) {
+		@SuppressWarnings("unchecked")
+		T t = (T)context.getBean(REF + beanName);
+		return t;
 	}
 }
