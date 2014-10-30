@@ -18,4 +18,10 @@ public @interface Application {
 	 * @return 应用的名
 	 */
 	public String name();
+	
+	/**
+	 * 是否放行，不拦截应用
+	 * @return true是，false否
+	 */
+	public boolean pass() default false;
 }

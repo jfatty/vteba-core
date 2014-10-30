@@ -28,7 +28,7 @@ public class DetermineSchemaInterceptor implements MethodInterceptor{
 			//boolean isSchema = clazz.isAnnotationPresent(Schema.class);// 不用判断了，这个方法底层调用的也是getAnnotation
 			Schema schema = clazz.getAnnotation(Schema.class);
 			if (schema != null) {
-				String schemaName = schema.schemaName();
+				String schemaName = schema.name();
 				if (LOGGER.isInfoEnabled()) {
 					LOGGER.info("Schema拦截器打印的，Schema是：[{}]，线程name是：[{}]。", schemaName, Thread.currentThread().getName());
 				}
