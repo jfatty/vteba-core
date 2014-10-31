@@ -16,6 +16,7 @@ import com.vteba.tx.jdbc.params.QueryBean;
 import com.vteba.tx.jdbc.params.UpdateBean;
 import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
 import com.vteba.tx.matrix.info.ShardsTables;
+import com.vteba.utils.common.Assert;
 import com.vteba.utils.date.DateUtils;
 
 /**
@@ -24,18 +25,14 @@ import com.vteba.utils.date.DateUtils;
  * @since 2013-12-16 14:56
  */
 public class DefaultShardingStrategy implements ShardingStrategy, InitializingBean {
-	private ShardsTableCache shardsTableCache;
+	private ShardsTableCache shardsTableCacheService;
 	
     private static final String DELETE = "deleteById";
     private static final String UPDATE = "updateById";
     private static final String GET = "get";
     
-    public ShardsTableCache getShardsTableCache() {
-		return shardsTableCache;
-	}
-
-	public void setShardsTableCache(ShardsTableCache shardsTableCache) {
-		this.shardsTableCache = shardsTableCache;
+	public void setShardsTableCacheService(ShardsTableCache shardsTableCacheService) {
+		this.shardsTableCacheService = shardsTableCacheService;
 	}
 
 	@Override
@@ -51,7 +48,7 @@ public class DefaultShardingStrategy implements ShardingStrategy, InitializingBe
      * @return 分区表名
      */
     public String getInsertTable(String baseTableName, Object params, String mapperId) {
-        ShardsTables tableInfo = shardsTableCache.get(baseTableName);
+        ShardsTables tableInfo = shardsTableCacheService.get(baseTableName);
         String tableName = tableInfo.getCurrentTable();
         
         return tableName;
@@ -147,7 +144,7 @@ public class DefaultShardingStrategy implements ShardingStrategy, InitializingBe
 			tables.add(baseTableName + "_" + endMonth + "m");
 		} else {
 			// 只查询当前表
-			ShardsTables tableInfo = shardsTableCache.get(baseTableName);
+			ShardsTables tableInfo = shardsTableCacheService.get(baseTableName);
 		    String tableName = tableInfo.getCurrentTable();
 		    
 			tables.add(tableName);
@@ -220,6 +217,7 @@ public class DefaultShardingStrategy implements ShardingStrategy, InitializingBe
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		ShardingConfigFactory.getInstance().register("table", this);
+		Assert.notNull(shardsTableCacheService);
+		ShardingConfigFactory.getInstance().register("user", this);
 	}
 }
