@@ -6,33 +6,18 @@ package com.vteba.tx.matrix.info;
  * @author yinlei
  * @since 2013-12-9 10:53
  */
-public class TableDetail {
-	private Integer id;
-	private Long tableIndex;// 分区表索引值
-	private Long shardsTableId;// 分区表id，外键，关联shards_table
+public interface TableDetail {
 
-	public Integer getId() {
-		return id;
-	}
+	public Integer getId();
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+	public void setId(Integer id);
 
-	public Long getTableIndex() {
-		return tableIndex;
-	}
+	public Long getTableIndex();
 
-	public void setTableIndex(Long tableIndex) {
-		this.tableIndex = tableIndex;
-	}
+	public void setTableIndex(Long tableIndex);
 
-	public Long getShardsTableId() {
-		return shardsTableId;
-	}
+	public Long getShardsTableId();
 
-	public void setShardsTableId(Long shardsTableId) {
-		this.shardsTableId = shardsTableId;
-	}
+	public void setShardsTableId(Long shardsTableId);
 
 }

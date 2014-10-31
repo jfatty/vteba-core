@@ -5,15 +5,17 @@ import java.util.List;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.InitializingBean;
 
-import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
+import com.vteba.tx.jdbc.mybatis.cache.ShardsTableCache;
+import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 import com.vteba.tx.jdbc.params.DeleteBean;
 import com.vteba.tx.jdbc.params.ParamBean;
 import com.vteba.tx.jdbc.params.QueryBean;
 import com.vteba.tx.jdbc.params.UpdateBean;
 import com.vteba.tx.jdbc.uuid.StandardRandomStrategy;
-import com.vteba.tx.matrix.info.ShardsTable;
+import com.vteba.tx.matrix.info.ShardsTables;
 import com.vteba.utils.date.DateUtils;
 
 /**
@@ -21,14 +23,22 @@ import com.vteba.utils.date.DateUtils;
  * @author yinlei
  * @since 2013-12-16 14:56
  */
-public class DefaultShardingStrategy implements ShardingStrategy {
+public class DefaultShardingStrategy implements ShardingStrategy, InitializingBean {
+	private ShardsTableCache shardsTableCache;
+	
     private static final String DELETE = "deleteById";
     private static final String UPDATE = "updateById";
     private static final String GET = "get";
     
-    //private TableRuler tableRuler;
-    
-    @Override
+    public ShardsTableCache getShardsTableCache() {
+		return shardsTableCache;
+	}
+
+	public void setShardsTableCache(ShardsTableCache shardsTableCache) {
+		this.shardsTableCache = shardsTableCache;
+	}
+
+	@Override
     public String getTableName(String baseTableName, Object params, String mapperId) {
         return baseTableName + "_" + DateUtils.toDateString("yyyyMM") + "m";
     }
@@ -41,7 +51,7 @@ public class DefaultShardingStrategy implements ShardingStrategy {
      * @return 分区表名
      */
     public String getInsertTable(String baseTableName, Object params, String mapperId) {
-        ShardsTable tableInfo = ShardingTableCache.get(baseTableName);
+        ShardsTables tableInfo = shardsTableCache.get(baseTableName);
         String tableName = tableInfo.getCurrentTable();
         
         return tableName;
@@ -137,7 +147,7 @@ public class DefaultShardingStrategy implements ShardingStrategy {
 			tables.add(baseTableName + "_" + endMonth + "m");
 		} else {
 			// 只查询当前表
-			ShardsTable tableInfo = ShardingTableCache.get(baseTableName);
+			ShardsTables tableInfo = shardsTableCache.get(baseTableName);
 		    String tableName = tableInfo.getCurrentTable();
 		    
 			tables.add(tableName);
@@ -207,4 +217,9 @@ public class DefaultShardingStrategy implements ShardingStrategy {
         System.out.println(System.currentTimeMillis() - d);
         
     }
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		ShardingConfigFactory.getInstance().register("table", this);
+	}
 }

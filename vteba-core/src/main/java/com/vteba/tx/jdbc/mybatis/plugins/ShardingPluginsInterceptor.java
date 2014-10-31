@@ -22,17 +22,16 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 
 import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
-import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.jsqlparser.JsqlParserConverterFactory;
-import com.vteba.tx.matrix.info.ShardsTable;
 
 /**
  * 基于Mybatis插件拦截器，实现的分表分片。
  * @author yinlei 
  * @since 2013-12-10
  */
+@Deprecated
 @Intercepts({ @Signature(type = StatementHandler.class, method = "prepare", args = { java.sql.Connection.class }) })
 public class ShardingPluginsInterceptor implements Interceptor {
 
@@ -104,10 +103,10 @@ public class ShardingPluginsInterceptor implements Interceptor {
         }
         
         // 临时处理的，以后会将配置放到数据库中的
-        ShardsTable tableInfo = new ShardsTable();
-        tableInfo.setCurrentTable("user_201409m");
-        tableInfo.setTableName("user");
-        ShardingTableCache.put("user", tableInfo);
+//        ShardsTable tableInfo = new ShardsTable();
+//        tableInfo.setCurrentTable("user_201409m");
+//        tableInfo.setTableName("user");
+//        ShardingTableCache.put("user", tableInfo);
     }
 
     private boolean isNeedParse(String mapperId) {

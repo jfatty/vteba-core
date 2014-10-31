@@ -2,7 +2,6 @@ package com.vteba.tx.jdbc.mybatis.plugins;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,13 +22,12 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 import com.vteba.tx.jdbc.mybatis.cache.SQLCache;
-import com.vteba.tx.jdbc.mybatis.cache.ShardingTableCache;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigFactory;
 import com.vteba.tx.jdbc.mybatis.config.ShardingConfigParser;
 import com.vteba.tx.jdbc.mybatis.converter.SqlConvertFactory;
 import com.vteba.tx.jdbc.mybatis.converter.internal.TemplateSqlConvertFactory;
-import com.vteba.tx.matrix.info.ShardsTable;
 
+@Deprecated
 @Intercepts({ @Signature(type = Executor.class, method = "query", args = {
 		MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class }),
 		@Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class })})
@@ -116,14 +114,14 @@ public class ExecutorPluginsInterceptor implements Interceptor {
         }
         
         // 临时处理的，以后会将配置放到数据库中的
-        ShardsTable tableInfo = new ShardsTable();
-        tableInfo.setCurrentTable("user_201409m");
-        tableInfo.setTableName("user");
-        List<Long> tableIndex = new ArrayList<Long>();
-        tableIndex.add(201409L);
-        tableIndex.add(201410L);
-        tableInfo.setTableIndexList(tableIndex);
-        ShardingTableCache.put("user", tableInfo);
+//        ShardsTable tableInfo = new ShardsTable();
+//        tableInfo.setCurrentTable("user_201409m");
+//        tableInfo.setTableName("user");
+//        List<Long> tableIndex = new ArrayList<Long>();
+//        tableIndex.add(201409L);
+//        tableIndex.add(201410L);
+//        tableInfo.setTableIndexList(tableIndex);
+//        ShardingTableCache.put("user", tableInfo);
 
 	}
 

@@ -33,7 +33,7 @@ public class ShardingConfigFactory {
     }
 
     public ShardingStrategy getStrategy(String table) {
-        return this.strategyRegister.get(table.toLowerCase());
+        return this.strategyRegister.get("table");// 现在这个值写死了
     }
 
     public synchronized void addIgnoreId(String id) {
