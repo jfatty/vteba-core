@@ -20,6 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.vteba.tx.jdbc.mybatis.strategy.ShardingStrategy;
 
+@Deprecated
 public class ShardConfigParser {
 
     private static final Log                 log              = LogFactory.getLog(ShardConfigParser.class);
