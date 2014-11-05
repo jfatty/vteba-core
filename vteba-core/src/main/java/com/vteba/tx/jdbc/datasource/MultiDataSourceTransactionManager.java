@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -43,10 +46,15 @@ public class MultiDataSourceTransactionManager implements PlatformTransactionMan
 
 	private List<PlatformTransactionManager> transactionManagers;
 	private List<PlatformTransactionManager> reverseTxManagers;
+	
+	private Map<String, PlatformTransactionManager> transactionManagerMap;
+	
 	private final SynchronizationManager synchronizationManager;
 	
 	public MultiDataSourceTransactionManager() {
 		synchronizationManager = DefaultSynchronizationManager.INSTANCE;
+		transactionManagers = new CopyOnWriteArrayList<PlatformTransactionManager>();
+		reverseTxManagers = new CopyOnWriteArrayList<PlatformTransactionManager>();
 	}
 
 	/**
@@ -87,7 +95,7 @@ public class MultiDataSourceTransactionManager implements PlatformTransactionMan
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * 开启事务，每一个事务管理器都开启
 	 * 
 	 * @see
 	 * org.springframework.transaction.PlatformTransactionManager#getTransaction
@@ -131,7 +139,7 @@ public class MultiDataSourceTransactionManager implements PlatformTransactionMan
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * 提交事务，按开启事务的逆序提交
 	 * 
 	 * @see
 	 * org.springframework.transaction.PlatformTransactionManager#commit(org
@@ -181,7 +189,7 @@ public class MultiDataSourceTransactionManager implements PlatformTransactionMan
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * 回滚事务，按开启事务的逆序回滚
 	 * 
 	 * @see
 	 * org.springframework.transaction.PlatformTransactionManager#rollback(org
@@ -247,8 +255,60 @@ public class MultiDataSourceTransactionManager implements PlatformTransactionMan
 		this.reverseTxManagers = txs;
 	}
 	
+	public Map<String, PlatformTransactionManager> getTransactionManagerMap() {
+		return transactionManagerMap;
+	}
+
+	public void setTransactionManagerMap(Map<String, PlatformTransactionManager> transactionManagerMap) {
+		ConcurrentMap<String, PlatformTransactionManager> txMap = new ConcurrentHashMap<String, PlatformTransactionManager>(transactionManagerMap);
+		this.transactionManagerMap = txMap;
+		for (Entry<String, PlatformTransactionManager> entry : transactionManagerMap.entrySet()) {
+			addTransactionManager(entry.getValue());
+		}
+	}
+
+	/**
+	 * 添加事务管理器
+	 * @param manager 事务管理器
+	 */
 	public void addTransactionManager(PlatformTransactionManager manager) {
 		this.transactionManagers.add(manager);
 		this.reverseTxManagers.add(0, manager);
+	}
+	
+	/**
+	 * 添加事务管理器
+	 * @param dataSourceName 事务管理器名字（数据源的名字）
+	 * @param manager 事务管理器
+	 */
+	public void addTransactionManager(String dataSourceName, PlatformTransactionManager manager) {
+		this.transactionManagerMap.put(dataSourceName, manager);
+		
+		addTransactionManager(manager);
+	}
+	
+	/**
+	 * 移除事务管理器
+	 * @param dataSourceName 数据源名字
+	 * @return 
+	 */
+	public PlatformTransactionManager removeTransactionManager(String dataSourceName) {
+		PlatformTransactionManager delete = this.transactionManagerMap.remove(dataSourceName);
+		if (delete != null) {
+			for (PlatformTransactionManager manager : transactionManagers) {
+				if (manager == delete) {
+					transactionManagers.remove(manager);
+					break;
+				}
+			}
+			
+			for (PlatformTransactionManager manager : reverseTxManagers) {
+				if (manager == delete) {
+					reverseTxManagers.remove(manager);
+					break;
+				}
+			}
+		}
+		return delete;
 	}
 }
