@@ -1,14 +1,14 @@
 package com.vteba.tx.jdbc.datasource;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.util.Assert;
 
 /**
  * 多数据源的一阶段提交的事务管理，实现spring的TransactionStatus
@@ -17,23 +17,25 @@ import org.springframework.transaction.TransactionStatus;
  */
 public class MultiTransactionStatus implements TransactionStatus {
 
-	private PlatformTransactionManager transactionManager;
-
-	private ConcurrentMap<PlatformTransactionManager, TransactionStatus> transactionStatusMap = new ConcurrentHashMap<PlatformTransactionManager, TransactionStatus>();
+	private final PlatformTransactionManager mainTransactionManager;
+	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = Collections
+			.synchronizedMap(new HashMap<PlatformTransactionManager, TransactionStatus>());
 
 	private boolean newSynchonization;
 
-	public MultiTransactionStatus(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
+	/**
+	 * Creates a new {@link MultiTransactionStatus} for the given {@link PlatformTransactionManager}.
+	 * 
+	 * @param mainTransactionManager must not be {@literal null}.
+	 */
+	public MultiTransactionStatus(PlatformTransactionManager mainTransactionManager) {
+
+		Assert.notNull(mainTransactionManager, "TransactionManager must not be null!");
+		this.mainTransactionManager = mainTransactionManager;
 	}
 
-	private Map<PlatformTransactionManager, TransactionStatus> getTransactionStatusMap() {
-		return transactionStatusMap;
-	}
-
-	private TransactionStatus getTransactionStatus() {
-		return transactionStatusMap.get(transactionManager);
+	public Map<PlatformTransactionManager, TransactionStatus> getTransactionStatuses() {
+		return transactionStatuses;
 	}
 
 	public void setNewSynchonization() {
@@ -44,37 +46,125 @@ public class MultiTransactionStatus implements TransactionStatus {
 		return newSynchonization;
 	}
 
-	@Override
+	public void registerTransactionManager(TransactionDefinition definition, PlatformTransactionManager transactionManager) {
+		getTransactionStatuses().put(transactionManager, transactionManager.getTransaction(definition));
+	}
+
+	public void commit(PlatformTransactionManager transactionManager) {
+		TransactionStatus transactionStatus = getTransactionStatus(transactionManager);
+		// 因为会动态添加事务管理器，添加时可能已经开启了事务，提交时，新添加的事务管理是没有事务状态的。
+		if (transactionStatus != null) {
+			transactionManager.commit(transactionStatus);
+		}
+	}
+
+	/**
+	 * Rolls back the {@link TransactionStatus} registered for the given {@link PlatformTransactionManager}.
+	 * 
+	 * @param transactionManager must not be {@literal null}.
+	 */
+	public void rollback(PlatformTransactionManager transactionManager) {
+		transactionManager.rollback(getTransactionStatus(transactionManager));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#isRollbackOnly()
+	 */
+	public boolean isRollbackOnly() {
+		return getMainTransactionStatus().isRollbackOnly();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#isCompleted()
+	 */
+	public boolean isCompleted() {
+		return getMainTransactionStatus().isCompleted();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#isNewTransaction()
+	 */
 	public boolean isNewTransaction() {
-		return getTransactionStatus().isNewTransaction();
+		return getMainTransactionStatus().isNewTransaction();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#hasSavepoint()
+	 */
 	public boolean hasSavepoint() {
-		return getTransactionStatus().hasSavepoint();
+		return getMainTransactionStatus().hasSavepoint();
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#setRollbackOnly()
+	 */
 	public void setRollbackOnly() {
-		for (TransactionStatus ts : transactionStatusMap.values()) {
+		for (TransactionStatus ts : transactionStatuses.values()) {
 			ts.setRollbackOnly();
 		}
 	}
 
-	@Override
-	public boolean isRollbackOnly() {
-		return getTransactionStatus().isRollbackOnly();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.SavepointManager#createSavepoint()
+	 */
+	public Object createSavepoint() throws TransactionException {
+
+		SavePoints savePoints = new SavePoints();
+
+		for (TransactionStatus transactionStatus : transactionStatuses.values()) {
+			savePoints.save(transactionStatus);
+		}
+		return savePoints;
 	}
 
-	@Override
-	public boolean isCompleted() {
-		return getTransactionStatus().isCompleted();
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.SavepointManager#rollbackToSavepoint(java.lang.Object)
+	 */
+	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
+		SavePoints savePoints = (SavePoints) savepoint;
+		savePoints.rollback();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.SavepointManager#releaseSavepoint(java.lang.Object)
+	 */
+	public void releaseSavepoint(Object savepoint) throws TransactionException {
+		((SavePoints) savepoint).release();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.transaction.TransactionStatus#flush()
+	 */
+	public void flush() {
+		for (TransactionStatus transactionStatus : transactionStatuses.values()) {
+			transactionStatus.flush();
+		}
+	}
+
+	private TransactionStatus getMainTransactionStatus() {
+		return transactionStatuses.get(mainTransactionManager);
+	}
+
+	private TransactionStatus getTransactionStatus(PlatformTransactionManager transactionManager) {
+		return this.getTransactionStatuses().get(transactionManager);
 	}
 
 	private static class SavePoints {
-		Map<TransactionStatus, Object> savepoints = new HashMap<TransactionStatus, Object>();
+
+		private final Map<TransactionStatus, Object> savepoints = new HashMap<TransactionStatus, Object>();
 
 		private void addSavePoint(TransactionStatus status, Object savepoint) {
+
+			Assert.notNull(status, "TransactionStatus must not be null!");
 			this.savepoints.put(status, savepoint);
 		}
 
@@ -97,52 +187,6 @@ public class MultiTransactionStatus implements TransactionStatus {
 			for (TransactionStatus transactionStatus : savepoints.keySet()) {
 				transactionStatus.releaseSavepoint(savepointFor(transactionStatus));
 			}
-		}
-	}
-
-	@Override
-	public Object createSavepoint() throws TransactionException {
-		SavePoints savePoints = new SavePoints();
-
-		for (TransactionStatus transactionStatus : transactionStatusMap.values()) {
-			savePoints.save(transactionStatus);
-		}
-		return savePoints;
-	}
-
-	@Override
-	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
-		SavePoints savePoints = (SavePoints) savepoint;
-		savePoints.rollback();
-	}
-
-	@Override
-	public void releaseSavepoint(Object savepoint) throws TransactionException {
-		((SavePoints) savepoint).release();
-	}
-
-	public void registerTransactionManager(TransactionDefinition definition,
-			PlatformTransactionManager transactionManager) {
-		getTransactionStatusMap().put(transactionManager, transactionManager.getTransaction(definition));
-	}
-
-	public void commit(PlatformTransactionManager transactionManager) {
-		TransactionStatus transactionStatus = getTransactionStatus(transactionManager);
-		transactionManager.commit(transactionStatus);
-	}
-
-	private TransactionStatus getTransactionStatus(PlatformTransactionManager transactionManager) {
-		return this.getTransactionStatusMap().get(transactionManager);
-	}
-
-	public void rollback(PlatformTransactionManager transactionManager) {
-		transactionManager.rollback(getTransactionStatus(transactionManager));
-	}
-
-	@Override
-	public void flush() {
-		for (TransactionStatus transactionStatus : transactionStatusMap.values()) {
-			transactionStatus.flush();
 		}
 	}
 }

@@ -38,12 +38,12 @@ public class ChainedTransactionManager implements PlatformTransactionManager, In
 		super();
 //		transactionManagers = new ArrayList<PlatformTransactionManager>();
 //		reversedTransactionManagers = new ArrayList<PlatformTransactionManager>();
-		synchronizationManager = new DefaultSynchronizationManager();
+		synchronizationManager = DefaultSynchronizationManager.INSTANCE;
 	}
 
 	public ChainedTransactionManager(
 			List<PlatformTransactionManager> transactionManagers) {
-		this(new DefaultSynchronizationManager(), transactionManagers);
+		this(DefaultSynchronizationManager.INSTANCE, transactionManagers);
 	}
 
 	public ChainedTransactionManager(

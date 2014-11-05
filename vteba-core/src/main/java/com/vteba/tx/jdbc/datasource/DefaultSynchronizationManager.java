@@ -8,7 +8,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author yinlei
  * @since 2014-1-9
  */
-public class DefaultSynchronizationManager implements SynchronizationManager {
+public enum DefaultSynchronizationManager implements SynchronizationManager {
+	INSTANCE;
 	
     @Override
     public void initSynchronization() {
