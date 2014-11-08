@@ -13,6 +13,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 /**
  * 基于头长度的netty decoder。netty原生的实现太复杂，且不能喝解压一起使用。
+ * 如果不解压，那么返回UTF-8编码的字符串。
  * @author yinlei
  * @date 2014-2-1
  */
@@ -38,7 +39,8 @@ public class LengthBasedFrameDecoder extends ByteToMessageDecoder {
 
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-		if (in.readableBytes() >= headerLength) {
+		int readable = in.readableBytes();
+		if (readable >= headerLength) {
 			Integer contentLength = frameLengthLocal.get();
 			if (contentLength == null) {
 				byte[] header = new byte[headerLength];
@@ -50,7 +52,7 @@ public class LengthBasedFrameDecoder extends ByteToMessageDecoder {
 					length = ByteUtils.toInt(header);
 				}
 				frameLengthLocal.set(length);
-			} else if (contentLength == in.readableBytes()) {
+			} else if (contentLength <= readable) {// 如果可读的数据大于内容长度，说明粘包了，只取内容长度的字节
 				byte[] dest = new byte[contentLength];
 				in.readBytes(dest);
 				String result = null;
