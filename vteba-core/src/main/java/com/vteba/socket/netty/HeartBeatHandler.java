@@ -10,7 +10,7 @@ import io.netty.handler.timeout.IdleStateEvent;
  * <p>配合io.netty.handler.timeout.IdleStateHandler，IdleStateHandler一般配置在客户端。
  * 让客户端主动发起ping检测，Server端响应pong。IdleStateHandler配置在Server端亦可，但是会增加Server端负载。
  * @author yinlei
- * @date 2014-11-8
+ * @date 2014-11-9
  */
 public class HeartBeatHandler extends ChannelDuplexHandler {
 	private static final String PING = "ping";
