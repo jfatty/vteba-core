@@ -19,7 +19,9 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 @ThreadSafe
 public class LengthBasedFrameDecoder extends ByteToMessageDecoder {
 	private final int headerLength;
+	private final boolean headerHex;
 	private final boolean uncompress;
+	
 	private ThreadLocal<Integer> frameLengthLocal = new ThreadLocal<Integer>();
 	
 	/**
@@ -27,10 +29,11 @@ public class LengthBasedFrameDecoder extends ByteToMessageDecoder {
 	 * @param headerLength 头长度（只包含内容的长度）
 	 * @param uncompress 是否解压数据
 	 */
-	public LengthBasedFrameDecoder(int headerLength, boolean uncompress) {
+	public LengthBasedFrameDecoder(int headerLength, boolean uncompress, boolean headerHex) {
 		super();
 		this.headerLength = headerLength;
 		this.uncompress = uncompress;
+		this.headerHex = headerHex;
 	}
 
 	@Override
@@ -40,7 +43,12 @@ public class LengthBasedFrameDecoder extends ByteToMessageDecoder {
 			if (contentLength == null) {
 				byte[] header = new byte[headerLength];
 				in.readBytes(header);
-				int length = ByteUtils.toInt(header);
+				int length = 0;
+				if (headerHex) {
+					length = ByteUtils.hexByte2Int(header);
+				} else {
+					length = ByteUtils.toInt(header);
+				}
 				frameLengthLocal.set(length);
 			} else if (contentLength == in.readableBytes()) {
 				byte[] dest = new byte[contentLength];
