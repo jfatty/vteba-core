@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 /**
- * 基于头长度的netty decoder。netty原生的实现太复杂，且不能喝解压一起使用。
+ * 基于头长度的netty decoder。netty原生的实现长度有限制，且不能喝解压一起使用。
  * 如果不解压，那么返回UTF-8编码的字符串。
  * @author yinlei
  * @date 2014-2-1
