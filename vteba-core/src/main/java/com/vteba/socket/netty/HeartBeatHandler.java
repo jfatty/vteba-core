@@ -1,5 +1,8 @@
 package com.vteba.socket.netty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
@@ -13,6 +16,8 @@ import io.netty.handler.timeout.IdleStateEvent;
  * @date 2014-11-9
  */
 public class HeartBeatHandler extends ChannelDuplexHandler {
+	private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatHandler.class);
+	
 	private static final String PING = "ping";
 	private static final String PONG = "pong";
 	
@@ -20,11 +25,11 @@ public class HeartBeatHandler extends ChannelDuplexHandler {
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
 		String heart = (String) msg;
-		if (heart.equals(PING)) {
-//			System.out.println("接受到心跳ping消息");
+		if (heart.equals(PING)) {// Server接收到Client的心跳ping消息
+			System.out.println("接受到心跳ping消息");
 			ctx.write(PONG);
 //			ctx.flush();//多余
-		} else if (heart.equals(PONG)) {
+		} else if (heart.equals(PONG)) {// Client接收到Server的心跳pong消息
 			// pong消息不处理，等待Netty核心的事件通知，空闲时才发送ping消息，减少负载
 //			System.out.println("接受到心跳pong消息");
 //			TimeUnit.SECONDS.sleep(6);
@@ -54,6 +59,13 @@ public class HeartBeatHandler extends ChannelDuplexHandler {
 			}
 		}
 		super.userEventTriggered(ctx, evt);// 将事件向下传递
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+			throws Exception {
+		LOGGER.error("心跳连接异常。", cause.getMessage());
+		ctx.fireExceptionCaught(cause);
 	}
 
 }
