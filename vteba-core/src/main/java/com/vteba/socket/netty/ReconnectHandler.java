@@ -37,7 +37,7 @@ public class ReconnectHandler extends ChannelDuplexHandler {
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		scheduler.scheduleAtFixedRate(new Runnable() {
+		getScheduler().scheduleAtFixedRate(new Runnable() {
 			
 			@Override
 			public void run() {
