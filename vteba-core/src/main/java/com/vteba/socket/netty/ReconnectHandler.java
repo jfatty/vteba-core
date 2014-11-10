@@ -41,7 +41,11 @@ public class ReconnectHandler extends ChannelDuplexHandler {
 			
 			@Override
 			public void run() {
-				bootstrap.connect();
+				try {
+					bootstrap.connect("127.0.0.1", 8080).sync();
+				} catch (InterruptedException e) {
+					
+				}
 			}
 		}, 1, 15, TimeUnit.SECONDS);
 	}
