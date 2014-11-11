@@ -26,7 +26,7 @@ public class HeartBeatHandler extends ChannelDuplexHandler {
 			throws Exception {
 		String heart = (String) msg;
 		if (heart.equals(PING)) {// Server接收到Client的心跳ping消息
-			System.out.println("接受到心跳ping消息");
+//			System.out.println("接受到心跳ping消息");
 			ctx.write(PONG);
 //			ctx.flush();//多余
 		} else if (heart.equals(PONG)) {// Client接收到Server的心跳pong消息
