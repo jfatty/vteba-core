@@ -8,6 +8,11 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+/**
+ * 断线重连处理器
+ * @author yinlei
+ * @since 2014-6-22
+ */
 public class ReconnectHandler extends ChannelDuplexHandler {
 	private final Bootstrap bootstrap;
 	private ScheduledExecutorService scheduler;

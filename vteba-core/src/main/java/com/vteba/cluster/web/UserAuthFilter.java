@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vteba.cluster.user.ClusterUser;
 import com.vteba.cluster.user.UserUtils;
-import com.vteba.service.context.config.PropUtils;
+import com.vteba.utils.common.PropUtils;
 
 /**
  * 用户登录权限过滤器，一些资源必须登录才能访问。公共资源直接放行。

@@ -18,8 +18,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 public class HeartBeatHandler extends ChannelDuplexHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HeartBeatHandler.class);
 	
-	private static final String PING = "ping";
-	private static final String PONG = "pong";
+	public static final String PING = "ping";
+	public static final String PONG = "pong";
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
